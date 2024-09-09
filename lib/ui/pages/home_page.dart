@@ -10,9 +10,9 @@ class HomePage extends StatelessWidget {
     final appTheme = Theme.of(context);
     final colorScheme = appTheme.colorScheme;
 
-    return Scaffold(
-      
-      body: const Placeholder(),
+    return const Scaffold(
+
+      body: Placeholder(),
     );
   }
 }

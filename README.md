@@ -1,3 +1,3 @@
-# help_me_alpha_dev
+# HelpMe! Early Alpha Development Version
 
-A new Flutter project.
+Skeleton app for project HelpMe!
