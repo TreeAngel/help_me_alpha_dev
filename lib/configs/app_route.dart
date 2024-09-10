@@ -1,5 +1,5 @@
 import 'package:go_router/go_router.dart';
-import 'package:help_me_alpha_dev/ui/pages/home_page.dart';
+import 'package:help_me_client_alpha_ver/ui/pages/home_page.dart';
 
 class AppRoute {
   static GoRouter get appRoute {

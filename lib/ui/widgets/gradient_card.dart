@@ -5,24 +5,26 @@ class GradientCard extends StatelessWidget {
     super.key,
     required this.width,
     required this.height,
-    required this.child,
     required this.cardColor,
+    required this.child,
   });
 
   final double? width;
   final double? height;
-  final Widget child;
   final Color cardColor;
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Stack(
-        children: [
-          _cardContainer(),
-          _cardGradient(65, 60),
-          _cardGradient(35, 80),
-        ],
+      child: Center(
+        child: Stack(
+          children: [
+            _cardContainer(),
+            _cardGradient(65, 60),
+            _cardGradient(35, 80),
+          ],
+        ),
       ),
     );
   }
@@ -47,7 +49,7 @@ class GradientCard extends StatelessWidget {
       ),
     );
   }
-  
+
   Positioned _cardGradient(double widht, double height) {
     return Positioned(
       top: 0,
