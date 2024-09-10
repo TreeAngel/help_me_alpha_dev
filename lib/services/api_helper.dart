@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:help_me_client_alpha_ver/models/auth_response_model.dart';
 import 'package:help_me_client_alpha_ver/models/category_model.dart';
+import 'package:help_me_client_alpha_ver/models/login_model.dart';
 import 'package:help_me_client_alpha_ver/models/register_model.dart';
 import 'package:help_me_client_alpha_ver/services/geolocator.dart';
 import 'package:help_me_client_alpha_ver/utils/logging.dart';
@@ -17,8 +18,8 @@ class ApiHelper {
       baseUrl: temporaryUrl,
       contentType: Headers.jsonContentType,
       responseType: ResponseType.json,
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 10),
+      connectTimeout: const Duration(seconds: 20),
+      receiveTimeout: const Duration(seconds: 20),
     ),
   );
 
@@ -87,12 +88,18 @@ class ApiHelper {
     return DataCategory.fromJson(response);
   }
 
-  static Future<AuthResponseModel> authLogin(
-      String username, String password) async {
-    final response = await _postData('auth/login', {
-      'username': username,
-      'password': password,
-    });
+  // static Future<AuthResponseModel> authLogin(
+  //     String username, String password) async {
+  //   final response = await _postData('auth/login', {
+  //     'username': username,
+  //     'password': password,
+  //   });
+  //   return AuthResponseModel.fromMap(response);
+  // }
+
+  static Future<AuthResponseModel> authLogin(LoginModel user) async {
+    Map<String, dynamic> userData = user.toJson();
+    final response = await _postData('auth/login', userData);
     return AuthResponseModel.fromMap(response);
   }
 

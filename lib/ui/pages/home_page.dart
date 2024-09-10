@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_randomcolor/flutter_randomcolor.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:help_me_client_alpha_ver/blocs/category_blocs/category_bloc.dart';
 import 'package:help_me_client_alpha_ver/configs/app_colors.dart';
+import 'package:help_me_client_alpha_ver/data/menu_items_data.dart';
 import 'package:help_me_client_alpha_ver/models/category_model.dart';
+import 'package:help_me_client_alpha_ver/models/menu_item_model.dart';
 import 'package:help_me_client_alpha_ver/ui/widgets/gradient_card.dart';
+import 'package:help_me_client_alpha_ver/utils/logging.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -14,14 +18,12 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final appTheme = Theme.of(context);
     final textTheme = appTheme.textTheme;
-    final buttonTheme = appTheme.buttonTheme;
     final colorScheme = appTheme.colorScheme;
     final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
 
     return SafeArea(
       child: Scaffold(
-        appBar: _homeAppBar(textTheme, colorScheme),
+        appBar: _homeAppBar(context, textTheme, colorScheme),
         body: Stack(
           children: [
             Positioned(
@@ -35,6 +37,7 @@ class HomePage extends StatelessWidget {
             Positioned.fill(
               child: RefreshIndicator(
                 triggerMode: RefreshIndicatorTriggerMode.onEdge,
+                color: AppColors.primary,
                 onRefresh: () async {
                   context.read<CategoryBloc>().add(
                       FetchCategories()); // TODO: Implement other future fetching from api
@@ -135,7 +138,9 @@ class HomePage extends StatelessWidget {
           ),
         ),
         ElevatedButton.icon(
-          onPressed: () {},
+          onPressed: () {
+            printInfo('You tap on detail order');
+          },
           style: ButtonStyle(
             backgroundColor: const WidgetStatePropertyAll(
               AppColors.primary,
@@ -174,7 +179,9 @@ class HomePage extends StatelessWidget {
               ),
             ),
             GestureDetector(
-              onTap: () {}, // TODO: Implement all order history page
+              onTap: () {
+                printInfo('You tap on all order history');
+              }, // TODO: Implement all order history page
               child: Text(
                 'Lihat Semua',
                 style: textTheme.titleMedium?.copyWith(
@@ -224,7 +231,12 @@ class HomePage extends StatelessWidget {
                 final randomColor = randomColors[index];
                 final color = randomColor.toString().substring(1);
                 final cardColor = Color(int.parse('0xFF$color'));
-                return _categoryGridItem(category, textTheme, cardColor);
+                return GestureDetector(
+                  onTap: () {
+                    printInfo('You tap on ${category.name}');
+                  },
+                  child: _categoryGridItem(category, textTheme, cardColor),
+                );
               },
             ),
           );
@@ -287,7 +299,9 @@ class HomePage extends StatelessWidget {
               ),
             ),
             GestureDetector(
-              onTap: () {}, // TODO: Implement all categories page
+              onTap: () {
+                printInfo('You tap on all categories');
+              }, // TODO: Implement all categories page
               child: SvgPicture.asset('assets/icons/option.svg'),
             ),
           ],
@@ -338,14 +352,22 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  AppBar _homeAppBar(TextTheme textTheme, ColorScheme colorScheme) {
+  AppBar _homeAppBar(
+      BuildContext context, TextTheme textTheme, ColorScheme colorScheme) {
     return AppBar(
       centerTitle: false,
       backgroundColor: Colors.black,
       actions: [
-        GestureDetector(
-          onTap: () {},
-          child: SvgPicture.asset('assets/icons/menu.svg'),
+        PopupMenuButton<MenuItemModel>(
+          icon: SvgPicture.asset('assets/icons/menu.svg'),
+          tooltip: 'Menu',
+          position: PopupMenuPosition.under,
+          onSelected: (item) => _appBarMenuFinction(context, item),
+          itemBuilder: (context) => [
+            ...MenuItems.firstItems.map(_buildItem),
+            const PopupMenuDivider(),
+            ...MenuItems.secondItems.map(_buildItem),
+          ],
         ),
       ],
       title: Text.rich(
@@ -356,7 +378,7 @@ class HomePage extends StatelessWidget {
           ),
           children: [
             TextSpan(
-              text: 'John Doe', // TODO: Get user name from API
+              text: 'John Doe', // TODO: Get client username from API
               style: textTheme.displaySmall?.copyWith(
                 color: AppColors.darkTextColor,
               ),
@@ -365,5 +387,43 @@ class HomePage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  PopupMenuItem<MenuItemModel> _buildItem(MenuItemModel item) =>
+      PopupMenuItem<MenuItemModel>(
+        value: item,
+        child: Row(
+          children: [
+            Icon(item.icon),
+            const SizedBox(width: 10),
+            Text(item.title),
+          ],
+        ),
+      );
+
+  void _appBarMenuFinction(BuildContext context, MenuItemModel item) {
+    switch (item) {
+      case MenuItems.itemHome:
+        printInfo('You tap on home');
+        break;
+      case MenuItems.itemProfile:
+        printInfo('You tap on profile');
+        break;
+      case MenuItems.itemOrderHistory:
+        printInfo('You tap on order history');
+        break;
+      case MenuItems.itemCategories:
+        printInfo('You tap on categories');
+        break;
+      case MenuItems.itemSignIn:
+        context.pushNamed('signInPage');
+        break;
+      case MenuItems.itemSignOut:
+        printInfo('You tap on sign out');
+        break;
+      default:
+        printError('What are you tapping? $item');
+        break;
+    }
   }
 }

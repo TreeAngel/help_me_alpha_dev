@@ -1,6 +1,5 @@
 import 'dart:io';
-import 'dart:ui';
-import 'dart:convert'; // Add this import for base64 encoding
+import 'dart:convert';
 
 class RegisterModel {
   final String fullName;
@@ -9,7 +8,7 @@ class RegisterModel {
   final String password;
   final String passwordConfirmation;
   final String role;
-  late String? imageProfile; // Change to base64 String
+  late String? imageProfile;
 
   RegisterModel({
     required this.fullName,
@@ -29,11 +28,10 @@ class RegisterModel {
       'password': password,
       'password_confirmation': passwordConfirmation,
       'role': role,
-      'image_profile': imageProfile, // This will be the base64 string of the image
+      'image_profile': imageProfile,
     };
   }
 
-  // Add a method to convert image to base64
   Future<void> setImageProfile(String imagePath) async {
     List<int> imageBytes = await File(imagePath).readAsBytes();
     imageProfile = base64Encode(imageBytes);
