@@ -1,3 +1,3 @@
-# HelpMe! Early Alpha Development Version
+# HelpMe! Client Early Alpha Development Version
 
-Skeleton app for project HelpMe!
+Client version for Help Me!
