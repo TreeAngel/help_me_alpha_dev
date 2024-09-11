@@ -9,17 +9,17 @@ import 'package:help_me_client_alpha_ver/utils/logging.dart';
 class ApiHelper {
   static const baseUrl = null;
   static const temporaryUrl =
-      'https://e1b2-2001-448a-302c-13d2-b9d2-f6d2-22fb-ad24.ngrok-free.app/api/';
+      'http://192.168.1.13:8080/api/';
 
-  static String token = '';
+  static String? token;
 
   static var dio = Dio(
     BaseOptions(
       baseUrl: temporaryUrl,
       contentType: Headers.jsonContentType,
       responseType: ResponseType.json,
-      connectTimeout: const Duration(seconds: 20),
-      receiveTimeout: const Duration(seconds: 20),
+      connectTimeout: const Duration(seconds: 50),
+      receiveTimeout: const Duration(seconds: 50),
     ),
   );
 
@@ -32,7 +32,7 @@ class ApiHelper {
       lat = location.latitude;
       long = location.longitude;
     } catch (e) {
-      printWarning(e.toString());
+      printError(e.toString());
       throw Exception(e);
     }
   }
@@ -41,7 +41,7 @@ class ApiHelper {
     try {
       final response = await dio.get(
         url,
-        options: token.isNotEmpty
+        options: token != null
             ? Options(headers: {'Authorization': 'Bearer $token'})
             : null,
       );
@@ -53,7 +53,7 @@ class ApiHelper {
         throw Exception('Failed to load data');
       }
     } catch (e) {
-      printWarning(e.toString());
+      printError(e.toString());
       throw Exception(e);
     }
   }
@@ -64,7 +64,7 @@ class ApiHelper {
       final response = await dio.post(
         url,
         data: data,
-        options: token.isNotEmpty
+        options: token != null
             ? Options(headers: {
                 'Authorization': 'Bearer $token',
               })
@@ -78,7 +78,7 @@ class ApiHelper {
         throw Exception('Failed to post data');
       }
     } catch (e) {
-      printWarning(e.toString());
+      printError(e.toString());
       throw Exception(e);
     }
   }

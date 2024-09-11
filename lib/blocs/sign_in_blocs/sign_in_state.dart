@@ -4,27 +4,31 @@ class SignInState extends Equatable {
   final String username;
   final String password;
   final bool isPasswordVisible;
+  final bool isRememberMe;
 
   const SignInState({
     this.username = '',
     this.password = '',
     this.isPasswordVisible = false,
+    this.isRememberMe = false,
   });
 
   SignInState copyWith({
     String? username,
     String? password,
     bool? isPasswordVisible,
+    bool? isRememberMe,
   }) {
     return SignInState(
       username: username ?? this.username,
       password: password ?? this.password,
       isPasswordVisible: isPasswordVisible ?? this.isPasswordVisible,
+      isRememberMe: isRememberMe ?? this.isRememberMe,
     );
   }
 
   @override
-  List<Object> get props => [username, password, isPasswordVisible];
+  List<Object> get props => [username, password, isPasswordVisible, isRememberMe];
 }
 
 final class SignInInitial extends SignInState {}

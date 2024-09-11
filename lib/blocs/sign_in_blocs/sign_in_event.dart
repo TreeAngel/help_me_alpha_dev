@@ -27,4 +27,8 @@ class PasswordChanged extends SignInEvent {
 
 class TogglePasswordVisibility extends SignInEvent {}
 
+class ToggleRememberMe extends SignInEvent {}
+
 class SignInSubmitted extends SignInEvent {}
+
+class ResetSignInState extends SignInEvent {}

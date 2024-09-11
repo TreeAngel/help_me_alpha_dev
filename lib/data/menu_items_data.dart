@@ -11,7 +11,7 @@ class MenuItems {
   ];
 
   static List<MenuItemModel> secondItems = [
-    ApiHelper.token.isNotEmpty ? itemSignOut : itemSignIn,
+    ApiHelper.token != null ? itemSignOut : itemSignIn,
   ];
 
   static const itemHome = MenuItemModel(

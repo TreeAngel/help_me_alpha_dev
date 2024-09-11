@@ -15,13 +15,15 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ApiHelper apiHelper = ApiHelper();
+
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) => CategoryBloc(apiHelper: ApiHelper()),
+          create: (context) => CategoryBloc(apiHelper: apiHelper),
         ),
         BlocProvider(
-          create: (context) => SignInBloc(apiHelper: ApiHelper()),
+          create: (context) => SignInBloc(apiHelper: apiHelper),
         )
         // TODO: Add other blocs here
       ],

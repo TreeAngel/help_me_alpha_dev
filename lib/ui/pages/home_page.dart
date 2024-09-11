@@ -8,8 +8,10 @@ import 'package:help_me_client_alpha_ver/configs/app_colors.dart';
 import 'package:help_me_client_alpha_ver/data/menu_items_data.dart';
 import 'package:help_me_client_alpha_ver/models/category_model.dart';
 import 'package:help_me_client_alpha_ver/models/menu_item_model.dart';
+import 'package:help_me_client_alpha_ver/services/api_helper.dart';
 import 'package:help_me_client_alpha_ver/ui/widgets/gradient_card.dart';
 import 'package:help_me_client_alpha_ver/utils/logging.dart';
+import 'package:help_me_client_alpha_ver/utils/secure_storage.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -20,6 +22,12 @@ class HomePage extends StatelessWidget {
     final textTheme = appTheme.textTheme;
     final colorScheme = appTheme.colorScheme;
     final screenWidth = MediaQuery.of(context).size.width;
+
+    SecureStorage().readSecureData('authToken').then((value) {
+      if (value != null) {
+        ApiHelper.token = value;
+      }
+    });
 
     return SafeArea(
       child: Scaffold(
