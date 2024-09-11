@@ -1,5 +1,5 @@
-name: help_me_alpha_dev
-description: "HelpMe! Alpha Development Version - Skeleton App"
+name: help_me_mitra_alpha_ver
+description: "HelpMe! Alpha Development Version - Mitra App"
 publish_to: "none"
 version: 0.1.0
 
@@ -27,5 +27,23 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - assets/fonts/
     - assets/images/
     - assets/icons/
+
+fonts:
+  - family: Inter_18pt-Regular
+    fonts: 
+      - asset: assets/fonts/Inter_18pt-Regular.ttf
+  - family: Inter_18pt-Regular
+    fonts: 
+      - asset: assets/fonts/Inter_24pt-Bold.ttf
+  - family: Poppins-Bold
+    fonts: 
+      - asset: assets/fonts/Poppins-Bold.ttf
+  - family: Poppins-Regular
+    fonts: 
+      - asset: assets/fonts/Poppins-Regular.ttf
+  - family: Poppins-SemiBold
+    fonts: 
+      - asset: assets/fonts/Poppins-SemiBold.ttf

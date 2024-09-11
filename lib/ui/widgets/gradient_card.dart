@@ -5,14 +5,14 @@ class GradientCard extends StatelessWidget {
     super.key,
     required this.width,
     required this.height,
-    required this.child,
     required this.cardColor,
+    required this.child,
   });
 
   final double? width;
   final double? height;
-  final Widget child;
   final Color cardColor;
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {

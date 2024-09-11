@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:help_me_alpha_dev/services/geolocator.dart';
-import 'package:help_me_alpha_dev/utils/logging.dart';
+import 'package:help_me_mitra_alpha_ver/services/geolocator.dart';
+import 'package:help_me_mitra_alpha_ver/utils/logging.dart';
 
 class ApiHelper {
   static const baseUrl = null;

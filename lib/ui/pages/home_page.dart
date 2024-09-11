@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:help_me_alpha_dev/configs/app_colors.dart';
-import 'package:help_me_alpha_dev/ui/widgets/gradient_card.dart';
+import 'package:help_me_mitra_alpha_ver/configs/app_colors.dart';
+import 'package:help_me_mitra_alpha_ver/ui/widgets/gradient_card.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
