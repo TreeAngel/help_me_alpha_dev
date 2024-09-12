@@ -77,28 +77,6 @@ class RegisterPageView extends StatelessWidget {
                 ),
               ),
             ),
-            // Center(
-            //   child: RichText(
-            //   text: const TextSpan(
-            //     text: 'Sudah memiliki akun? ',
-            //     style: TextStyle(
-            //       color: Colors.white,
-            //       fontSize: 17,
-            //       fontWeight: FontWeight.w400
-            //     ),
-            //     children: <TextSpan>[
-            //       TextSpan(
-            //         text: 'Masuk',
-            //         style: TextStyle(
-            //           fontWeight: FontWeight.w400,
-            //           color: AppColors.mitraGreen,
-            //           decoration: TextDecoration.underline,
-            //         ),
-            //       ),
-            //     ],
-            //   ),
-            // ),
-            // ),
             const SizedBox(height: 15),
             Text(
               "Username",
