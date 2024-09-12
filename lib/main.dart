@@ -15,9 +15,9 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Login',
+      title: 'HelpMe | Mitra',
       theme: AppTheme.appTheme,
-      home: const LoginPageView(),
+      home: const HomePage(),
     );
   }
 }

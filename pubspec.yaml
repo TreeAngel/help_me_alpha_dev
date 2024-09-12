@@ -27,23 +27,5 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/fonts/
     - assets/images/
     - assets/icons/
-
-fonts:
-  - family: Inter_18pt-Regular
-    fonts: 
-      - asset: assets/fonts/Inter_18pt-Regular.ttf
-  - family: Inter_18pt-Regular
-    fonts: 
-      - asset: assets/fonts/Inter_24pt-Bold.ttf
-  - family: Poppins-Bold
-    fonts: 
-      - asset: assets/fonts/Poppins-Bold.ttf
-  - family: Poppins-Regular
-    fonts: 
-      - asset: assets/fonts/Poppins-Regular.ttf
-  - family: Poppins-SemiBold
-    fonts: 
-      - asset: assets/fonts/Poppins-SemiBold.ttf
