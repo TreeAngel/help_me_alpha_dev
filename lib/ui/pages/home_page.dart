@@ -70,7 +70,7 @@ class HomePage extends StatelessWidget {
                             null,
                           );
                           ManageAuthToken.deleteToken();
-                          // context.goNamed('signInPage');
+                          context.goNamed('signInPage');
                         }
                       },
                       child: const SliverToBoxAdapter(child: SizedBox.shrink()),
