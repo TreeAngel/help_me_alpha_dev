@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:help_me_mitra_alpha_ver/configs/app_colors.dart';
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+class HomeViewPage extends StatelessWidget {
+  const HomeViewPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
+      body: 
+      Container(
         child: Stack(
           children: [
             Container(
@@ -41,7 +42,7 @@ class HomePage extends StatelessWidget {
             ),
             Container(
               margin: EdgeInsets.only(top: MediaQuery.of(context).size.height / 3.5),
-              height: MediaQuery.of(context).size.height / 4,
+              height: MediaQuery.of(context).size.height,
               width: MediaQuery.of(context).size.width,
               decoration: const BoxDecoration(
                 color: Colors.white,
@@ -49,8 +50,71 @@ class HomePage extends StatelessWidget {
                   topLeft: Radius.circular(40),
                   topRight: Radius.circular(40),
                 ),
+              ),              
+            ),
+            Container(
+              margin: EdgeInsets.only(top: MediaQuery.of(context).size.height / 2.4, left: 25),
+              child: Text("Orderan",
+              style: TextStyle(
+                fontSize: 22.15,
+                  fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),)
+            ),
+            Container(
+              margin: const EdgeInsets.only(top: 107, left: 25, right: 25), // Menambah margin top
+              child: Column(
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 300),
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height / 5.2,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: AppColors.boxGreen,
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Center(
+                      child: Text('Tunggu orderan ya!'),
+                    ),
+                    
+                  )
+                ],
               ),
-              child: const Text(""),
+            ),
+            Container(
+              margin: EdgeInsets.only(top: MediaQuery.of(context).size.height / 1.50, left: 25),
+              child: Text("Riwayat",
+              style: TextStyle(
+                fontSize: 22.15,
+                  fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),)
+            ),
+            Container(
+              margin: const EdgeInsets.only(top: 330, left: 25, right: 25), // Menambah margin top
+              child: Column(
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 300),
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height / 5.2,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: AppColors.boxGreen,
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Center(
+                      child: Text(''),
+                    ),
+                    
+                  )
+                ],
+              ),
             ),
             Container(
               margin: const EdgeInsets.only(top: 120, left: 20.0, right: 20.0), // Menambah margin top
@@ -61,7 +125,14 @@ class HomePage extends StatelessWidget {
                     width: MediaQuery.of(context).size.width,
                     height: MediaQuery.of(context).size.height / 4.2,
                     decoration: BoxDecoration(
-                      color: AppColors.mitraGreen.withOpacity(0.9),
+                      gradient: LinearGradient(
+                        colors: [
+                          Color(0xFFDAFF79).withOpacity(0.8), // Warna DAFF79 (atas)
+                          Color(0xFF758D38).withOpacity(0.8), // Warna 758D38 (bawah)
+                        ],
+                        begin: Alignment.topCenter, // Mulai dari atas
+                        end: Alignment.bottomCenter, // Berakhir di bawah
+                      ),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Stack(
@@ -107,6 +178,47 @@ class HomePage extends StatelessWidget {
                             ],
                           ),
                         ),
+                        Positioned(
+                          right: 0,
+                          bottom: 138,
+                          child: Container(
+                            width: 60,
+                            height: 70,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.white.withOpacity(0.3), // Warna putih dengan opasitas 30%
+                                  Colors.white.withOpacity(0.0), // Transparan (memudar ke atas)
+                                ],
+                                  begin: Alignment.bottomCenter, // Gradien dimulai dari bawah
+                                  end: Alignment.topCenter, // Gradien berakhir di atas
+                                ),
+                                  borderRadius: const BorderRadius.only(
+                                  topRight: Radius.circular(19),
+                                ),
+                            ),
+                        )),
+                        Positioned(
+                          right: 30,
+                          bottom: 165,
+                          child: Container(
+                            width: 65,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.white.withOpacity(0.3), // Warna putih dengan opasitas 30%
+                                  Colors.white.withOpacity(0.0), // Transparan (memudar ke atas)
+                                ],
+                                  begin: Alignment.bottomCenter, // Gradien dimulai dari bawah
+                                  end: Alignment.topCenter, // Gradien berakhir di atas
+                                ),
+                                  borderRadius: const BorderRadius.only(
+                                  topRight: Radius.circular(19),
+                                ),
+                            ),
+                          )
+                        ),
                         // Ikon Heksagonal di Kanan Atas
                         Positioned(
                         right: 10,
@@ -129,8 +241,8 @@ class HomePage extends StatelessWidget {
                       ),
                       ],
                     ),
-
                   ),
+                  
                 ],
               ),
             ),

@@ -10,7 +10,9 @@ class AppColors {
 
   static const vividRed = Color(0xFFEE3F3F);
   static const salmonPink = Color(0xFFFF7F7F);
-  static const limeGreen = Color(0xFF6CC51D);
+  static const boxGreen = Color(0xFFD7FF79);
+  static const limeGreen = Color(0xFFDAFF79);
+  static const leavesGreen = Color(0xFF758D38);
   static const mitraGreen = Color(0xFFA2BD5B);
   static const goldenYellow = Color(0xFFFFC107);
   static const aquamarine = Color(0xFF95FACF);

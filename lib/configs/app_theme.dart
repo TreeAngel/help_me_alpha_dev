@@ -12,7 +12,6 @@ class AppTheme {
         backgroundColor: Colors.transparent,
       ),
       fontFamily: GoogleFonts.poppins().fontFamily,
-      textTheme: GoogleFonts.poppinsTextTheme(), // Menambahkan textTheme secara eksplisit
     );
   }
 }
