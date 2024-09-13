@@ -3,15 +3,18 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_randomcolor/flutter_randomcolor.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:help_me_client_alpha_ver/blocs/category_blocs/category_bloc.dart';
-import 'package:help_me_client_alpha_ver/configs/app_colors.dart';
-import 'package:help_me_client_alpha_ver/data/menu_items_data.dart';
-import 'package:help_me_client_alpha_ver/models/category_model.dart';
-import 'package:help_me_client_alpha_ver/models/menu_item_model.dart';
-import 'package:help_me_client_alpha_ver/services/api_helper.dart';
-import 'package:help_me_client_alpha_ver/ui/widgets/gradient_card.dart';
-import 'package:help_me_client_alpha_ver/utils/logging.dart';
-import 'package:help_me_client_alpha_ver/utils/secure_storage.dart';
+import 'package:help_me_client_alpha_ver/utils/manage_auth_token.dart';
+
+import '../../blocs/category_blocs/category_bloc.dart';
+import '../../configs/app_colors.dart';
+import '../../data/menu_items_data.dart';
+import '../../models/category_model.dart';
+import '../../models/menu_item_model.dart';
+import '../../ui/widgets/gradient_card.dart';
+import '../../utils/logging.dart';
+import '../../utils/show_alert_dialog.dart';
+import '../../blocs/auth_blocs/auth_bloc.dart';
+import '../../blocs/auth_blocs/auth_state.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -22,12 +25,6 @@ class HomePage extends StatelessWidget {
     final textTheme = appTheme.textTheme;
     final colorScheme = appTheme.colorScheme;
     final screenWidth = MediaQuery.of(context).size.width;
-
-    SecureStorage().readSecureData('authToken').then((value) {
-      if (value != null) {
-        ApiHelper.token = value;
-      }
-    });
 
     return SafeArea(
       child: Scaffold(
@@ -63,6 +60,21 @@ class HomePage extends StatelessWidget {
                     const SliverToBoxAdapter(child: SizedBox(height: 20)),
                     _lastOrderHistory(textTheme),
                     const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                    BlocListener<AuthBloc, AuthState>(
+                      listener: (context, state) {
+                        if (state is SignOutLoaded) {
+                          ShowAlertDialog.showAlertDialog(
+                            context,
+                            'Berhasil',
+                            'Anda berhasil sign out',
+                            null,
+                          );
+                          ManageAuthToken.deleteToken();
+                          // context.goNamed('signInPage');
+                        }
+                      },
+                      child: const SliverToBoxAdapter(child: SizedBox.shrink()),
+                    ),
                   ],
                 ),
               ),
@@ -124,20 +136,26 @@ class HomePage extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text.rich(TextSpan(children: [
+        Text.rich(
           TextSpan(
-            text: 'Kunci Hilang\n', // TODO: Get problem subCategory from API
-            style: textTheme.titleLarge?.copyWith(
-              color: AppColors.primary,
-              fontWeight: FontWeight.w800,
-            ),
+            children: [
+              TextSpan(
+                text:
+                    'Kunci Hilang\n', // TODO: Get problem subCategory from API
+                style: textTheme.titleLarge?.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              TextSpan(
+                  text:
+                      'Masalah Kendaraan', // TODO: Get problem category from API
+                  style: textTheme.bodyLarge?.copyWith(
+                    color: AppColors.aquamarine,
+                  ))
+            ],
           ),
-          TextSpan(
-              text: 'Masalah Kendaraan', // TODO: Get problem category from API
-              style: textTheme.bodyLarge?.copyWith(
-                color: AppColors.aquamarine,
-              ))
-        ])),
+        ),
         Text(
           'Rp5.000',
           style: textTheme.titleMedium?.copyWith(
@@ -211,13 +229,13 @@ class HomePage extends StatelessWidget {
           context.read<CategoryBloc>().add(FetchCategories());
           return const SliverFillRemaining(
             child: Center(
-              child: CircularProgressIndicator(),
+              child: SizedBox.shrink(),
             ),
           );
         } else if (state is CategoryLoading) {
           return const SliverFillRemaining(
             child: Center(
-              child: CircularProgressIndicator(),
+              child: CircularProgressIndicator(color: AppColors.primary),
             ),
           );
         } else if (state is CategoryLoaded) {
@@ -249,11 +267,15 @@ class HomePage extends StatelessWidget {
             ),
           );
         } else if (state is CategoryError) {
-          return SliverFillRemaining(
-            child: Center(
-              child: Text('Error: ${state.errorMessage}'),
-            ),
-          );
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ShowAlertDialog.showAlertDialog(
+              context,
+              'Error',
+              state.errorMessage,
+              null,
+            );
+            context.read<CategoryBloc>().add(FetchCategories());
+          });
         }
         return const SliverToBoxAdapter(child: SizedBox.shrink());
       },
@@ -366,16 +388,19 @@ class HomePage extends StatelessWidget {
       centerTitle: false,
       backgroundColor: Colors.black,
       actions: [
-        PopupMenuButton<MenuItemModel>(
-          icon: SvgPicture.asset('assets/icons/menu.svg'),
-          tooltip: 'Menu',
-          position: PopupMenuPosition.under,
-          onSelected: (item) => _appBarMenuFinction(context, item),
-          itemBuilder: (context) => [
-            ...MenuItems.firstItems.map(_buildItem),
-            const PopupMenuDivider(),
-            ...MenuItems.secondItems.map(_buildItem),
-          ],
+        Padding(
+          padding: const EdgeInsets.only(right: 20),
+          child: PopupMenuButton<MenuItemModel>(
+            icon: SvgPicture.asset('assets/icons/menu.svg'),
+            tooltip: 'Menu',
+            position: PopupMenuPosition.under,
+            onSelected: (item) => _appBarMenuFunction(context, item),
+            itemBuilder: (context) => [
+              ...MenuItems.firstItems.map(_buildItem),
+              const PopupMenuDivider(),
+              ...MenuItems.secondItems.map(_buildItem),
+            ],
+          ),
         ),
       ],
       title: Text.rich(
@@ -409,7 +434,7 @@ class HomePage extends StatelessWidget {
         ),
       );
 
-  void _appBarMenuFinction(BuildContext context, MenuItemModel item) {
+  void _appBarMenuFunction(BuildContext context, MenuItemModel item) {
     switch (item) {
       case MenuItems.itemHome:
         printInfo('You tap on home');
@@ -424,10 +449,20 @@ class HomePage extends StatelessWidget {
         printInfo('You tap on categories');
         break;
       case MenuItems.itemSignIn:
-        context.pushNamed('signInPage');
+        context.goNamed('signInPage');
         break;
       case MenuItems.itemSignOut:
-        printInfo('You tap on sign out');
+        ShowAlertDialog.showAlertDialog(
+          context,
+          'Sign Out',
+          'Are you sure want to sign out?',
+          TextButton(
+            onPressed: () {
+              context.read<AuthBloc>().add(SignOutSubmitted());
+            },
+            child: const Text('Sign out'),
+          ),
+        );
         break;
       default:
         printError('What are you tapping? $item');

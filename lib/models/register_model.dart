@@ -1,6 +1,3 @@
-import 'dart:io';
-import 'dart:convert';
-
 class RegisterModel {
   final String fullName;
   final String username;
@@ -8,7 +5,7 @@ class RegisterModel {
   final String password;
   final String passwordConfirmation;
   final String role;
-  late String? imageProfile;
+  final String email;
 
   RegisterModel({
     required this.fullName,
@@ -17,7 +14,7 @@ class RegisterModel {
     required this.password,
     required this.passwordConfirmation,
     required this.role,
-    this.imageProfile,
+    required this.email,
   });
 
   Map<String, dynamic> toJson() {
@@ -28,12 +25,7 @@ class RegisterModel {
       'password': password,
       'password_confirmation': passwordConfirmation,
       'role': role,
-      'image_profile': imageProfile,
+      'email': email,
     };
-  }
-
-  Future<void> setImageProfile(String imagePath) async {
-    List<int> imageBytes = await File(imagePath).readAsBytes();
-    imageProfile = base64Encode(imageBytes);
   }
 }

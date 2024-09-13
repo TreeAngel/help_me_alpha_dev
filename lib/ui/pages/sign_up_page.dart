@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,13 +12,21 @@ import '../../blocs/auth_blocs/auth_bloc.dart';
 import '../../blocs/auth_blocs/auth_state.dart';
 import '../../utils/show_alert_dialog.dart';
 
-class SignInPage extends StatelessWidget {
-  const SignInPage({super.key});
+enum TextInputEvent {
+  fullname,
+  username,
+  email,
+}
+
+class SignUpPage extends StatelessWidget {
+  const SignUpPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     final appTheme = Theme.of(context);
     final textTheme = appTheme.textTheme;
+
+    bool isPassword = true;
 
     return SafeArea(
       child: Scaffold(
@@ -30,7 +40,7 @@ class SignInPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Masuk',
+                  'Daftar akun',
                   style: textTheme.headlineLarge?.copyWith(
                       color: AppColors.darkTextColor,
                       fontWeight: FontWeight.w800),
@@ -42,6 +52,38 @@ class SignInPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
+                          'Nama lengkap',
+                          style: textTheme.titleMedium?.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        _textInputField(context, textTheme,
+                            'Masukkan nama lengkap', TextInputEvent.fullname),
+                        const SizedBox(height: 10),
+                        Text(
+                          'Nomor handphone',
+                          style: textTheme.titleMedium?.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        _phoneNumInputField(context, textTheme),
+                        const SizedBox(height: 10),
+                        Text(
+                          'Email',
+                          style: textTheme.titleMedium?.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        _textInputField(context, textTheme, 'Masukan email',
+                            TextInputEvent.email),
+                        const SizedBox(height: 10),
+                        Text(
                           'Username',
                           style: textTheme.titleMedium?.copyWith(
                             color: AppColors.primary,
@@ -49,27 +91,32 @@ class SignInPage extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        _usernameInputField(context, textTheme),
+                        _textInputField(context, textTheme, 'Masukan username',
+                            TextInputEvent.username),
                         const SizedBox(height: 10),
                         Text(
-                          'Password',
+                          'Kata sandi',
                           style: textTheme.titleMedium?.copyWith(
                             color: AppColors.primary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const SizedBox(height: 10),
-                        _passwordInputField(state, context, textTheme),
+                        _passwordInputField(state, context, textTheme,
+                            'Masukan Kata sandi', isPassword),
                         const SizedBox(height: 10),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            _rememberMeCheckBox(state, context, textTheme),
-                            _forgetPassword(context, textTheme)
-                          ],
+                        Text(
+                          'Konfirmasi kata sandi',
+                          style: textTheme.titleMedium?.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                        const SizedBox(height: 20),
-                        if (state is SignInLoaded) ...[
+                        const SizedBox(height: 10),
+                        _passwordInputField(state, context, textTheme,
+                            'Konfirmasi kata sandi', !isPassword),
+                        const SizedBox(height: 40),
+                        if (state is SignUpLoaded) ...[
                           _stateLoaded(context),
                         ],
                         if (state is AuthError) ...[
@@ -82,10 +129,10 @@ class SignInPage extends StatelessWidget {
                             ),
                           ),
                         ] else ...[
-                          _signInButton(textTheme, context, state),
+                          _signUpButton(textTheme, context, state),
                         ],
                         const SizedBox(height: 10),
-                        _notHaveAccountSection(textTheme, context),
+                        _haveAccountSection(textTheme, context),
                         const SizedBox(height: 10),
                       ],
                     );
@@ -99,22 +146,22 @@ class SignInPage extends StatelessWidget {
     );
   }
 
-  Center _notHaveAccountSection(TextTheme textTheme, BuildContext context) {
+  Center _haveAccountSection(TextTheme textTheme, BuildContext context) {
     return Center(
       child: Text.rich(
         style: textTheme.bodyLarge?.copyWith(
             color: AppColors.darkTextColor, fontWeight: FontWeight.normal),
         TextSpan(
-          text: 'Belum memiliki akun? ',
+          text: 'Sudah memiliki akun? ',
           children: [
             TextSpan(
-              text: 'Daftar',
+              text: 'Masuk',
               style: textTheme.bodyLarge?.copyWith(
                 color: AppColors.primary,
                 decoration: TextDecoration.underline,
               ),
               recognizer: TapGestureRecognizer()
-                ..onTap = () => context.goNamed('signUpPage'),
+                ..onTap = () => context.goNamed('signInPage'),
             )
           ],
         ),
@@ -122,48 +169,12 @@ class SignInPage extends StatelessWidget {
     );
   }
 
-  GestureDetector _forgetPassword(BuildContext context, TextTheme textTheme) {
-    return GestureDetector(
-      onTap: () => ShowAlertDialog.showAlertDialog(context, 'Lupa kata sandi?',
-          'Sabar bang, nanti dibuat fiturnya', null),
-      child: Text(
-        'Lupa kata sandi?',
-        style: textTheme.bodyLarge?.copyWith(
-          color: AppColors.darkTextColor,
-          fontWeight: FontWeight.normal,
-        ),
-      ),
-    );
-  }
-
-  Row _rememberMeCheckBox(
-      AuthState state, BuildContext context, TextTheme textTheme) {
-    return Row(
-      children: [
-        Checkbox(
-          value: state.rememberMe,
-          onChanged: (value) {
-            context.read<AuthBloc>().add(ToggleRememberMe());
-          },
-        ),
-        Text(
-          'Tetap login',
-          style: textTheme.titleMedium?.copyWith(
-            color: AppColors.darkTextColor,
-            fontWeight: FontWeight.w500,
-          ),
-        )
-      ],
-    );
-  }
-
   _stateError(BuildContext context, AuthError state) {
-    String errorMessage = ApiException.errorMessageBuilder(state.errorMessage);
-    
+    final errorMessage = ApiException.errorMessageBuilder(state.errorMessage);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ShowAlertDialog.showAlertDialog(
         context,
-        'Error!',
+        'Error',
         errorMessage,
         null,
       );
@@ -175,7 +186,7 @@ class SignInPage extends StatelessWidget {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ShowAlertDialog.showAlertDialog(
         context,
-        'Berhasil Sign In!',
+        'Berhasil Sign Up!',
         null,
         TextButton.icon(
           onPressed: () {
@@ -199,7 +210,7 @@ class SignInPage extends StatelessWidget {
     return const SizedBox.shrink();
   }
 
-  SizedBox _signInButton(
+  SizedBox _signUpButton(
       TextTheme textTheme, BuildContext context, AuthState state) {
     return SizedBox(
       width: double.infinity,
@@ -223,22 +234,23 @@ class SignInPage extends StatelessWidget {
           ),
         ),
         onPressed: () {
-          context.read<AuthBloc>().add(SignInSubmitted());
+          context.read<AuthBloc>().add(SignUpSubmitted());
         },
       ),
     );
   }
 
-  TextFormField _passwordInputField(
-      AuthState state, BuildContext context, TextTheme textTheme) {
+  TextFormField _passwordInputField(AuthState state, BuildContext context,
+      TextTheme textTheme, String hintText, bool passwordC) {
     return TextFormField(
       obscureText: !state.isPasswordVisible,
-      onChanged: (password) =>
-          context.read<AuthBloc>().add(PasswordChanged(password)),
+      onChanged: (password) => context.read<AuthBloc>().add(passwordC
+          ? PasswordChanged(password)
+          : ConfirmPasswordChanged(password)),
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.white,
-        hintText: 'Masukan password',
+        hintText: hintText,
         hintStyle:
             textTheme.bodyLarge?.copyWith(color: AppColors.hintTextColor),
         border: OutlineInputBorder(
@@ -261,15 +273,48 @@ class SignInPage extends StatelessWidget {
     );
   }
 
-  TextFormField _usernameInputField(BuildContext context, TextTheme textTheme) {
+  TextFormField _phoneNumInputField(BuildContext context, TextTheme textTheme) {
+    return TextFormField(
+      keyboardType: TextInputType.phone,
+      cursorColor: Colors.black,
+      onChanged: (phoneNumber) =>
+          context.read<AuthBloc>().add(PhoneNumberChanged(phoneNumber)),
+      decoration: InputDecoration(
+        prefixText: '+62 | ',
+        prefixStyle: textTheme.bodyLarge?.copyWith(
+          color: AppColors.lightTextColor,
+          fontWeight: FontWeight.normal,
+        ),
+        floatingLabelBehavior: FloatingLabelBehavior.always,
+        filled: true,
+        fillColor: Colors.white,
+        hintText: 'Masukan nomor handphone',
+        hintStyle:
+            textTheme.bodyLarge?.copyWith(color: AppColors.hintTextColor),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+      style: textTheme.bodyLarge?.copyWith(
+        color: AppColors.lightTextColor,
+        fontWeight: FontWeight.normal,
+      ),
+    );
+  }
+
+  TextFormField _textInputField(BuildContext context, TextTheme textTheme,
+      String hintText, TextInputEvent event) {
     return TextFormField(
       cursorColor: Colors.black,
-      onChanged: (username) =>
-          context.read<AuthBloc>().add(UsernameChanged(username)),
+      onChanged: (textInput) => context.read<AuthBloc>().add(switch (event) {
+            TextInputEvent.fullname => FullNameChanged(textInput),
+            TextInputEvent.username => UsernameChanged(textInput),
+            TextInputEvent.email => EmailChanged(textInput),
+          }),
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.white,
-        hintText: 'Masukkan username',
+        hintText: hintText,
         hintStyle:
             textTheme.bodyLarge?.copyWith(color: AppColors.hintTextColor),
         border: OutlineInputBorder(
