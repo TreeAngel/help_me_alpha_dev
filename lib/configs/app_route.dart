@@ -26,15 +26,15 @@ class AppRoute {
         builder: (context, state) => const SignUpPage(),
       ),
     ],
-    // redirect: (context, state) {
-    //   final isAuthenticated = ApiController.token != null ? true : false;
-    //   // TODO: Add other guarded route later
-    //   if (!isAuthenticated && state.matchedLocation == '/home') {
-    //       return '/signIn';
-    //   } else {
-    //     return null;
-    //   }
-    // },
+    redirect: (context, state) {
+      final isAuthenticated = ApiController.token != null ? true : false;
+      // TODO: Add other guarded route later
+      if (!isAuthenticated && state.matchedLocation == '/home') {
+          return '/signIn';
+      } else {
+        return null;
+      }
+    },
     errorBuilder: (context, state) => const Placeholder(),
   );
 }
