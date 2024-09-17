@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:help_me_client_alpha_ver/models/api_error_response/message_error_model.dart';
+import '../../models/api_error_response/message_error_model.dart';
 
 class ApiException {
   Map<String, dynamic> apiException(DioException dioException) {
@@ -18,28 +18,32 @@ class ApiException {
         };
       case DioExceptionType.badCertificate:
         return {
-          'error': 'Failed to validate certificate, try again after a few seconds',
+          'error':
+              'Failed to validate certificate, try again after a few seconds',
         };
       case DioExceptionType.badResponse:
-        // if (dioException.response?.statusCode == 400) {
-        //   return {
-        //     'error': 'Bad Request',
-        //   };
-        // } else if (dioException.response?.statusCode == 401) {
-        //   return {
-        //     'error': 'Unauthorized',
-        //   };
-        // } else if (dioException.response?.statusCode == 403) {
-        //   return {
-        //     'error': 'Acount is inactive'
-        //   };
-        // }
-        return {
-          'error': 'Failed to process data, try again after a few seconds',
-        };
+        if (dioException.response?.statusCode == 400) {
+          return {
+            'error': 'Bad Request',
+          };
+        } else if (dioException.response?.statusCode == 401) {
+          return {
+            'error': 'Unauthorized',
+          };
+          // } else if (dioException.response?.statusCode == 403) {
+          //   return {
+          //     'error': 'Acount is inactive'
+          //   };
+          // }
+        } else {
+          return {
+            'error': 'Failed to process data, try again after a few seconds',
+          };
+        }
       case DioExceptionType.cancel:
         return {
-          'error': 'Network request was cancelled, try again after a few seconds',
+          'error':
+              'Network request was cancelled, try again after a few seconds',
         };
       case DioExceptionType.connectionError:
         return {
@@ -79,7 +83,10 @@ class ApiException {
       errorMessage += '${errorModel.role}, ';
     }
     errorMessage = errorMessage.trim();
-    errorMessage = errorMessage.endsWith(',') ? errorMessage.substring(errorMessage.length - errorMessage.length, errorMessage.length) : errorMessage;
+    errorMessage = errorMessage.endsWith(',')
+        ? errorMessage.substring(
+            errorMessage.length - errorMessage.length, errorMessage.length)
+        : errorMessage;
     return errorMessage;
   }
 }

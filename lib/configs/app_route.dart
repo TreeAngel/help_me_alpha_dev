@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../services/api/api_helper.dart';
+import '../services/api/api_controller.dart';
 import '../ui/pages/home_page.dart';
 import '../ui/pages/sign_in_page.dart';
 import '../ui/pages/sign_up_page.dart';
-// import '../utils/router_util.dart';
 
 class AppRoute {
   static final GoRouter appRoute = GoRouter(
@@ -27,14 +26,15 @@ class AppRoute {
         builder: (context, state) => const SignUpPage(),
       ),
     ],
-    redirect: (context, state) {
-      final isAuthenticated = ApiHelper.token != null ? true : false;
-      if (!isAuthenticated) {
-        return '/signIn';
-      } else {
-        return null;
-      }
-    },
+    // redirect: (context, state) {
+    //   final isAuthenticated = ApiController.token != null ? true : false;
+    //   // TODO: Add other guarded route later
+    //   if (!isAuthenticated && state.matchedLocation == '/home') {
+    //       return '/signIn';
+    //   } else {
+    //     return null;
+    //   }
+    // },
     errorBuilder: (context, state) => const Placeholder(),
   );
 }

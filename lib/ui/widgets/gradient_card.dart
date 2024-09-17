@@ -58,6 +58,7 @@ class GradientCard extends StatelessWidget {
         width: widht,
         height: height,
         decoration: BoxDecoration(
+          backgroundBlendMode: BlendMode.dstATop,
           color: Colors.white,
           borderRadius: const BorderRadius.only(
             topRight: Radius.circular(20),

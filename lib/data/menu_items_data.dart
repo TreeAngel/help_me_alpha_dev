@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:help_me_client_alpha_ver/models/menu_item_model.dart';
-import 'package:help_me_client_alpha_ver/services/api/api_helper.dart';
+import 'package:help_me_client_alpha_ver/services/api/api_controller.dart';
 
 class MenuItems {
   static const List<MenuItemModel> firstItems = [
@@ -11,7 +11,7 @@ class MenuItems {
   ];
 
   static List<MenuItemModel> secondItems = [
-    ApiHelper.token != null ? itemSignOut : itemSignIn,
+    ApiController.token != null ? itemSignOut : itemSignIn,
   ];
 
   static const itemHome = MenuItemModel(

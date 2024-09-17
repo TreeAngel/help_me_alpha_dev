@@ -4,17 +4,18 @@ import 'package:help_me_client_alpha_ver/models/api_error_response/api_error_res
 import 'package:help_me_client_alpha_ver/models/api_error_response/message_error_model.dart';
 import 'package:help_me_client_alpha_ver/models/auth_response_model.dart';
 import 'package:help_me_client_alpha_ver/models/login_model.dart';
-import 'package:help_me_client_alpha_ver/services/api/api_helper.dart';
+import 'package:help_me_client_alpha_ver/services/api/api_controller.dart';
 import 'package:help_me_client_alpha_ver/utils/manage_auth_token.dart';
 import 'package:equatable/equatable.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../models/register_model.dart';
+import '../../services/api/api_helper.dart';
 import 'auth_state.dart';
 part 'auth_event.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  final ApiHelper apiHelper;
+  final ApiController apiHelper;
 
   var fullName = '';
   var username = '';
@@ -79,13 +80,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<SignUpSubmitted>(_onSignUpSubmitted);
 
     on<ResetAuthState>((event, emit) {
-      fullName = '';
-      username = '';
-      password = '';
-      passwordConfirmation = '';
-      phoneNumber = '';
-      profilePicture = null;
-      email = '';
+      // fullName = '';
+      // username = '';
+      // password = '';
+      // passwordConfirmation = '';
+      // phoneNumber = '';
+      // profilePicture = null;
+      // email = '';
       emit(AuthInitial());
     });
   }
@@ -114,13 +115,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     if (username.isEmpty || password.isEmpty) {
       emit(
         const AuthError(
-          errorMessage: MessageErrorModel(message: 'Unknown error occured'),
+          errorMessage: MessageErrorModel(message: 'Isi username dan password'),
         ),
       );
     } else if (password.length < 8) {
       emit(
         const AuthError(
-          errorMessage: MessageErrorModel(message: 'Unknown error occured'),
+          errorMessage: MessageErrorModel(message: 'Password minimal 8 karakter'),
         ),
       );
     } else {
@@ -136,7 +137,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         final authMessage = signInResponse.message.toString();
         final authToken = signInResponse.token;
         if (authToken != null) {
-          ApiHelper.token = authToken;
+          ApiController.token = authToken;
           emit(
             SignInLoaded(
               message: authMessage.toString(),
@@ -174,7 +175,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         !EmailValidator.validate(email)) {
       emit(
         const AuthError(
-          errorMessage: MessageErrorModel(message: 'Isi semua data dengan benar'),
+          errorMessage:
+              MessageErrorModel(message: 'Isi semua data dengan benar'),
         ),
       );
     } else {
@@ -199,7 +201,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         final authMessage = signUpResponse.message.toString();
         final authToken = signUpResponse.token;
         if (authToken != null) {
-          ApiHelper.token = authToken;
+          ApiController.token = authToken;
           emit(
             SignUpLoaded(
               message: authMessage.toString(),

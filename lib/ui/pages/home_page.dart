@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_randomcolor/flutter_randomcolor.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:help_me_client_alpha_ver/utils/manage_auth_token.dart';
 
+import '../../utils/manage_auth_token.dart';
 import '../../blocs/category_blocs/category_bloc.dart';
 import '../../configs/app_colors.dart';
 import '../../data/menu_items_data.dart';
@@ -12,7 +12,7 @@ import '../../models/category_model.dart';
 import '../../models/menu_item_model.dart';
 import '../../ui/widgets/gradient_card.dart';
 import '../../utils/logging.dart';
-import '../../utils/show_alert_dialog.dart';
+import '../../utils/show_dialog.dart';
 import '../../blocs/auth_blocs/auth_bloc.dart';
 import '../../blocs/auth_blocs/auth_state.dart';
 
@@ -28,7 +28,6 @@ class HomePage extends StatelessWidget {
 
     return SafeArea(
       child: Scaffold(
-        appBar: _homeAppBar(context, textTheme, colorScheme),
         body: Stack(
           children: [
             Positioned(
@@ -42,13 +41,14 @@ class HomePage extends StatelessWidget {
             Positioned.fill(
               child: RefreshIndicator(
                 triggerMode: RefreshIndicatorTriggerMode.onEdge,
-                color: AppColors.primary,
                 onRefresh: () async {
                   context.read<CategoryBloc>().add(
                       FetchCategories()); // TODO: Implement other future fetching from api
                 },
                 child: CustomScrollView(
                   slivers: <Widget>[
+                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                    _homeAppBar(context, textTheme, colorScheme),
                     const SliverToBoxAdapter(child: SizedBox(height: 20)),
                     _searchTextField(),
                     const SliverToBoxAdapter(child: SizedBox(height: 20)),
@@ -63,7 +63,7 @@ class HomePage extends StatelessWidget {
                     BlocListener<AuthBloc, AuthState>(
                       listener: (context, state) {
                         if (state is SignOutLoaded) {
-                          ShowAlertDialog.showAlertDialog(
+                          ShowDialog.showAlertDialog(
                             context,
                             'Berhasil',
                             'Anda berhasil sign out',
@@ -268,13 +268,18 @@ class HomePage extends StatelessWidget {
           );
         } else if (state is CategoryError) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            ShowAlertDialog.showAlertDialog(
+            ShowDialog.showAlertDialog(
               context,
               'Error',
               state.errorMessage,
-              null,
+              IconButton.outlined(
+                onPressed: () {
+                  context.pop();
+                  context.read<CategoryBloc>().add(FetchCategories());
+                },
+                icon: const Icon(Icons.refresh_outlined),
+              ),
             );
-            context.read<CategoryBloc>().add(FetchCategories());
           });
         }
         return const SliverToBoxAdapter(child: SizedBox.shrink());
@@ -382,9 +387,9 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  AppBar _homeAppBar(
+  SliverAppBar _homeAppBar(
       BuildContext context, TextTheme textTheme, ColorScheme colorScheme) {
-    return AppBar(
+    return SliverAppBar(
       centerTitle: false,
       backgroundColor: Colors.black,
       actions: [
@@ -452,7 +457,7 @@ class HomePage extends StatelessWidget {
         context.goNamed('signInPage');
         break;
       case MenuItems.itemSignOut:
-        ShowAlertDialog.showAlertDialog(
+        ShowDialog.showAlertDialog(
           context,
           'Sign Out',
           'Are you sure want to sign out?',

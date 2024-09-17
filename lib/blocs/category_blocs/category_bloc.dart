@@ -1,15 +1,16 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:help_me_client_alpha_ver/models/category_model.dart';
-import 'package:help_me_client_alpha_ver/services/api/api_helper.dart';
 
+import '../../models/category_model.dart';
+import '../../services/api/api_controller.dart';
 import '../../models/api_error_response/api_error_response_model.dart';
+import '../../services/api/api_helper.dart';
 
 part 'category_event.dart';
 part 'category_state.dart';
 
 class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
-  final ApiHelper apiHelper;
+  final ApiController apiHelper;
 
   CategoryBloc({required this.apiHelper}) : super(CategoryInitial()) {
     on<FetchCategories>(_onFetchCategories);

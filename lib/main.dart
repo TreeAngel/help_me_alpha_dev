@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'blocs/category_blocs/category_bloc.dart';
 import 'blocs/auth_blocs/auth_bloc.dart';
 import 'configs/app_theme.dart';
-import 'services/api/api_helper.dart';
+import 'services/api/api_controller.dart';
 import 'utils/manage_auth_token.dart';
 import 'configs/app_route.dart';
 
@@ -18,7 +18,7 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ApiHelper apiHelper = ApiHelper();
+    final ApiController apiHelper = ApiController();
     ManageAuthToken.readToken();
 
     return MultiBlocProvider(
