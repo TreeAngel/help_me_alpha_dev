@@ -1,21 +1,22 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:help_me_client_alpha_ver/models/api_error_response/api_error_response_model.dart';
-import 'package:help_me_client_alpha_ver/models/api_error_response/message_error_model.dart';
-import 'package:help_me_client_alpha_ver/models/auth_response_model.dart';
-import 'package:help_me_client_alpha_ver/models/login_model.dart';
-import 'package:help_me_client_alpha_ver/services/api/api_controller.dart';
-import 'package:help_me_client_alpha_ver/utils/manage_auth_token.dart';
 import 'package:equatable/equatable.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../models/api_error_response/api_error_response_model.dart';
+import '../../models/api_error_response/message_error_model.dart';
+import '../../models/auth_response_model.dart';
+import '../../models/login_model.dart';
+import '../../services/api/api_controller.dart';
+import '../../utils/manage_auth_token.dart';
 import '../../models/register_model.dart';
 import '../../services/api/api_helper.dart';
+
 import 'auth_state.dart';
 part 'auth_event.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  final ApiController apiHelper;
+  final ApiController apiController;
 
   var fullName = '';
   var username = '';
@@ -28,7 +29,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   var isPasswordVisible = false;
   var rememberMe = false;
 
-  AuthBloc({required this.apiHelper}) : super(const AuthState()) {
+  AuthBloc({required this.apiController}) : super(const AuthState()) {
     on<FullNameChanged>((event, emit) {
       fullName = event.fullName;
       emit(state.copyWith(fullName: event.fullName));
@@ -121,7 +122,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } else if (password.length < 8) {
       emit(
         const AuthError(
-          errorMessage: MessageErrorModel(message: 'Password minimal 8 karakter'),
+          errorMessage:
+              MessageErrorModel(message: 'Password minimal 8 karakter'),
         ),
       );
     } else {

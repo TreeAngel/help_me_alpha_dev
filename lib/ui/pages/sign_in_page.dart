@@ -89,7 +89,7 @@ class SignInPage extends StatelessWidget {
                             ],
                             const SizedBox(height: 10),
                             _notHaveAccountSection(textTheme, context),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 20),
                           ],
                         );
                       },
@@ -178,27 +178,7 @@ class SignInPage extends StatelessWidget {
 
   _stateLoaded(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ShowDialog.showAlertDialog(
-        context,
-        'Berhasil Sign In!',
-        null,
-        TextButton.icon(
-          onPressed: () {
-            context.goNamed('homePage');
-          },
-          style: ButtonStyle(
-            backgroundColor: WidgetStateProperty.all(Colors.transparent),
-            elevation: WidgetStateProperty.all(0),
-            iconColor: WidgetStateProperty.all(AppColors.lightTextColor),
-          ),
-          label: const Text(
-            'Halaman utama',
-            style: TextStyle(color: AppColors.lightTextColor),
-          ),
-          icon: const Icon(Icons.arrow_forward_ios_rounded),
-          iconAlignment: IconAlignment.end,
-        ),
-      );
+      context.goNamed('homePage');
     });
     return const SizedBox.shrink();
   }

@@ -1,5 +1,5 @@
-import '../../models/client_model.dart';
 import 'api_controller.dart';
+import '../../models/user_model.dart';
 import '../../models/auth_response_model.dart';
 import '../../models/category_model.dart';
 import '../../models/login_model.dart';
@@ -51,7 +51,7 @@ class ApiHelper {
     if (response is ApiErrorResponseModel) {
       return response;
     } else {
-      return ClientModel.fromJson(response);
+      return DataUser.fromJson(response);
     }
   }
 }

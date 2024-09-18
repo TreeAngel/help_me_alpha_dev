@@ -7,7 +7,8 @@ import '../../utils/logging.dart';
 
 class ApiController {
   static const baseUrl = null;
-  static const temporaryUrl = 'http://192.168.1.13:8888/api/';
+  static const temporaryUrl =
+      'https://976d18b22d4ee5631e744dfa3030115a.serveo.net//api/';
   static String? token;
 
   static var dio = Dio(
@@ -15,9 +16,9 @@ class ApiController {
       baseUrl: temporaryUrl,
       contentType: Headers.jsonContentType,
       responseType: ResponseType.json,
-      connectTimeout: const Duration(seconds: 60),
-      receiveTimeout: const Duration(seconds: 60),
-      sendTimeout: const Duration(seconds: 60),
+      connectTimeout: const Duration(seconds: 120),
+      receiveTimeout: const Duration(seconds: 120),
+      sendTimeout: const Duration(seconds: 120),
     ),
   );
 

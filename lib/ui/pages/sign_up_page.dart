@@ -137,7 +137,7 @@ class SignUpPage extends StatelessWidget {
                             ],
                             const SizedBox(height: 10),
                             _haveAccountSection(textTheme, context),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 50),
                           ],
                         );
                       },
@@ -196,7 +196,6 @@ class SignUpPage extends StatelessWidget {
         null,
         TextButton.icon(
           onPressed: () {
-            context.read<AuthBloc>().add(ResetAuthState());
             context.goNamed('homePage');
           },
           style: ButtonStyle(

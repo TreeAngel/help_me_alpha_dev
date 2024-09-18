@@ -5,7 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../utils/manage_auth_token.dart';
-import '../../blocs/category_blocs/category_bloc.dart';
+import '../../blocs/home_blocs/home_bloc.dart';
 import '../../configs/app_colors.dart';
 import '../../data/menu_items_data.dart';
 import '../../models/category_model.dart';
@@ -25,6 +25,7 @@ class HomePage extends StatelessWidget {
     final textTheme = appTheme.textTheme;
     final colorScheme = appTheme.colorScheme;
     final screenWidth = MediaQuery.of(context).size.width;
+    String username = 'Unidentified Client';
 
     return SafeArea(
       child: Scaffold(
@@ -42,45 +43,157 @@ class HomePage extends StatelessWidget {
               child: RefreshIndicator(
                 triggerMode: RefreshIndicatorTriggerMode.onEdge,
                 onRefresh: () async {
-                  context.read<CategoryBloc>().add(
-                      FetchCategories()); // TODO: Implement other future fetching from api
+                  context.read<HomeBloc>().add(FetchProfile());
                 },
                 child: CustomScrollView(
                   slivers: <Widget>[
                     const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                    _homeAppBar(context, textTheme, colorScheme),
+                    _appBarBlocBuilder(username, textTheme, colorScheme),
                     const SliverToBoxAdapter(child: SizedBox(height: 20)),
                     _searchTextField(),
                     const SliverToBoxAdapter(child: SizedBox(height: 20)),
                     _categoryTextHeader(textTheme),
                     const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                    _categoriesGrid(textTheme),
+                    _categoryBlocBuilder(textTheme),
                     const SliverToBoxAdapter(child: SizedBox(height: 20)),
                     _orderHistoryTextHeader(textTheme),
                     const SliverToBoxAdapter(child: SizedBox(height: 20)),
                     _lastOrderHistory(textTheme),
                     const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                    BlocListener<AuthBloc, AuthState>(
-                      listener: (context, state) {
-                        if (state is SignOutLoaded) {
-                          ShowDialog.showAlertDialog(
-                            context,
-                            'Berhasil',
-                            'Anda berhasil sign out',
-                            null,
-                          );
-                          ManageAuthToken.deleteToken();
-                          context.goNamed('signInPage');
-                        }
-                      },
-                      child: const SliverToBoxAdapter(child: SizedBox.shrink()),
-                    ),
+                    _logoutBlocListener(),
                   ],
                 ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  BlocListener<AuthBloc, AuthState> _logoutBlocListener() {
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (state is SignOutLoaded) {
+          ShowDialog.showAlertDialog(
+            context,
+            'Berhasil',
+            'Anda berhasil sign out',
+            null,
+          );
+          ManageAuthToken.deleteToken();
+          context.goNamed('signInPage');
+        }
+      },
+      child: const SliverToBoxAdapter(child: SizedBox.shrink()),
+    );
+  }
+
+  BlocBuilder<HomeBloc, HomeState> _appBarBlocBuilder(
+      String username, TextTheme textTheme, ColorScheme colorScheme) {
+    return BlocBuilder<HomeBloc, HomeState>(
+      builder: (context, state) {
+        if (state is ProfileLoaded) {
+          username = state.user.user.username.toString();
+          context.read<HomeBloc>().add(FetchCategories());
+          return _homeAppBar(
+            context,
+            textTheme,
+            colorScheme,
+            username,
+          );
+        } else if (state is ProfileError) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ShowDialog.showAlertDialog(
+              context,
+              'Error fetching profile',
+              state.errorMessage,
+              IconButton.outlined(
+                onPressed: () {
+                  context.pop();
+                  context.read<HomeBloc>().add(FetchProfile());
+                },
+                icon: const Icon(Icons.refresh_outlined),
+              ),
+            );
+          });
+        }
+        return _homeAppBar(
+          context,
+          textTheme,
+          colorScheme,
+          username,
+        );
+      },
+    );
+  }
+
+  BlocBuilder<HomeBloc, HomeState> _categoryBlocBuilder(TextTheme textTheme) {
+    return BlocBuilder<HomeBloc, HomeState>(
+      builder: (context, state) {
+        if (state is HomeInitial) {
+          context.read<HomeBloc>().add(FetchProfile());
+        } else if (state is HomeLoading) {
+          return const SliverFillRemaining(
+            child: Center(
+              child: CircularProgressIndicator(
+                color: AppColors.primary,
+              ),
+            ),
+          );
+        } else if (state is CategoryLoaded) {
+          final categories = state.categories.take(4).toList();
+          final colorOption = Options(
+            format: Format.hex,
+            luminosity: Luminosity.light,
+            count: categories.length,
+          );
+          final randomColors = RandomColor.getColor(colorOption);
+          return _categoriesGrid(categories, randomColors, textTheme);
+        } else if (state is CategoryError) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ShowDialog.showAlertDialog(
+              context,
+              'Error fetching categories',
+              state.errorMessage,
+              IconButton.outlined(
+                onPressed: () {
+                  context.pop();
+                  context.read<HomeBloc>().add(FetchCategories());
+                },
+                icon: const Icon(Icons.refresh_outlined),
+              ),
+            );
+          });
+        }
+        return const SliverToBoxAdapter(
+          child: SizedBox.shrink(),
+        );
+      },
+    );
+  }
+
+  SliverGrid _categoriesGrid(
+      List<CategoryModel> categories, randomColors, TextTheme textTheme) {
+    return SliverGrid(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 20,
+      ),
+      delegate: SliverChildBuilderDelegate(
+        childCount: categories.length,
+        (context, index) {
+          final category = categories[index];
+          final randomColor = randomColors[index];
+          final color = randomColor.toString().substring(1);
+          final cardColor = Color(int.parse('0xFF$color'));
+          return GestureDetector(
+            onTap: () {
+              printInfo('You tap on ${category.name}');
+            },
+            child: _categoryGridItem(category, textTheme, cardColor),
+          );
+        },
       ),
     );
   }
@@ -148,11 +261,12 @@ class HomePage extends StatelessWidget {
                 ),
               ),
               TextSpan(
-                  text:
-                      'Masalah Kendaraan', // TODO: Get problem category from API
-                  style: textTheme.bodyLarge?.copyWith(
-                    color: AppColors.aquamarine,
-                  ))
+                text:
+                    'Masalah Kendaraan', // TODO: Get problem category from API
+                style: textTheme.bodyLarge?.copyWith(
+                  color: AppColors.aquamarine,
+                ),
+              )
             ],
           ),
         ),
@@ -219,71 +333,6 @@ class HomePage extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _categoriesGrid(TextTheme textTheme) {
-    return BlocBuilder<CategoryBloc, CategoryState>(
-      builder: (context, state) {
-        if (state is CategoryInitial) {
-          context.read<CategoryBloc>().add(FetchCategories());
-          return const SliverFillRemaining(
-            child: Center(
-              child: SizedBox.shrink(),
-            ),
-          );
-        } else if (state is CategoryLoading) {
-          return const SliverFillRemaining(
-            child: Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
-            ),
-          );
-        } else if (state is CategoryLoaded) {
-          final categories = state.categories.take(4).toList();
-          final colorOption = Options(
-            format: Format.hex,
-            luminosity: Luminosity.light,
-            count: categories.length,
-          );
-          final randomColors = RandomColor.getColor(colorOption);
-          return SliverGrid(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-            ),
-            delegate: SliverChildBuilderDelegate(
-              childCount: categories.length,
-              (context, index) {
-                final category = categories[index];
-                final randomColor = randomColors[index];
-                final color = randomColor.toString().substring(1);
-                final cardColor = Color(int.parse('0xFF$color'));
-                return GestureDetector(
-                  onTap: () {
-                    printInfo('You tap on ${category.name}');
-                  },
-                  child: _categoryGridItem(category, textTheme, cardColor),
-                );
-              },
-            ),
-          );
-        } else if (state is CategoryError) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            ShowDialog.showAlertDialog(
-              context,
-              'Error',
-              state.errorMessage,
-              IconButton.outlined(
-                onPressed: () {
-                  context.pop();
-                  context.read<CategoryBloc>().add(FetchCategories());
-                },
-                icon: const Icon(Icons.refresh_outlined),
-              ),
-            );
-          });
-        }
-        return const SliverToBoxAdapter(child: SizedBox.shrink());
-      },
     );
   }
 
@@ -388,7 +437,11 @@ class HomePage extends StatelessWidget {
   }
 
   SliverAppBar _homeAppBar(
-      BuildContext context, TextTheme textTheme, ColorScheme colorScheme) {
+    BuildContext context,
+    TextTheme textTheme,
+    ColorScheme colorScheme,
+    String username,
+  ) {
     return SliverAppBar(
       centerTitle: false,
       backgroundColor: Colors.black,
@@ -411,13 +464,13 @@ class HomePage extends StatelessWidget {
       title: Text.rich(
         TextSpan(
           text: 'Hi, ',
-          style: textTheme.titleLarge?.copyWith(
+          style: textTheme.titleMedium?.copyWith(
             color: AppColors.darkTextColor,
           ),
           children: [
             TextSpan(
-              text: 'John Doe', // TODO: Get client username from API
-              style: textTheme.displaySmall?.copyWith(
+              text: username, // TODO: Get client username from API
+              style: textTheme.titleLarge?.copyWith(
                 color: AppColors.darkTextColor,
               ),
             )

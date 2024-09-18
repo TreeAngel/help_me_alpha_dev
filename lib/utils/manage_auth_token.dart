@@ -21,5 +21,6 @@ class ManageAuthToken {
 
   static void deleteToken() {
     SecureStorage().deleteSecureData('authToken');
+    ApiController.token = null;
   }
 }

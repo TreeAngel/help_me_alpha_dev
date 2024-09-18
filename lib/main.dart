@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'blocs/category_blocs/category_bloc.dart';
+import 'blocs/home_blocs/home_bloc.dart';
 import 'blocs/auth_blocs/auth_bloc.dart';
 import 'configs/app_theme.dart';
 import 'services/api/api_controller.dart';
@@ -24,10 +24,10 @@ class MainApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) => CategoryBloc(apiHelper: apiHelper),
+          create: (context) => HomeBloc(apiController: apiHelper),
         ),
         BlocProvider(
-          create: (context) => AuthBloc(apiHelper: apiHelper),
+          create: (context) => AuthBloc(apiController: apiHelper),
         )
         // TODO: Add other blocs here
       ],

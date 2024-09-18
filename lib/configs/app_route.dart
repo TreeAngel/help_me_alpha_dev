@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../services/api/api_controller.dart';
@@ -29,12 +28,14 @@ class AppRoute {
     redirect: (context, state) {
       final isAuthenticated = ApiController.token != null ? true : false;
       // TODO: Add other guarded route later
-      if (!isAuthenticated && state.matchedLocation == '/home') {
-          return '/signIn';
+      if (isAuthenticated == false && state.matchedLocation == '/home') {
+        return '/signIn';
+      } else if (isAuthenticated == true && state.matchedLocation == '/signIn' && state.matchedLocation == '/signUp') {
+        return '/home';
       } else {
-        return null;
+        return state.fullPath;
       }
     },
-    errorBuilder: (context, state) => const Placeholder(),
+    // errorBuilder: (context, state) => const Placeholder(),
   );
 }
