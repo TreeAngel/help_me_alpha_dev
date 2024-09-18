@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:help_me_mitra_alpha_ver/configs/app_colors.dart';
 import 'package:help_me_mitra_alpha_ver/configs/app_theme.dart';
 import 'package:help_me_mitra_alpha_ver/ui/pages/home_page.dart';
 import 'package:help_me_mitra_alpha_ver/ui/pages/order_popup.dart';
@@ -22,7 +21,7 @@ class MainApp extends StatelessWidget {
       // home: OrderPop(),
       initialRoute: '/',
       routes: {
-        '/': (context) => const OrderPop(),
+        // '/': (context) => const OrderPop(),
         '/': (context) => const LoginPageView(),
         '/register': (context) => const RegisterPageView(),
         '/home': (context) => const HomePageView(),

@@ -83,44 +83,18 @@ class Exit extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      top: 65,
-      left: 30,
-      child: GestureDetector(
-        onTap: () {
-          //actions
-          showDialog(
-            context: context,
-            builder: (BuildContext context){
-              return AlertDialog(
-                title: const Text("Konfirmasi"),
-                content: const Text("Apakah anda yakin ingin keluar?"),
-                actions: <Widget>[
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      Navigator.of(context).pushReplacementNamed('/home');
-                    },
-                    child: const Text("Yes"),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text("No"),
-                  ),
-                ],
-              );
-            }
-          );
+      top: 60, // Margin top 10
+      left: 30, // Margin left 10
+      child: IconButton(
+        icon: Icon(Icons.close),
+        color: Colors.white,
+        iconSize: 24.0,
+        onPressed: () {
+          Navigator.of(context).pushReplacementNamed('/home'); // Redirect ke halaman Home
         },
-        child: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(Icons.close, size: 24, color: Colors.black),
-        ),
+        padding: EdgeInsets.all(0),
+        constraints: BoxConstraints(),
+        splashRadius: 24, // Ukuran splash radius lingkaran
       ),
     );
   }
