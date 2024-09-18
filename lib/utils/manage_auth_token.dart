@@ -1,7 +1,6 @@
-import 'package:help_me_client_alpha_ver/utils/logging.dart';
-
-import '../services/api/api_controller.dart';
+import 'logging.dart';
 import 'secure_storage.dart';
+import '../services/api/api_controller.dart';
 
 class ManageAuthToken {
   static void readToken() {

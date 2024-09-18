@@ -28,7 +28,7 @@ class MainApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => AuthBloc(apiController: apiHelper),
-        )
+        ),
         // TODO: Add other blocs here
       ],
       child: MaterialApp.router(

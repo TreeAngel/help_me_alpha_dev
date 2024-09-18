@@ -1,7 +1,7 @@
-import 'package:help_me_client_alpha_ver/models/api_error_response/message_error_model.dart';
 import 'package:image_picker/image_picker.dart';
-
 import 'package:equatable/equatable.dart';
+
+import '../../models/api_error_response/message_error_model.dart';
 
 class AuthState extends Equatable {
   final String? fullName;

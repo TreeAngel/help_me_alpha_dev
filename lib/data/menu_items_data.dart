@@ -5,7 +5,6 @@ import 'package:help_me_client_alpha_ver/services/api/api_controller.dart';
 class MenuItems {
   static const List<MenuItemModel> firstItems = [
     itemHome,
-    itemCategories,
     itemOrderHistory,
     itemProfile,
   ];
@@ -38,10 +37,5 @@ class MenuItems {
     id: 5,
     title: 'Order History',
     icon: Icons.history,
-  );
-  static const itemCategories = MenuItemModel(
-    id: 6,
-    title: 'Categories',
-    icon: Icons.category,
   );
 }

@@ -90,10 +90,15 @@ class HomePage extends StatelessWidget {
   }
 
   BlocBuilder<HomeBloc, HomeState> _appBarBlocBuilder(
-      String username, TextTheme textTheme, ColorScheme colorScheme) {
+    String username,
+    TextTheme textTheme,
+    ColorScheme colorScheme,
+  ) {
     return BlocBuilder<HomeBloc, HomeState>(
       builder: (context, state) {
-        if (state is ProfileLoaded) {
+        if (state is HomeInitial) {
+          context.read<HomeBloc>().add(FetchProfile());
+        } else if (state is ProfileLoaded) {
           username = state.user.user.username.toString();
           context.read<HomeBloc>().add(FetchCategories());
           return _homeAppBar(
@@ -131,9 +136,7 @@ class HomePage extends StatelessWidget {
   BlocBuilder<HomeBloc, HomeState> _categoryBlocBuilder(TextTheme textTheme) {
     return BlocBuilder<HomeBloc, HomeState>(
       builder: (context, state) {
-        if (state is HomeInitial) {
-          context.read<HomeBloc>().add(FetchProfile());
-        } else if (state is HomeLoading) {
+        if (state is HomeLoading) {
           return const SliverFillRemaining(
             child: Center(
               child: CircularProgressIndicator(
@@ -186,10 +189,19 @@ class HomePage extends StatelessWidget {
           final category = categories[index];
           final randomColor = randomColors[index];
           final color = randomColor.toString().substring(1);
-          final cardColor = Color(int.parse('0xFF$color'));
+          final cardColor = index == 0 || index == 1
+              ? Color(int.parse('0xFF$color'))
+              : AppColors.grey;
           return GestureDetector(
             onTap: () {
-              printInfo('You tap on ${category.name}');
+              index == 0 || index == 1
+                  ? context.push('/detail/${category.id}')
+                  : ShowDialog.showAlertDialog(
+                      context,
+                      'Fitur masih dikembangin',
+                      'Ditunggu ya kakak! Fiturnya bakal hadir nanti',
+                      null,
+                    );
             },
             child: _categoryGridItem(category, textTheme, cardColor),
           );
@@ -469,7 +481,7 @@ class HomePage extends StatelessWidget {
           ),
           children: [
             TextSpan(
-              text: username, // TODO: Get client username from API
+              text: username,
               style: textTheme.titleLarge?.copyWith(
                 color: AppColors.darkTextColor,
               ),
@@ -502,9 +514,6 @@ class HomePage extends StatelessWidget {
         break;
       case MenuItems.itemOrderHistory:
         printInfo('You tap on order history');
-        break;
-      case MenuItems.itemCategories:
-        printInfo('You tap on categories');
         break;
       case MenuItems.itemSignIn:
         context.goNamed('signInPage');

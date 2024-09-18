@@ -26,8 +26,7 @@ class SignInPage extends StatelessWidget {
             _sliverAppBar(context, textTheme),
             const SliverToBoxAdapter(child: SizedBox(height: 20)),
             SliverToBoxAdapter(
-              child: Container(
-                decoration: const BoxDecoration(),
+              child: Padding(
                 padding: const EdgeInsets.only(left: 16, right: 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,7 +118,7 @@ class SignInPage extends StatelessWidget {
                 decoration: TextDecoration.underline,
               ),
               recognizer: TapGestureRecognizer()
-                ..onTap = () => context.goNamed('signUpPage'),
+                ..onTap = () => context.pushNamed('signUpPage'),
             )
           ],
         ),
@@ -167,7 +166,7 @@ class SignInPage extends StatelessWidget {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ShowDialog.showAlertDialog(
         context,
-        'Error!',
+        'Terjadi error saat sign in!',
         errorMessage,
         null,
       );

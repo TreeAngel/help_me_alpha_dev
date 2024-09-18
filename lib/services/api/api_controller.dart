@@ -8,7 +8,7 @@ import '../../utils/logging.dart';
 class ApiController {
   static const baseUrl = null;
   static const temporaryUrl =
-      'https://976d18b22d4ee5631e744dfa3030115a.serveo.net//api/';
+      'https://408bc4f6fe3ab43caa7f901f6ca13940.serveo.net/api/';
   static String? token;
 
   static var dio = Dio(

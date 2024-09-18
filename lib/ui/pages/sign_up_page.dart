@@ -196,7 +196,9 @@ class SignUpPage extends StatelessWidget {
         null,
         TextButton.icon(
           onPressed: () {
-            context.goNamed('homePage');
+            context.canPop() == true
+                ? context.pop()
+                : context.goNamed('signInPage');
           },
           style: ButtonStyle(
             backgroundColor: WidgetStateProperty.all(Colors.transparent),
