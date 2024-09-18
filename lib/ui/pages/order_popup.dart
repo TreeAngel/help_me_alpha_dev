@@ -433,7 +433,7 @@ class TawarkanBtn extends StatelessWidget {
 
                       Future.delayed(const Duration(milliseconds: 100), () {
                         Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(builder: (context) => const HomePageView()),
+                          MaterialPageRoute(builder: (context) => const HomePage()),
                         );
                       });
                     },

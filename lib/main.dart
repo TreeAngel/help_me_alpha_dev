@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:help_me_mitra_alpha_ver/configs/app_theme.dart';
-import 'package:help_me_mitra_alpha_ver/ui/pages/home_page.dart';
-import 'package:help_me_mitra_alpha_ver/ui/pages/order_popup.dart';
-import 'package:help_me_mitra_alpha_ver/ui/pages/register_page.dart';
-import 'package:help_me_mitra_alpha_ver/ui/pages/login_page.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'blocs/home_blocs/home_bloc.dart';
+import 'blocs/auth_blocs/auth_bloc.dart';
+import 'configs/app_theme.dart';
+import 'services/api/api_controller.dart';
+import 'utils/manage_auth_token.dart';
+import 'configs/app_route.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MainApp());
 }
 
@@ -14,21 +18,26 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'HelpMe | Mitra',
-      theme: AppTheme.appTheme,
-      // home: OrderPop(),
-      initialRoute: '/',
-      routes: {
-        // '/': (context) => const OrderPop(),
-        '/': (context) => const LoginPageView(),
-        '/register': (context) => const RegisterPageView(),
-        '/home': (context) => const HomePageView(),
-        '/orderan': (context) => const OrderPop(),
-        // '/chat': ChatPage(),
-        // '/activity': ActivityPage(),
-      }
+    final ApiController apiController = ApiController();
+    ManageAuthToken.readToken();
+
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => HomeBloc(apiController: apiController),
+        ),
+        BlocProvider(
+          create: (context) => AuthBloc(apiController: apiController),
+        ),
+        // TODO: Add other blocs here
+      ],
+      child: MaterialApp.router(
+        debugShowCheckedModeBanner: false,
+        title: 'HelpMe | Mitra',
+        theme: AppTheme.appTheme,
+        // home: OrderPop(),
+        routerConfig: AppRoute.appRoute,
+      ),
     );
   }
 }
