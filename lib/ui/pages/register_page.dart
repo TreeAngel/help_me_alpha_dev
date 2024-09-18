@@ -1,196 +1,349 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:help_me_mitra_alpha_ver/configs/app_colors.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../services/api/api_exception.dart';
+import '../../configs/app_colors.dart';
+import '../../blocs/auth_blocs/auth_bloc.dart';
+import '../../blocs/auth_blocs/auth_state.dart';
+import '../../utils/show_dialog.dart';
+
+enum TextInputEvent {
+  fullname,
+  username,
+  email,
+}
 
 class RegisterPageView extends StatelessWidget {
   const RegisterPageView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('HelpMe!', style: TextStyle(
-          fontFamily: "poppins",
-          color: Colors.white,
-          fontSize: 25.21,
-          fontWeight: FontWeight.bold,
-        ),)
-      ),
-      backgroundColor: Colors.black,
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-          const SizedBox(height: 25),
-            Text(
-              "Daftar Akun",
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 15),
-            Text(
-              "Nama Lengkap",
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 5),
-            TextField(
-              style: const TextStyle(color: Colors.black ),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.white,
-                hintText: 'Masukkan nama lengkap',
-                hintStyle: GoogleFonts.poppins(color: AppColors.greyinput),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-            const SizedBox(height: 15),
-            Text(
-              "Nomor Handphone",
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 5),
-            TextField(
-              style: const TextStyle(color: Colors.black ),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.white,
-                hintText: '+62 | Masukkan nomor handphone',
-                hintStyle: GoogleFonts.poppins(color: AppColors.greyinput),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-            const SizedBox(height: 15),
-            Text(
-              "Username",
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 5),
-            TextField(
-              style: const TextStyle(color: Colors.black ),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.white,
-                hintText: 'Masukkan username',
-                hintStyle: GoogleFonts.poppins(color: AppColors.greyinput),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-             Text(
-              "Kata Sandi",
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 5),
-            TextField(
-              style: const TextStyle(color: Colors.black ),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.white,
-                hintText: 'Masukkan Kata Sandi',
-                hintStyle: GoogleFonts.poppins(color: AppColors.greyinput),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-             Text(
-              "Konfirmasi Kata Sandi",
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 5),
-              TextField(
-              style: const TextStyle(color: Colors.black ),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.white,
-                hintText: 'Masukkan konfirmasi kata sandi',
-                hintStyle: GoogleFonts.poppins(color: AppColors.greyinput),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-            const SizedBox(height: 35),
-            ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.mitraGreen,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 158, vertical: 15,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              child: const Text(
-                'Daftar',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Center(
-              child: RichText(
-              text: const TextSpan(
-                text: 'Sudah memiliki akun? ',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w400
-                ),
-                children: <TextSpan>[
-                  TextSpan(
-                    text: 'Masuk',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.mitraGreen,
-                      decoration: TextDecoration.underline,
+    final appTheme = Theme.of(context);
+    final textTheme = appTheme.textTheme;
+
+    bool isPassword = true;
+
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: CustomScrollView(
+          slivers: <Widget>[
+            const SliverToBoxAdapter(child: SizedBox(height: 20)),
+            _sliverAPpBSliverAppBar(context, textTheme),
+            const SliverToBoxAdapter(child: SizedBox(height: 20)),
+            SliverToBoxAdapter(
+              child: Container(
+                decoration: const BoxDecoration(),
+                padding: const EdgeInsets.only(left: 16, right: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Daftar akun',
+                      style: textTheme.headlineLarge?.copyWith(
+                          color: AppColors.darkTextColor,
+                          fontWeight: FontWeight.w800),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 20),
+                    BlocBuilder<AuthBloc, AuthState>(
+                      builder: (context, state) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Nama lengkap',
+                              style: textTheme.titleMedium?.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            _textInputField(
+                                context,
+                                textTheme,
+                                'Masukkan nama lengkap',
+                                TextInputEvent.fullname),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Nomor handphone',
+                              style: textTheme.titleMedium?.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            _phoneNumInputField(context, textTheme),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Email',
+                              style: textTheme.titleMedium?.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            _textInputField(context, textTheme, 'Masukan email',
+                                TextInputEvent.email),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Username',
+                              style: textTheme.titleMedium?.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            _textInputField(context, textTheme,
+                                'Masukan username', TextInputEvent.username),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Kata sandi',
+                              style: textTheme.titleMedium?.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            _passwordInputField(state, context, textTheme,
+                                'Masukan Kata sandi', isPassword),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Konfirmasi kata sandi',
+                              style: textTheme.titleMedium?.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            _passwordInputField(state, context, textTheme,
+                                'Konfirmasi kata sandi', !isPassword),
+                            const SizedBox(height: 40),
+                            if (state is SignUpLoaded) ...[
+                              _stateLoaded(context),
+                            ],
+                            if (state is AuthError) ...[
+                              _stateError(context, state),
+                            ],
+                            if (state is AuthLoading) ...[
+                              const Center(
+                                child: CircularProgressIndicator(
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            ] else ...[
+                              _signUpButton(textTheme, context, state),
+                            ],
+                            const SizedBox(height: 10),
+                            _haveAccountSection(textTheme, context),
+                            const SizedBox(height: 50),
+                          ],
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
-            ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Center _haveAccountSection(TextTheme textTheme, BuildContext context) {
+    return Center(
+      child: Text.rich(
+        style: textTheme.bodyLarge?.copyWith(
+            color: AppColors.darkTextColor, fontWeight: FontWeight.normal),
+        TextSpan(
+          text: 'Sudah memiliki akun? ',
+          children: [
+            TextSpan(
+              text: 'Masuk',
+              style: textTheme.bodyLarge?.copyWith(
+                color: AppColors.primary,
+                decoration: TextDecoration.underline,
+              ),
+              recognizer: TapGestureRecognizer()
+                ..onTap = () => context.goNamed('signInPage'),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  _stateError(BuildContext context, AuthError state) {
+    final errorMessage = ApiException.errorMessageBuilder(state.errorMessage);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ShowDialog.showAlertDialog(
+        context,
+        'Error',
+        errorMessage,
+        null,
+      );
+    });
+    return const SizedBox.shrink();
+  }
+
+  _stateLoaded(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ShowDialog.showAlertDialog(
+        context,
+        'Berhasil Sign Up!',
+        null,
+        TextButton.icon(
+          onPressed: () {
+            context.goNamed('homePage');
+          },
+          style: ButtonStyle(
+            backgroundColor: WidgetStateProperty.all(Colors.transparent),
+            elevation: WidgetStateProperty.all(0),
+            iconColor: WidgetStateProperty.all(AppColors.lightTextColor),
+          ),
+          label: const Text(
+            'Halaman utama',
+            style: TextStyle(color: AppColors.lightTextColor),
+          ),
+          icon: const Icon(Icons.arrow_forward_ios_rounded),
+          iconAlignment: IconAlignment.end,
+        ),
+      );
+    });
+    return const SizedBox.shrink();
+  }
+
+  SizedBox _signUpButton(
+      TextTheme textTheme, BuildContext context, AuthState state) {
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: ElevatedButton(
+        style: ButtonStyle(
+          backgroundColor: WidgetStateProperty.all(
+            AppColors.primary,
+          ),
+          shape: WidgetStateProperty.all(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        ),
+        child: Text(
+          'Sign In',
+          style: textTheme.titleMedium?.copyWith(
+            color: AppColors.lightTextColor,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        onPressed: () {
+          context.read<AuthBloc>().add(SignUpSubmitted());
+        },
+      ),
+    );
+  }
+
+  TextFormField _passwordInputField(AuthState state, BuildContext context,
+      TextTheme textTheme, String hintText, bool passwordC) {
+    return TextFormField(
+      obscureText: !state.isPasswordVisible,
+      onChanged: (password) => context.read<AuthBloc>().add(passwordC
+          ? PasswordChanged(password)
+          : ConfirmPasswordChanged(password)),
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: Colors.white,
+        hintText: hintText,
+        hintStyle:
+            textTheme.bodyLarge?.copyWith(color: AppColors.hintTextColor),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        suffixIconColor: Colors.black,
+        suffixIcon: IconButton(
+          icon: Icon(
+            state.isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+          ),
+          onPressed: () {
+            context.read<AuthBloc>().add(TogglePasswordVisibility());
+          },
+        ),
+      ),
+      style: textTheme.bodyLarge?.copyWith(
+        color: AppColors.lightTextColor,
+        fontWeight: FontWeight.normal,
+      ),
+    );
+  }
+
+  TextFormField _phoneNumInputField(BuildContext context, TextTheme textTheme) {
+    return TextFormField(
+      keyboardType: TextInputType.phone,
+      cursorColor: Colors.black,
+      onChanged: (phoneNumber) =>
+          context.read<AuthBloc>().add(PhoneNumberChanged(phoneNumber)),
+      decoration: InputDecoration(
+        prefixText: '+62 | ',
+        prefixStyle: textTheme.bodyLarge?.copyWith(
+          color: AppColors.lightTextColor,
+          fontWeight: FontWeight.normal,
+        ),
+        floatingLabelBehavior: FloatingLabelBehavior.always,
+        filled: true,
+        fillColor: Colors.white,
+        hintText: 'Masukan nomor handphone',
+        hintStyle:
+            textTheme.bodyLarge?.copyWith(color: AppColors.hintTextColor),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+      style: textTheme.bodyLarge?.copyWith(
+        color: AppColors.lightTextColor,
+        fontWeight: FontWeight.normal,
+      ),
+    );
+  }
+
+  TextFormField _textInputField(BuildContext context, TextTheme textTheme,
+      String hintText, TextInputEvent event) {
+    return TextFormField(
+      cursorColor: Colors.black,
+      onChanged: (textInput) => context.read<AuthBloc>().add(switch (event) {
+            TextInputEvent.fullname => FullNameChanged(textInput),
+            TextInputEvent.username => UsernameChanged(textInput),
+            TextInputEvent.email => EmailChanged(textInput),
+          }),
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: Colors.white,
+        hintText: hintText,
+        hintStyle:
+            textTheme.bodyLarge?.copyWith(color: AppColors.hintTextColor),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+      style: textTheme.bodyLarge?.copyWith(
+        color: AppColors.lightTextColor,
+        fontWeight: FontWeight.normal,
+      ),
+    );
+  }
+
+  SliverAppBar _sliverAPpBSliverAppBar(
+      BuildContext context, TextTheme textTheme) {
+    return SliverAppBar(
+      centerTitle: true,
+      backgroundColor: Colors.black,
+      foregroundColor: AppColors.darkTextColor,
+      title: Text(
+        'Help Me!',
+        style: textTheme.titleLarge?.copyWith(
+          color: AppColors.darkTextColor,
+          fontWeight: FontWeight.bold,
         ),
       ),
     );

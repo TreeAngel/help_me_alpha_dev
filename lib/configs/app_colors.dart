@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 
+@immutable
 class AppColors {
   static const primary = Color(0xFFE5FF7F);
+  static const surface = Color(0xFFFEFDFF);
+  static const lightTextColor = Color(0xFF3F3849);
+  static const darkTextColor = Color(0xFFF9F9FB);
+  static const hintTextColor = Color(0xFF1F1F1F);
+  static const strokeColor = Color(0xFFC6C6C6);
 
   static const black = Color(0xFF000000);
-  static const Color grey = Color(0xFFB7B6C4);
-  static const Color greyinput = Color(0xFFB7B6C4);
+  static const grey = Color(0xFFB7B6C4);
+  static const greyinput = Color(0xFFB7B6C4);
   static const white = Color(0xFFFFFFFF);
 
   static const vividRed = Color(0xFFEE3F3F);
