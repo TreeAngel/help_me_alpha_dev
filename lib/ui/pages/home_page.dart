@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:help_me_mitra_alpha_ver/configs/app_colors.dart';
 
-class HomeViewPage extends StatelessWidget {
-  const HomeViewPage({super.key});
+class HomePageView extends StatelessWidget {
+  const HomePageView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -127,11 +127,11 @@ class HomeViewPage extends StatelessWidget {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          Color(0xFFDAFF79).withOpacity(0.8), // Warna DAFF79 (atas)
-                          Color(0xFF758D38).withOpacity(0.8), // Warna 758D38 (bawah)
+                          const Color(0xFFDAFF79).withOpacity(0.8), 
+                          const Color(0xFF758D38).withOpacity(0.8), 
                         ],
-                        begin: Alignment.topCenter, // Mulai dari atas
-                        end: Alignment.bottomCenter, // Berakhir di bawah
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
                       ),
                       borderRadius: BorderRadius.circular(20),
                     ),
@@ -187,11 +187,11 @@ class HomeViewPage extends StatelessWidget {
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
-                                  Colors.white.withOpacity(0.3), // Warna putih dengan opasitas 30%
-                                  Colors.white.withOpacity(0.0), // Transparan (memudar ke atas)
+                                  Colors.white.withOpacity(0.3),
+                                  Colors.white.withOpacity(0.0),
                                 ],
-                                  begin: Alignment.bottomCenter, // Gradien dimulai dari bawah
-                                  end: Alignment.topCenter, // Gradien berakhir di atas
+                                  begin: Alignment.bottomCenter, 
+                                  end: Alignment.topCenter,
                                 ),
                                   borderRadius: const BorderRadius.only(
                                   topRight: Radius.circular(19),
@@ -207,11 +207,11 @@ class HomeViewPage extends StatelessWidget {
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
-                                  Colors.white.withOpacity(0.3), // Warna putih dengan opasitas 30%
-                                  Colors.white.withOpacity(0.0), // Transparan (memudar ke atas)
+                                  Colors.white.withOpacity(0.3),
+                                  Colors.white.withOpacity(0.0),
                                 ],
-                                  begin: Alignment.bottomCenter, // Gradien dimulai dari bawah
-                                  end: Alignment.topCenter, // Gradien berakhir di atas
+                                  begin: Alignment.bottomCenter,
+                                  end: Alignment.topCenter,
                                 ),
                                   borderRadius: const BorderRadius.only(
                                   topRight: Radius.circular(19),
@@ -219,12 +219,11 @@ class HomeViewPage extends StatelessWidget {
                             ),
                           )
                         ),
-                        // Ikon Heksagonal di Kanan Atas
+                        
                         Positioned(
                         right: 10,
                         bottom: 10,
                         child: ClipPath(
-                          // clipper: HexagonClipper(),
                           child: Container(
                             width: 40,
                             height: 40,
@@ -241,8 +240,7 @@ class HomeViewPage extends StatelessWidget {
                       ),
                       ],
                     ),
-                  ),
-                  
+                  )   
                 ],
               ),
             ),

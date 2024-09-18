@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:help_me_mitra_alpha_ver/configs/app_colors.dart';
+import 'package:help_me_mitra_alpha_ver/ui/pages/home_page.dart';
 
 class OrderPop extends StatelessWidget {
   const OrderPop({super.key});
@@ -35,9 +36,9 @@ class OrderPop extends StatelessWidget {
                     ),
                   ),
                 ),
-                const exit(),
-                const profile(),
-                const orderan(),
+                const Exit(),
+                const Profile(),
+                const Orderan(),
               ],
             ),
           ),
@@ -46,8 +47,8 @@ class OrderPop extends StatelessWidget {
   }
 }
 
-class profile extends StatelessWidget {
-  const profile({
+class Profile extends StatelessWidget {
+  const Profile({
     super.key,
   });
 
@@ -74,8 +75,8 @@ class profile extends StatelessWidget {
   }
 }
 
-class exit extends StatelessWidget {
-  const exit({
+class Exit extends StatelessWidget {
+  const Exit({
     super.key,
   });
 
@@ -86,7 +87,31 @@ class exit extends StatelessWidget {
       left: 30,
       child: GestureDetector(
         onTap: () {
-          Navigator.pop(context);
+          //actions
+          showDialog(
+            context: context,
+            builder: (BuildContext context){
+              return AlertDialog(
+                title: const Text("Konfirmasi"),
+                content: const Text("Apakah anda yakin ingin keluar?"),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).pushReplacementNamed('/home');
+                    },
+                    child: const Text("Yes"),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text("No"),
+                  ),
+                ],
+              );
+            }
+          );
         },
         child: Container(
           padding: const EdgeInsets.all(8),
@@ -101,98 +126,100 @@ class exit extends StatelessWidget {
   }
 }
 
-class orderan extends StatefulWidget {
-  const orderan({super.key});
+class Orderan extends StatefulWidget {
+  const Orderan({super.key});
 
   @override
   _OrderanState createState() => _OrderanState();
 }
 
-class _OrderanState extends State<orderan> {
+class _OrderanState extends State<Orderan> {
   final _formKey = GlobalKey<FormState>(); //GlobalKey for the form
 
   @override
   Widget build(BuildContext context) {
     return Center(
-    child: Padding(
-      padding: const EdgeInsets.only(top: 50),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text(
-            'Orderan',
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 20),
-          const CircleAvatar(
-            backgroundImage: AssetImage('assets/images/ban-kempes.jpg'),
-            radius: 75,
-          ),
-          
-          const SizedBox(height: 10),
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+    child: Positioned(
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.only(top: 40),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Icon(Icons.location_on, size: 20),
-              Text(
-                '2.3 km',
+              const Text(
+                'Orderan',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+              const CircleAvatar(
+                backgroundImage: AssetImage('assets/images/ban-kempes.jpg'),
+                radius: 75,
+              ), 
+              const SizedBox(height: 10),
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.location_on, size: 20),
+                  Text(
+                    '2.3 km',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold
+                      ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Text('Kempes/Bocor',
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold
-                  ),
+                )),
               ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Text('Ban tubeless',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold
+                )),
+              ),
+              const Padding(padding: EdgeInsets.only(bottom: 8)),
+                FormTawar(formKey: _formKey),                      
+                const TawarkanBtn()
+              ],
             ),
-            child: const Text('Kempes/Bocor',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.bold
-            )),
-          ),
-          const SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Text('Ban tubeless',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.bold
-            )),
-          ),
-          const Padding(padding: EdgeInsets.only(bottom: 8),),
-            // const formTawar(),                                    ERROR DISINI!!!!!!
-            const tawarkanBtn(),
-          ],
         ),
+      ),
     ),
     );
   }
 }
 
-class formTawar extends StatelessWidget {
+class FormTawar extends StatelessWidget {
   final GlobalKey<FormState> formKey;
-
-  const formTawar(this.formKey, {super.key});
-
+  const FormTawar({required this.formKey, super.key});
+  
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: 60, left: 31, right: 31),
       child: Column(
-       key: (context as _OrderanState)._formKey, // Attach the key to the form
+       key: formKey, // Attach the key to the form
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
@@ -230,12 +257,12 @@ class formTawar extends StatelessWidget {
                   ),
                 ),
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Field ini wajib diisi';
-                }
-                return null;
-              },
+              // validator: (value) {
+              //   if (value == null || value.isEmpty) {
+              //     return 'Field ini wajib diisi';
+              //   }
+              //   return null;
+              // },
             ),
           ),
           const SizedBox(height: 30),
@@ -319,10 +346,8 @@ class formTawar extends StatelessWidget {
   }
 }
 
-class tawarkanBtn extends StatelessWidget {
-  const tawarkanBtn({
-    super.key,
-  });
+class TawarkanBtn extends StatelessWidget {
+  const TawarkanBtn({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -330,7 +355,6 @@ class tawarkanBtn extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 0, top: 30),
       child: ElevatedButton(
         onPressed: () {
-          // Tampilkan dialog konfirmasi saat tombol "Tawarkan" ditekan
           showDialog(
             context: context,
             builder: (BuildContext context) {
@@ -418,23 +442,26 @@ class tawarkanBtn extends StatelessWidget {
                         fontWeight: FontWeight.w600
                       ),
                     ),
+      
                     onPressed: () {
-                      // Lanjutkan aksi tawaran dan tutup dialog
-                      
                       Navigator.of(context).pop();
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           duration: const Duration(seconds: 2),
-                          content: const Text("Tawaran berhasil dikirim!"),
+                          content: const Text("Tawaran dikirim!"),
                           backgroundColor: Colors.black,
                           behavior: SnackBarBehavior.floating,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          
                         ),
                       );
 
+                      Future.delayed(const Duration(milliseconds: 100), () {
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(builder: (context) => const HomePageView()),
+                        );
+                      });
                     },
                   ),
                 ],

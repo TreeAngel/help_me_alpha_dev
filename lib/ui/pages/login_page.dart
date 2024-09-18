@@ -91,7 +91,11 @@ class LoginPageView extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Future.delayed(const Duration(seconds: 1), () {
+                        Navigator.of(context).pushReplacementNamed('/orderan'); // Replace with your home route
+                });
+              },
               style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.mitraGreen,
                   padding: const EdgeInsets.symmetric(

@@ -19,7 +19,17 @@ class MainApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'HelpMe | Mitra',
       theme: AppTheme.appTheme,
-      home: OrderPop(),
+      // home: OrderPop(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const OrderPop(),
+        '/': (context) => const LoginPageView(),
+        '/register': (context) => const RegisterPageView(),
+        '/home': (context) => const HomePageView(),
+        '/orderan': (context) => const OrderPop(),
+        // '/chat': ChatPage(),
+        // '/activity': ActivityPage(),
+      }
     );
   }
 }

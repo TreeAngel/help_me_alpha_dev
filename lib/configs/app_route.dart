@@ -9,7 +9,7 @@ class AppRoute {
         GoRoute(
             path: '/home',
             name: 'homePage',
-            builder: (context, state) => const HomeViewPage()),
+            builder: (context, state) => const HomePageView()),
       ],
     );
   }
