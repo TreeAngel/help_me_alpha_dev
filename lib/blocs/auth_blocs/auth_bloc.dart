@@ -140,13 +140,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         final authToken = signInResponse.token;
         if (authToken != null) {
           ApiController.token = authToken;
+          rememberMe == true ? ManageAuthToken.writeToken() : null;
           emit(
             SignInLoaded(
               message: authMessage.toString(),
               token: authToken,
             ),
           );
-          rememberMe == true ? ManageAuthToken.writeToken() : null;
         }
       } else if (signInResponse is ApiErrorResponseModel) {
         final error = signInResponse.error;

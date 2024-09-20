@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+
 import '../../models/api_error_response/api_error_response_model.dart';
 import '../../models/api_error_response/message_error_model.dart';
 import '../../services/api/api_exception.dart';
@@ -8,7 +9,7 @@ import '../../utils/logging.dart';
 class ApiController {
   static const baseUrl = null;
   static const temporaryUrl =
-      'https://408bc4f6fe3ab43caa7f901f6ca13940.serveo.net/api/';
+      'https://a3ffc2345a58c05ade5458c64a73d622.serveo.net/api/';
   static String? token;
 
   static var dio = Dio(

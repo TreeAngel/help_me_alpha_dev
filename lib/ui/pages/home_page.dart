@@ -25,7 +25,7 @@ class HomePage extends StatelessWidget {
     final textTheme = appTheme.textTheme;
     final colorScheme = appTheme.colorScheme;
     final screenWidth = MediaQuery.of(context).size.width;
-    String username = 'Unidentified Client';
+    String username = 'Kamu!';
 
     return SafeArea(
       child: Scaffold(
@@ -60,7 +60,7 @@ class HomePage extends StatelessWidget {
                     const SliverToBoxAdapter(child: SizedBox(height: 20)),
                     _lastOrderHistory(textTheme),
                     const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                    _logoutBlocListener(),
+                    _logoutBlocBuilder(context),
                   ],
                 ),
               ),
@@ -71,21 +71,26 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  BlocListener<AuthBloc, AuthState> _logoutBlocListener() {
-    return BlocListener<AuthBloc, AuthState>(
-      listener: (context, state) {
-        if (state is SignOutLoaded) {
-          ShowDialog.showAlertDialog(
-            context,
-            'Berhasil',
-            'Anda berhasil sign out',
-            null,
+  BlocBuilder<AuthBloc, AuthState> _logoutBlocBuilder(
+      BuildContext pageContext) {
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, state) {
+        if (state is AuthLoading) {
+          return const SliverFillRemaining(
+            child: Center(
+              child: CircularProgressIndicator(
+                color: AppColors.primary,
+              ),
+            ),
           );
-          ManageAuthToken.deleteToken();
-          context.goNamed('signInPage');
         }
+        if (state is SignOutLoaded) {
+          ManageAuthToken.deleteToken();
+          pageContext.goNamed('signInPage');
+          return const SliverToBoxAdapter(child: SizedBox.shrink());
+        }
+        return const SliverToBoxAdapter(child: SizedBox.shrink());
       },
-      child: const SliverToBoxAdapter(child: SizedBox.shrink()),
     );
   }
 
@@ -195,7 +200,10 @@ class HomePage extends StatelessWidget {
           return GestureDetector(
             onTap: () {
               index == 0 || index == 1
-                  ? context.push('/detail/${category.id}')
+                  ? context.pushNamed('detailPage', queryParameters: {
+                      'categoryId': '0',
+                      'category': category.name,
+                    })
                   : ShowDialog.showAlertDialog(
                       context,
                       'Fitur masih dikembangin',
@@ -203,7 +211,14 @@ class HomePage extends StatelessWidget {
                       null,
                     );
             },
-            child: _categoryGridItem(category, textTheme, cardColor),
+            child: _categoryGridItem(
+              category,
+              textTheme,
+              cardColor,
+              index == 0 || index == 1
+                  ? AppColors.lightTextColor
+                  : AppColors.lightTextColor.withOpacity(0.5),
+            ),
           );
         },
       ),
@@ -349,7 +364,11 @@ class HomePage extends StatelessWidget {
   }
 
   GradientCard _categoryGridItem(
-      CategoryModel category, TextTheme textTheme, Color cardColor) {
+    CategoryModel category,
+    TextTheme textTheme,
+    Color cardColor,
+    Color textColor,
+  ) {
     return GradientCard(
       width: 175,
       height: 210,
@@ -361,6 +380,7 @@ class HomePage extends StatelessWidget {
               TextSpan(
                 text: 'Bantuan\n',
                 style: textTheme.titleLarge?.copyWith(
+                  color: textColor,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -370,6 +390,7 @@ class HomePage extends StatelessWidget {
                   category.name[0].toUpperCase(),
                 ),
                 style: textTheme.titleLarge?.copyWith(
+                  color: textColor,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -459,7 +480,7 @@ class HomePage extends StatelessWidget {
       backgroundColor: Colors.black,
       actions: [
         Padding(
-          padding: const EdgeInsets.only(right: 20),
+          padding: const EdgeInsets.only(right: 10),
           child: PopupMenuButton<MenuItemModel>(
             icon: SvgPicture.asset('assets/icons/menu.svg'),
             tooltip: 'Menu',
@@ -473,20 +494,24 @@ class HomePage extends StatelessWidget {
           ),
         ),
       ],
-      title: Text.rich(
-        TextSpan(
-          text: 'Hi, ',
-          style: textTheme.titleMedium?.copyWith(
-            color: AppColors.darkTextColor,
+      title: Padding(
+        padding: const EdgeInsets.only(left: 10),
+        child: Text.rich(
+          TextSpan(
+            text: 'Hi, ',
+            style: textTheme.titleMedium?.copyWith(
+              color: AppColors.darkTextColor,
+            ),
+            children: [
+              TextSpan(
+                text: username,
+                style: textTheme.headlineMedium?.copyWith(
+                  color: AppColors.darkTextColor,
+                  fontWeight: FontWeight.bold,
+                ),
+              )
+            ],
           ),
-          children: [
-            TextSpan(
-              text: username,
-              style: textTheme.titleLarge?.copyWith(
-                color: AppColors.darkTextColor,
-              ),
-            )
-          ],
         ),
       ),
     );

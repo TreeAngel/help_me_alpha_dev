@@ -1,3 +1,4 @@
+import '../../models/problem_model.dart';
 import 'api_controller.dart';
 import '../../models/user_model.dart';
 import '../../models/auth_response_model.dart';
@@ -17,9 +18,24 @@ class ApiHelper {
     }
   }
 
+  static Future getProblems(int id) async {
+    final response = await ApiController.getData('category/problem/$id');
+    if (response is ApiErrorResponseModel) {
+      return response;
+    } else {
+      List<ProblemModel> data = [];
+      final problems = await response as List<dynamic>;
+      for (var problem in problems) {
+        data.add(ProblemModel.fromMap(problem));
+      }
+      return data;
+    }
+  }
+
   static Future authLogin(LoginModel user) async {
     Map<String, dynamic> userData = user.toJson();
-    final response = await ApiController.postData('auth/login', userData);
+    final response =
+        await ApiController.postData('auth/login?app_type=user', userData);
     if (response is ApiErrorResponseModel) {
       return response;
     } else {

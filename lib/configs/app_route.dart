@@ -26,11 +26,16 @@ class AppRoute {
         builder: (context, state) => const SignUpPage(),
       ),
       GoRoute(
-        path: '/detail/:categoryId',
-        // name: 'detailPage',
-        builder: (context, state) => DetailPage(
-          categoryId: int.parse(state.pathParameters['categoryId'].toString()),
-        ),
+        path: '/detail',
+        name: 'detailPage',
+        builder: (context, state) {
+          final id = state.uri.queryParameters['categoryId'].toString();
+          final category = state.uri.queryParameters['category'];
+          return DetailPage(
+            categoryId: int.parse(id),
+            category: category.toString(),
+          );
+        },
       ),
     ],
     redirect: (context, state) {
@@ -39,11 +44,13 @@ class AppRoute {
       if (isAuthenticated == false && state.matchedLocation == '/home') {
         return '/signIn';
       } else if (isAuthenticated == true &&
-          state.matchedLocation == '/signIn' &&
+          state.matchedLocation == '/signIn') {
+        return '/home';
+      } else if (isAuthenticated == true &&
           state.matchedLocation == '/signUp') {
         return '/home';
       } else {
-        return state.fullPath;
+        return null;
       }
     },
     // errorBuilder: (context, state) => const Placeholder(),

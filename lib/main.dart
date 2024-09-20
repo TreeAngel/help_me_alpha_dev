@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'blocs/home_blocs/home_bloc.dart';
 import 'blocs/auth_blocs/auth_bloc.dart';
+import 'blocs/order_blocs/order_bloc.dart';
 import 'configs/app_theme.dart';
 import 'services/api/api_controller.dart';
 import 'utils/manage_auth_token.dart';
@@ -28,6 +29,9 @@ class MainApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => AuthBloc(apiController: apiHelper),
+        ),
+        BlocProvider(
+          create: (context) => OrderBloc(apiController: apiHelper),
         ),
         // TODO: Add other blocs here
       ],
