@@ -26,7 +26,6 @@ final class ProblemsError extends OrderState {
   const ProblemsError({required this.errorMessage});
 
   @override
-  // TODO: implement props
   List<Object> get props => [errorMessage];
 }
 

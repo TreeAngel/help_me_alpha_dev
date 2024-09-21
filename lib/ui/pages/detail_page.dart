@@ -40,38 +40,90 @@ class DetailPage extends StatelessWidget {
               ),
             ),
             Positioned(
-                bottom: 0,
-                width: screenWidth,
-                height: screenHeight - (screenHeight / 5),
-                child: BlocBuilder<OrderBloc, OrderState>(
-                  builder: (context, state) {
-                    if (state is OrderInitial) {
-                      if (categoryId != null) {
-                        context
-                            .read<OrderBloc>()
-                            .add(FetchProblems(id: categoryId!));
-                      } else {
-                        _categoryIdNotFound(context);
-                      }
-                      if (state is OrderLoading) {
-                        return const Expanded(
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              color: AppColors.primary,
-                            ),
+              bottom: 0,
+              width: screenWidth,
+              height: screenHeight - (screenHeight / 5),
+              child: BlocBuilder<OrderBloc, OrderState>(
+                builder: (contextBuilder, state) {
+                  if (state is OrderInitial) {
+                    if (categoryId != null &&
+                        category?.toLowerCase() != 'serabutan') {
+                      contextBuilder
+                          .read<OrderBloc>()
+                          .add(FetchProblems(id: categoryId!));
+                    } else if (categoryId != null &&
+                        category?.toLowerCase() == 'serabutan') {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        ShowDialog.showAlertDialog(
+                          contextBuilder,
+                          'Fiture masih dikembangkan',
+                          'Fitur masih dikembangkan ya ka\n Mohon tunggu',
+                          ElevatedButton.icon(
+                            onPressed: () => context.canPop()
+                                ? context.pop()
+                                : context.goNamed('homePage'),
+                            icon: const Icon(Icons.arrow_forward_ios),
+                            label: const Text('Kembali'),
                           ),
                         );
-                      }
-                      if (state is ProblemsLoaded) {}
-                      if (state is ProblemsError) {}
+                      });
+                      // context.pushReplacementNamed('/addTaskPage'); TODO: Enable this later
+                    } else {
+                      _categoryIdNotFound(contextBuilder);
                     }
-                    return const SizedBox.shrink();
-                  },
-                ))
+                  } else if (state is OrderLoading) {
+                    return const SizedBox.expand(
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    );
+                  } else if (state is ProblemsLoaded) {
+                    List<ProblemModel> problems = state.problems;
+                    ProblemModel selectedProblem = problems.first;
+                    if (problems.isNotEmpty) {
+                      return ListView.builder(
+                        itemCount: problems.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          ProblemModel data = problems[index];
+                          return RadioListTile(
+                            value: data.name,
+                            groupValue: selectedProblem,
+                            onChanged: (value) =>
+                                selectedProblem = value as ProblemModel,
+                          );
+                        },
+                      );
+                    }
+                  } else if (state is ProblemsError) {
+                    _stateError(context, state);
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
+            )
           ],
         ),
       ),
     );
+  }
+
+  void _stateError(BuildContext context, ProblemsError state) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ShowDialog.showAlertDialog(
+        context,
+        'Error fetching problems',
+        state.errorMessage,
+        IconButton.outlined(
+          onPressed: () {
+            context.pop();
+            context.read<OrderBloc>().add(FetchProblems(id: categoryId!));
+          },
+          icon: const Icon(Icons.refresh_outlined),
+        ),
+      );
+    });
   }
 
   Widget _categoryIdNotFound(BuildContext context) {
@@ -80,9 +132,8 @@ class DetailPage extends StatelessWidget {
       'Error',
       'Category tidak ada',
       ElevatedButton.icon(
-        onPressed: () {
-          context.canPop() ? context.pop() : context.goNamed('homePage');
-        },
+        onPressed: () =>
+            context.canPop() ? context.pop() : context.goNamed('homePage'),
         label: const Text('Kembali'),
         icon: const Icon(Icons.arrow_forward_ios),
       ),
