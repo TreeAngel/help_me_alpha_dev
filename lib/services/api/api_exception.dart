@@ -76,9 +76,6 @@ class ApiException {
     if (errorModel.password != null) {
       errorMessage += '${errorModel.password}, ';
     }
-    if (errorModel.email != null) {
-      errorMessage += '${errorModel.email}, ';
-    }
     if (errorModel.role != null) {
       errorMessage += '${errorModel.role}, ';
     }

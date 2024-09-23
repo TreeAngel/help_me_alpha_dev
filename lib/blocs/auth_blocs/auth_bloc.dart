@@ -1,4 +1,3 @@
-import 'package:email_validator/email_validator.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:image_picker/image_picker.dart';
@@ -23,7 +22,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   var password = '';
   var passwordConfirmation = '';
   var phoneNumber = '';
-  var email = '';
   final role = 'user';
   XFile? profilePicture;
   var isPasswordVisible = false;
@@ -60,11 +58,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(state.copyWith(profilePicture: event.image));
     });
 
-    on<EmailChanged>((event, emit) {
-      email = event.email;
-      emit(state.copyWith(email: event.email));
-    });
-
     on<TogglePasswordVisibility>((event, emit) {
       emit(state.copyWith(isPasswordVisible: !state.isPasswordVisible));
     });
@@ -87,7 +80,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       // passwordConfirmation = '';
       // phoneNumber = '';
       // profilePicture = null;
-      // email = '';
       emit(AuthInitial());
     });
   }
@@ -173,8 +165,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         passwordConfirmation.isEmpty ||
         phoneNumber.isEmpty ||
         password.length < 8 ||
-        passwordConfirmation != password ||
-        !EmailValidator.validate(email)) {
+        passwordConfirmation != password) {
       emit(
         const AuthError(
           errorMessage:
@@ -187,7 +178,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       password = password.trim();
       passwordConfirmation = passwordConfirmation.trim();
       phoneNumber = '+62${phoneNumber.trim()}';
-      email = email.trim();
       emit(AuthLoading());
       final signUpModel = RegisterModel(
         fullName: fullName,
@@ -196,7 +186,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         passwordConfirmation: passwordConfirmation,
         phoneNumber: phoneNumber,
         role: role,
-        email: email,
       );
       final signUpResponse = await ApiHelper.authRegister(signUpModel);
       if (signUpResponse is AuthResponseModel) {

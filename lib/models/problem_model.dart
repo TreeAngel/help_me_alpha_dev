@@ -2,6 +2,20 @@ import 'dart:convert';
 
 import 'package:equatable/equatable.dart';
 
+class DataProblem {
+  final List<ProblemModel> data;
+
+  DataProblem({
+    required this.data,
+  });
+
+  factory DataProblem.fromJson(Map<String, dynamic> json) => DataProblem(
+        data: List<ProblemModel>.from(
+          json['data'].map((problem) => ProblemModel.fromMap(problem)),
+        ),
+      );
+}
+
 class ProblemModel extends Equatable {
   final int? id;
   final String? name;

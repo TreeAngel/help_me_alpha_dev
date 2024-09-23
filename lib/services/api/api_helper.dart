@@ -1,5 +1,5 @@
-import '../../models/problem_model.dart';
 import 'api_controller.dart';
+import '../../models/problem_model.dart';
 import '../../models/user_model.dart';
 import '../../models/auth_response_model.dart';
 import '../../models/category_model.dart';
@@ -23,12 +23,7 @@ class ApiHelper {
     if (response is ApiErrorResponseModel) {
       return response;
     } else {
-      List<ProblemModel> data = [];
-      final problems = await response as List<dynamic>;
-      for (var problem in problems) {
-        data.add(ProblemModel.fromMap(problem));
-      }
-      return data;
+      return DataProblem.fromJson(response);
     }
   }
 

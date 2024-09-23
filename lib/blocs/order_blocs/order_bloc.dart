@@ -12,8 +12,19 @@ part 'order_state.dart';
 class OrderBloc extends Bloc<OrderEvent, OrderState> {
   final ApiController apiController;
 
+  late ProblemModel? selectedProblem;
+
   OrderBloc({required this.apiController}) : super(OrderInitial()) {
     on<FetchProblems>(_onFetchProblems);
+
+    on<ProblemSelected>((event, emit) {
+      selectedProblem = event.selectedProblem;
+      // emit(state.copyWith(selectedProblem: event.selectedProblem));
+    });
+
+    on<ProblemsPop>((event, emit) {
+      emit(OrderInitial());
+    });
   }
 
   Future<void> _onFetchProblems(

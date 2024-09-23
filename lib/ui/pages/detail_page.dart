@@ -1,27 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:help_me_client_alpha_ver/configs/app_route.dart';
 
 import '../../blocs/order_blocs/order_bloc.dart';
 import '../../configs/app_colors.dart';
 import '../../models/problem_model.dart';
-import '../../services/api/api_helper.dart';
 import '../../utils/show_dialog.dart';
 
-enum ProblemCategory { serabutan, kendaraan, rumah, elektronik }
+// enum ProblemCategory { serabutan, kendaraan, rumah, elektronik }
 
-class DetailPage extends StatelessWidget {
-  const DetailPage({super.key, this.categoryId, this.category});
+class DetailPage extends StatefulWidget {
+  const DetailPage(
+      {super.key, required this.categoryId, required this.category});
 
   final int? categoryId;
   final String? category;
 
   @override
+  State<DetailPage> createState() => _DetailPageState();
+}
+
+class _DetailPageState extends State<DetailPage> {
+  late List<ProblemModel> problems;
+  ProblemModel? selectedProblem;
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<OrderBloc>().add(const ProblemsPop());
+  }
+
+  @override
   Widget build(BuildContext context) {
     final appTheme = Theme.of(context);
     final textTheme = appTheme.textTheme;
-    final colorScheme = appTheme.colorScheme;
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
@@ -40,73 +52,182 @@ class DetailPage extends StatelessWidget {
               ),
             ),
             Positioned(
+              bottom: 10,
+              width: screenWidth,
+              height: screenHeight - (screenHeight / 3),
+              child: SizedBox(
+                height: screenHeight - (screenHeight / 3),
+                child: _problemBlocBuilder(context, textTheme),
+              ),
+            ),
+            Positioned(
               bottom: 0,
               width: screenWidth,
-              height: screenHeight - (screenHeight / 5),
               child: BlocBuilder<OrderBloc, OrderState>(
-                builder: (contextBuilder, state) {
-                  if (state is OrderInitial) {
-                    if (categoryId != null &&
-                        category?.toLowerCase() != 'serabutan') {
-                      contextBuilder
-                          .read<OrderBloc>()
-                          .add(FetchProblems(id: categoryId!));
-                    } else if (categoryId != null &&
-                        category?.toLowerCase() == 'serabutan') {
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        ShowDialog.showAlertDialog(
-                          contextBuilder,
-                          'Fiture masih dikembangkan',
-                          'Fitur masih dikembangkan ya ka\n Mohon tunggu',
-                          ElevatedButton.icon(
-                            onPressed: () => context.canPop()
-                                ? context.pop()
-                                : context.goNamed('homePage'),
-                            icon: const Icon(Icons.arrow_forward_ios),
-                            label: const Text('Kembali'),
-                          ),
-                        );
-                      });
-                      // context.pushReplacementNamed('/addTaskPage'); TODO: Enable this later
-                    } else {
-                      _categoryIdNotFound(contextBuilder);
-                    }
-                  } else if (state is OrderLoading) {
-                    return const SizedBox.expand(
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    );
-                  } else if (state is ProblemsLoaded) {
-                    List<ProblemModel> problems = state.problems;
-                    ProblemModel selectedProblem = problems.first;
-                    if (problems.isNotEmpty) {
-                      return ListView.builder(
-                        itemCount: problems.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          ProblemModel data = problems[index];
-                          return RadioListTile(
-                            value: data.name,
-                            groupValue: selectedProblem,
-                            onChanged: (value) =>
-                                selectedProblem = value as ProblemModel,
-                          );
-                        },
-                      );
-                    }
-                  } else if (state is ProblemsError) {
-                    _stateError(context, state);
+                builder: (context, state) {
+                  if (state is OrderLoading || state is ProblemsError) {
+                    return const SizedBox.shrink();
+                  } else {
+                    return _navigateSection(context, textTheme);
                   }
-                  return const SizedBox.shrink();
                 },
               ),
-            )
+            ),
           ],
         ),
       ),
     );
+  }
+
+  Padding _navigateSection(BuildContext context, TextTheme textTheme) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 50),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: SizedBox(
+            width: double.infinity,
+            height: 56,
+            child: _continueButton(context, textTheme),
+          ),
+        ),
+      ),
+    );
+  }
+
+  ElevatedButton _continueButton(BuildContext context, TextTheme textTheme) {
+    return ElevatedButton(
+      style: ButtonStyle(
+        backgroundColor: const WidgetStatePropertyAll(AppColors.primary),
+        shape: WidgetStatePropertyAll(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      ),
+      onPressed: () {
+        selectedProblem != null
+            ? context.pushNamed(
+                'addTaskPage',
+                queryParameters: {
+                  'problemId': selectedProblem?.id.toString(),
+                  'problem': selectedProblem?.name.toString()
+                },
+              )
+            : ShowDialog.showAlertDialog(
+                context,
+                'Apa Masalahmu?',
+                'Kasih tau masalah yang lagi kamu alamin sebelum nyari bantuan',
+                null,
+              );
+      },
+      child: Text(
+        'Lanjut detail',
+        style: textTheme.bodyLarge?.copyWith(
+            fontWeight: FontWeight.bold, color: AppColors.lightTextColor),
+      ),
+    );
+  }
+
+  BlocBuilder<OrderBloc, OrderState> _problemBlocBuilder(
+    BuildContext context,
+    TextTheme textTheme,
+  ) {
+    return BlocBuilder<OrderBloc, OrderState>(
+      builder: (contextBuilder, state) {
+        if (state is OrderInitial) {
+          _onInitProblem(contextBuilder, context);
+        } else if (state is OrderLoading) {
+          return const SizedBox.expand(
+            child: Center(
+              child: CircularProgressIndicator(
+                color: AppColors.lightTextColor,
+              ),
+            ),
+          );
+        } else if (state is ProblemsLoaded) {
+          problems = state.problems;
+          if (problems.isNotEmpty) {
+            return ListView.builder(
+              itemCount: problems.length,
+              itemBuilder: (BuildContext context, int index) {
+                ProblemModel data = problems[index];
+                return Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: _problemRadioTileList(data, context, textTheme),
+                );
+              },
+            );
+          }
+        } else if (state is ProblemsError) {
+          _stateError(context, state);
+        }
+        return const SizedBox.shrink();
+      },
+    );
+  }
+
+  RadioListTile<ProblemModel> _problemRadioTileList(
+      ProblemModel data, BuildContext context, TextTheme textTheme) {
+    final title = data.name.toString();
+    return RadioListTile<ProblemModel>(
+      activeColor: AppColors.vividRed,
+      fillColor: const WidgetStatePropertyAll(AppColors.salmonPink),
+      title: Text(
+        title.replaceFirst(title[0], title[0].toUpperCase()),
+        style: textTheme.bodyLarge?.copyWith(
+            fontWeight: FontWeight.bold, color: AppColors.lightTextColor),
+      ),
+      value: data,
+      groupValue: selectedProblem,
+      contentPadding: const EdgeInsets.all(4),
+      shape: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(15),
+        borderSide: const BorderSide(
+            color: AppColors.salmonPink,
+            width: 2,
+            strokeAlign: BorderSide.strokeAlignInside),
+      ),
+      onChanged: (value) {
+        setState(() {
+          selectedProblem = value as ProblemModel;
+        });
+        context.read<OrderBloc>().add(ProblemSelected(selectedProblem!));
+      },
+    );
+  }
+
+  void _onInitProblem(BuildContext contextBuilder, BuildContext context) {
+    if (widget.categoryId != 0 &&
+        widget.category?.toLowerCase() != 'serabutan') {
+      contextBuilder
+          .read<OrderBloc>()
+          .add(FetchProblems(id: widget.categoryId!));
+    } else if (widget.categoryId != 0 &&
+        widget.category?.toLowerCase() == 'serabutan') {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // ShowDialog.showAlertDialog(
+        //   contextBuilder,
+        //   'Masih dikembangin!',
+        //   'Fitur masih dikembangkan ya ka\n Mohon tunggu',
+        //   ElevatedButton.icon(
+        //     onPressed: () =>
+        //         context.canPop() ? context.pop() : context.goNamed('homePage'),
+        //     icon: const Icon(Icons.arrow_forward_ios),
+        //     label: const Text('Kembali'),
+        //   ),
+        // );
+        context.pushReplacementNamed(
+          'addTaskPage',
+          queryParameters: {
+            'problemId': '',
+            'problem': 'serabutan',
+          },
+        );
+      });
+    } else {
+      _categoryIdNotFound(contextBuilder);
+    }
   }
 
   void _stateError(BuildContext context, ProblemsError state) {
@@ -118,7 +239,9 @@ class DetailPage extends StatelessWidget {
         IconButton.outlined(
           onPressed: () {
             context.pop();
-            context.read<OrderBloc>().add(FetchProblems(id: categoryId!));
+            context
+                .read<OrderBloc>()
+                .add(FetchProblems(id: widget.categoryId!));
           },
           icon: const Icon(Icons.refresh_outlined),
         ),
@@ -142,22 +265,22 @@ class DetailPage extends StatelessWidget {
 
   Padding _detailHeadline(TextTheme textTheme) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 30,
+      ),
       child: Text.rich(
         softWrap: true,
-        style: textTheme.headlineSmall?.copyWith(
+        style: textTheme.headlineMedium?.copyWith(
           color: AppColors.darkTextColor,
           fontWeight: FontWeight.bold,
         ),
-        category?.toLowerCase().contains('serabutan') == false
-            ? _detailHeadlineText('hmm, Kenapa\n$category?')
-            : _detailHeadlineText('hmm, Butuh \nbantuan apa kali ini?'),
+        widget.category?.toLowerCase().contains('serabutan') == false
+            ? TextSpan(text: 'hmm, Kenapa\n${widget.category}mu?')
+            : const TextSpan(text: 'hmm, Butuh \nbantuan apa kali ini?'),
       ),
     );
-  }
-
-  TextSpan _detailHeadlineText(String text) {
-    return TextSpan(text: text);
   }
 
   AppBar _appBar(BuildContext context, TextTheme textTheme) {

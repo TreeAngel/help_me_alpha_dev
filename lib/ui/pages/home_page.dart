@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_randomcolor/flutter_randomcolor.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../data/cards_color.dart';
 import '../../utils/manage_auth_token.dart';
 import '../../blocs/home_blocs/home_bloc.dart';
 import '../../configs/app_colors.dart';
@@ -145,19 +146,13 @@ class HomePage extends StatelessWidget {
           return const SliverFillRemaining(
             child: Center(
               child: CircularProgressIndicator(
-                color: AppColors.primary,
+                color: AppColors.lightTextColor,
               ),
             ),
           );
         } else if (state is CategoryLoaded) {
           final categories = state.categories.take(4).toList();
-          final colorOption = Options(
-            format: Format.hex,
-            luminosity: Luminosity.light,
-            count: categories.length,
-          );
-          final randomColors = RandomColor.getColor(colorOption);
-          return _categoriesGrid(categories, randomColors, textTheme);
+          return _categoriesGrid(categories, textTheme);
         } else if (state is CategoryError) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             ShowDialog.showAlertDialog(
@@ -182,7 +177,7 @@ class HomePage extends StatelessWidget {
   }
 
   SliverGrid _categoriesGrid(
-      List<CategoryModel> categories, randomColors, TextTheme textTheme) {
+      List<CategoryModel> categories, TextTheme textTheme) {
     return SliverGrid(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
@@ -192,16 +187,14 @@ class HomePage extends StatelessWidget {
         childCount: categories.length,
         (context, index) {
           final category = categories[index];
-          final randomColor = randomColors[index];
-          final color = randomColor.toString().substring(1);
           final cardColor = index == 0 || index == 1
-              ? Color(int.parse('0xFF$color'))
+              ? CardsColor.categoryCardsColor[index]
               : AppColors.grey;
           return GestureDetector(
-            onTap: () {
+            onTap: () async {
               index == 0 || index == 1
                   ? context.pushNamed('detailPage', queryParameters: {
-                      'categoryId': '0',
+                      'categoryId': category.id.toString(),
                       'category': category.name,
                     })
                   : ShowDialog.showAlertDialog(

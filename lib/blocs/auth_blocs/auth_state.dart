@@ -11,7 +11,6 @@ class AuthState extends Equatable {
   final String? passwordConfirmation;
   final String? role;
   final XFile? profilePicture;
-  final String? email;
   final bool isPasswordVisible;
   final bool rememberMe;
 
@@ -23,7 +22,6 @@ class AuthState extends Equatable {
     this.passwordConfirmation = '',
     this.role = 'user',
     this.profilePicture,
-    this.email,
     this.isPasswordVisible = false,
     this.rememberMe = false,
   });
@@ -35,7 +33,6 @@ class AuthState extends Equatable {
     String? phoneNumber,
     String? passwordConfirmation,
     XFile? profilePicture,
-    String? email,
     bool? isPasswordVisible,
     bool? rememberMe,
   }) {
@@ -46,7 +43,6 @@ class AuthState extends Equatable {
       phoneNumber: phoneNumber ?? this.phoneNumber,
       passwordConfirmation: passwordConfirmation ?? this.passwordConfirmation,
       profilePicture: profilePicture ?? this.profilePicture,
-      email: email ?? this.email,
       isPasswordVisible: isPasswordVisible ?? this.isPasswordVisible,
       rememberMe: rememberMe ?? this.rememberMe,
     );
@@ -60,7 +56,6 @@ class AuthState extends Equatable {
         phoneNumber,
         passwordConfirmation,
         profilePicture,
-        email,
         isPasswordVisible,
         rememberMe
       ];

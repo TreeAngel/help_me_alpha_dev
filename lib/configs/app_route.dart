@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 
 import '../services/api/api_controller.dart';
+import '../ui/pages/add_task_page.dart';
 import '../ui/pages/home_page.dart';
 import '../ui/pages/sign_in_page.dart';
 import '../ui/pages/sign_up_page.dart';
@@ -34,6 +35,18 @@ class AppRoute {
           return DetailPage(
             categoryId: int.parse(id),
             category: category.toString(),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/addTask',
+        name: 'addTaskPage',
+        builder: (context, state) {
+          String id = state.uri.queryParameters['problemId'].toString();
+          final problem = state.uri.queryParameters['problem'];
+          return AddTaskPage(
+            problemId: id.isNotEmpty ? int.parse(id) : null,
+            problem: problem.toString(),
           );
         },
       ),

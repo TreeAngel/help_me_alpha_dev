@@ -12,7 +12,6 @@ import '../../utils/show_dialog.dart';
 enum TextInputEvent {
   fullname,
   username,
-  email,
 }
 
 class SignUpPage extends StatelessWidget {
@@ -75,17 +74,6 @@ class SignUpPage extends StatelessWidget {
                             ),
                             const SizedBox(height: 10),
                             _phoneNumInputField(context, textTheme),
-                            const SizedBox(height: 10),
-                            Text(
-                              'Email',
-                              style: textTheme.titleMedium?.copyWith(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            _textInputField(context, textTheme, 'Masukan email',
-                                TextInputEvent.email),
                             const SizedBox(height: 10),
                             Text(
                               'Username',
@@ -316,7 +304,6 @@ class SignUpPage extends StatelessWidget {
       onChanged: (textInput) => context.read<AuthBloc>().add(switch (event) {
             TextInputEvent.fullname => FullNameChanged(textInput),
             TextInputEvent.username => UsernameChanged(textInput),
-            TextInputEvent.email => EmailChanged(textInput),
           }),
       decoration: InputDecoration(
         filled: true,
