@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 
 import '../services/api/api_controller.dart';
+import '../ui/pages/launch_page.dart';
 import '../ui/pages/add_task_page.dart';
 import '../ui/pages/home_page.dart';
 import '../ui/pages/sign_in_page.dart';
@@ -9,8 +10,13 @@ import '../ui/pages/detail_page.dart';
 
 class AppRoute {
   static final GoRouter appRoute = GoRouter(
-    initialLocation: '/home',
+    initialLocation: '/',
     routes: [
+      GoRoute(
+        path: '/',
+        name: 'init',
+        builder: (context, state) => const LaunchPage(),
+      ),
       GoRoute(
         path: '/home',
         name: 'homePage',

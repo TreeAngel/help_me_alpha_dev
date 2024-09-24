@@ -4,12 +4,12 @@ import 'package:equatable/equatable.dart';
 import '../../models/api_error_response/message_error_model.dart';
 
 class AuthState extends Equatable {
-  final String? fullName;
+  final String fullName;
   final String username;
-  final String? phoneNumber;
+  final String phoneNumber;
   final String password;
-  final String? passwordConfirmation;
-  final String? role;
+  final String passwordConfirmation;
+  final String role;
   final XFile? profilePicture;
   final bool isPasswordVisible;
   final bool rememberMe;
@@ -28,9 +28,9 @@ class AuthState extends Equatable {
 
   AuthState copyWith({
     String? fullName,
+    String? phoneNumber,
     String? username,
     String? password,
-    String? phoneNumber,
     String? passwordConfirmation,
     XFile? profilePicture,
     bool? isPasswordVisible,
@@ -75,7 +75,6 @@ final class AuthError extends AuthState {
 }
 
 // Sign In states
-
 final class SignInLoaded extends AuthState {
   final String message;
   final String token;
@@ -87,8 +86,6 @@ final class SignInLoaded extends AuthState {
 }
 
 // Sign Up states
-
-// TODO: Change the response in the future
 final class SignUpLoaded extends AuthState {
   final String message;
   final String token;
@@ -100,7 +97,6 @@ final class SignUpLoaded extends AuthState {
 }
 
 // Sign Out states
-
 final class SignOutLoaded extends AuthState {
   final String message;
 

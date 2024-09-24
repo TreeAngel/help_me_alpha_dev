@@ -17,9 +17,9 @@ class UserModel {
   final String? username;
   final String? role;
   final int? isActive;
-  final String? email;
-  final String? emailVerifiedAt;
+  final String? identifier;
   final String? imageProfile;
+  final String? phoneNumberVerifiedAt;
 
   const UserModel({
     this.id,
@@ -28,9 +28,9 @@ class UserModel {
     this.username,
     this.role,
     this.isActive,
-    this.email,
-    this.emailVerifiedAt,
+    this.identifier,
     this.imageProfile,
+    this.phoneNumberVerifiedAt,
   });
 
   factory UserModel.fromModel(Map<String, dynamic> json) => UserModel(
@@ -40,8 +40,8 @@ class UserModel {
         username: json['username'],
         role: json['role'],
         isActive: json['is_active'],
-        email: json['email'],
-        emailVerifiedAt: json['email_verified_at'],
+        identifier: json['identifier'],
         imageProfile: json['image_profile'],
+        phoneNumberVerifiedAt: json['phone_number_verified_at'],
       );
 }

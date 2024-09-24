@@ -7,6 +7,10 @@ sealed class AuthEvent extends Equatable {
   List<Object> get props => [];
 }
 
+class RetryAuthState extends AuthEvent {}
+
+class ResetAuthState extends AuthEvent {}
+
 class FullNameChanged extends AuthEvent {
   final String fullName;
 
@@ -70,5 +74,3 @@ class SignInSubmitted extends AuthEvent {}
 class SignUpSubmitted extends AuthEvent {}
 
 class SignOutSubmitted extends AuthEvent {}
-
-class ResetAuthState extends AuthEvent {}

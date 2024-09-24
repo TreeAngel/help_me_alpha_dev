@@ -11,6 +11,8 @@ class MessageErrorModel {
   final List<String>? phoneNumber;
   final List<String>? password;
   final List<String>? role;
+  final List<String>? newPassword;
+  final List<String>? verificationCode;
 
   const MessageErrorModel({
     this.error,
@@ -20,11 +22,13 @@ class MessageErrorModel {
     this.phoneNumber,
     this.password,
     this.role,
+    this.newPassword,
+    this.verificationCode,
   });
 
   @override
   String toString() {
-    return 'Error(error: $error, message: $message, fullname: $fullname, username: $username, phoneNumber: $phoneNumber, password: $password, role: $role';
+    return 'Error(error: $error, message: $message, fullname: $fullname, username: $username, phoneNumber: $phoneNumber, password: $password, role: $role, newPassword: $newPassword, verificationCode: $verificationCode';
   }
 
   factory MessageErrorModel.fromMap(Map<String, dynamic> data) =>
@@ -36,6 +40,8 @@ class MessageErrorModel {
         phoneNumber: data['phone_number'] as List<String>?,
         password: data['password'] as List<String>?,
         role: data['role'] as List<String>?,
+        newPassword: data['new_password'] as List<String>?,
+        verificationCode: data['verification_code'] as List<String>?,
       );
 
   Map<String, dynamic> toMap() => {
@@ -46,6 +52,8 @@ class MessageErrorModel {
         'phone_number': phoneNumber,
         'password': password,
         'role': role,
+        'new_password': newPassword,
+        'verification_code': verificationCode,
       };
 
   /// `dart:convert`
@@ -68,6 +76,8 @@ class MessageErrorModel {
     List<String>? phoneNumber,
     List<String>? password,
     List<String>? role,
+    List<String>? newPassword,
+    List<String>? verificationCode,
   }) {
     return MessageErrorModel(
       error: error ?? this.error,
@@ -77,6 +87,8 @@ class MessageErrorModel {
       phoneNumber: phoneNumber ?? this.phoneNumber,
       password: password ?? this.password,
       role: role ?? this.role,
+      newPassword: newPassword ?? this.newPassword,
+      verificationCode: verificationCode ?? this.verificationCode,
     );
   }
 }

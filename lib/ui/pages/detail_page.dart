@@ -52,25 +52,29 @@ class _DetailPageState extends State<DetailPage> {
               ),
             ),
             Positioned(
-              bottom: 10,
+              bottom: 100,
               width: screenWidth,
-              height: screenHeight - (screenHeight / 3),
-              child: SizedBox(
-                height: screenHeight - (screenHeight / 3),
+              height: screenHeight - (screenHeight / 2.45),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
                 child: _problemBlocBuilder(context, textTheme),
               ),
             ),
             Positioned(
               bottom: 0,
               width: screenWidth,
-              child: BlocBuilder<OrderBloc, OrderState>(
-                builder: (context, state) {
-                  if (state is OrderLoading || state is ProblemsError) {
-                    return const SizedBox.shrink();
-                  } else {
-                    return _navigateSection(context, textTheme);
-                  }
-                },
+              height: screenHeight / 8,
+              child: Container(
+                color: AppColors.surface,
+                child: BlocBuilder<OrderBloc, OrderState>(
+                  builder: (context, state) {
+                    if (state is OrderLoading || state is ProblemsError) {
+                      return const SizedBox.shrink();
+                    } else {
+                      return _navigateSection(context, textTheme);
+                    }
+                  },
+                ),
               ),
             ),
           ],
@@ -79,17 +83,14 @@ class _DetailPageState extends State<DetailPage> {
     );
   }
 
-  Padding _navigateSection(BuildContext context, TextTheme textTheme) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 50),
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: SizedBox(
-            width: double.infinity,
-            height: 56,
-            child: _continueButton(context, textTheme),
-          ),
+  Center _navigateSection(BuildContext context, TextTheme textTheme) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: SizedBox(
+          width: double.infinity,
+          height: 56,
+          child: _continueButton(context, textTheme),
         ),
       ),
     );
@@ -111,7 +112,7 @@ class _DetailPageState extends State<DetailPage> {
                 'addTaskPage',
                 queryParameters: {
                   'problemId': selectedProblem?.id.toString(),
-                  'problem': selectedProblem?.name.toString()
+                  'problem': selectedProblem?.name.toString(),
                 },
               )
             : ShowDialog.showAlertDialog(
@@ -124,7 +125,9 @@ class _DetailPageState extends State<DetailPage> {
       child: Text(
         'Lanjut detail',
         style: textTheme.bodyLarge?.copyWith(
-            fontWeight: FontWeight.bold, color: AppColors.lightTextColor),
+          fontWeight: FontWeight.bold,
+          color: AppColors.lightTextColor,
+        ),
       ),
     );
   }
@@ -140,9 +143,7 @@ class _DetailPageState extends State<DetailPage> {
         } else if (state is OrderLoading) {
           return const SizedBox.expand(
             child: Center(
-              child: CircularProgressIndicator(
-                color: AppColors.lightTextColor,
-              ),
+              child: CircularProgressIndicator(),
             ),
           );
         } else if (state is ProblemsLoaded) {
@@ -168,7 +169,10 @@ class _DetailPageState extends State<DetailPage> {
   }
 
   RadioListTile<ProblemModel> _problemRadioTileList(
-      ProblemModel data, BuildContext context, TextTheme textTheme) {
+    ProblemModel data,
+    BuildContext context,
+    TextTheme textTheme,
+  ) {
     final title = data.name.toString();
     return RadioListTile<ProblemModel>(
       activeColor: AppColors.vividRed,

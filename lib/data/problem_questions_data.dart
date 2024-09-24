@@ -1,5 +1,6 @@
 class ProblemQuestions {
   // Kendaraan
+    // Motor
   static const List<String> banMotor = ['Ban dalem', 'Tubeless'];
   static const List<String> motorMogok = [
     'Aki drop/lemah',
@@ -15,7 +16,7 @@ class ProblemQuestions {
     'Inspeksi/konsultasi',
   ];
   static const List<String> cuciMotor = ['Cuci standar', 'Cuci poles'];
-
+    // Mobil
   static const List<String> banMobil = ['Tambal', 'Ganti ban serep'];
   static const List<String> mobilMogok = [
     'Aki drop/lemah',
@@ -31,7 +32,7 @@ class ProblemQuestions {
     'Inspeksi/konsultasi',
   ];
   static const List<String> cuciMobil = ['Cuci standar', 'Cuci poles'];
-
+    // Sepeda
   static const List<String> banSepeda = ['Ban dalem', 'Tubeless'];
   static const List<String> setelSepeda = [
     'Setel biar enak lagi',

@@ -79,9 +79,7 @@ class SignInPage extends StatelessWidget {
                             ],
                             if (state is AuthLoading) ...[
                               const Center(
-                                child: CircularProgressIndicator(
-                                  color: AppColors.primary,
-                                ),
+                                child: CircularProgressIndicator(),
                               ),
                             ] else ...[
                               _signInButton(textTheme, context, state),
@@ -118,7 +116,10 @@ class SignInPage extends StatelessWidget {
                 decoration: TextDecoration.underline,
               ),
               recognizer: TapGestureRecognizer()
-                ..onTap = () => context.goNamed('signUpPage'),
+                ..onTap = () {
+                  context.read<AuthBloc>().add(ResetAuthState());
+                  context.goNamed('signUpPage');
+                },
             )
           ],
         ),
@@ -166,16 +167,17 @@ class SignInPage extends StatelessWidget {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ShowDialog.showAlertDialog(
         context,
-        'Terjadi error saat sign in!',
+        'Peringatan!',
         errorMessage,
         null,
       );
-      context.read<AuthBloc>().add(ResetAuthState());
+      context.read<AuthBloc>().add(RetryAuthState());
     });
     return const SizedBox.shrink();
   }
 
   _stateLoaded(BuildContext context) {
+    context.read<AuthBloc>().add(ResetAuthState());
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.goNamed('homePage');
     });

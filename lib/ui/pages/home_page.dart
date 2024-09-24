@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -73,21 +72,19 @@ class HomePage extends StatelessWidget {
   }
 
   BlocBuilder<AuthBloc, AuthState> _logoutBlocBuilder(
-      BuildContext pageContext) {
+      BuildContext contextl) {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
         if (state is AuthLoading) {
           return const SliverFillRemaining(
             child: Center(
-              child: CircularProgressIndicator(
-                color: AppColors.primary,
-              ),
+              child: CircularProgressIndicator(),
             ),
           );
         }
         if (state is SignOutLoaded) {
           ManageAuthToken.deleteToken();
-          pageContext.goNamed('signInPage');
+          context.goNamed('signInPage');
           return const SliverToBoxAdapter(child: SizedBox.shrink());
         }
         return const SliverToBoxAdapter(child: SizedBox.shrink());
@@ -145,9 +142,7 @@ class HomePage extends StatelessWidget {
         if (state is HomeLoading) {
           return const SliverFillRemaining(
             child: Center(
-              child: CircularProgressIndicator(
-                color: AppColors.lightTextColor,
-              ),
+              child: CircularProgressIndicator(),
             ),
           );
         } else if (state is CategoryLoaded) {
@@ -543,6 +538,7 @@ class HomePage extends StatelessWidget {
           'Are you sure want to sign out?',
           TextButton(
             onPressed: () {
+              context.pop();
               context.read<AuthBloc>().add(SignOutSubmitted());
             },
             child: const Text('Sign out'),

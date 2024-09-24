@@ -9,24 +9,7 @@ import '../../models/api_error_response/api_error_response_model.dart';
 import '../../models/api_error_response/message_error_model.dart';
 
 class ApiHelper {
-  static Future getCategories() async {
-    final response = await ApiController.getData('category/all');
-    if (response is ApiErrorResponseModel) {
-      return response;
-    } else {
-      return DataCategory.fromJson(response);
-    }
-  }
-
-  static Future getProblems(int id) async {
-    final response = await ApiController.getData('category/problem/$id');
-    if (response is ApiErrorResponseModel) {
-      return response;
-    } else {
-      return DataProblem.fromJson(response);
-    }
-  }
-
+  // Auth
   static Future authLogin(LoginModel user) async {
     Map<String, dynamic> userData = user.toJson();
     final response =
@@ -63,6 +46,69 @@ class ApiHelper {
       return response;
     } else {
       return DataUser.fromJson(response);
+    }
+  }
+
+  // Verify account & manage password
+  static Future<ApiErrorResponseModel> requestVerification(
+      String phoneNumber) async {
+    final response = await ApiController.postData(
+      'auth/send-verification',
+      {'phone_number': phoneNumber},
+    );
+    if (response is ApiErrorResponseModel) {
+      return response;
+    } else {
+      return ApiErrorResponseModel(error: MessageErrorModel.fromMap(response));
+    }
+  }
+
+  static Future<ApiErrorResponseModel> verifyOTP(
+    String phoneNumber,
+    String otp,
+  ) async {
+    final response = await ApiController.postData(
+      'auth/verify-code',
+      {
+        'phone_number': phoneNumber,
+        'verification_code': otp,
+      },
+    );
+    if (response is ApiErrorResponseModel) {
+      return response;
+    } else {
+      return ApiErrorResponseModel(error: MessageErrorModel.fromMap(response));
+    }
+  }
+
+  Future<ApiErrorResponseModel> forgotPassword(String phoneNumber) async {
+    final response = await ApiController.postData(
+      'auth/forgot-password',
+      {'phone_number': phoneNumber},
+    );
+    if (response is ApiErrorResponseModel) {
+      return response;
+    } else {
+      return ApiErrorResponseModel(error: MessageErrorModel.fromMap(response));
+    }
+  }
+
+  // Home
+  static Future getCategories() async {
+    final response = await ApiController.getData('category/all');
+    if (response is ApiErrorResponseModel) {
+      return response;
+    } else {
+      return DataCategory.fromJson(response);
+    }
+  }
+
+  static Future getProblems(int id) async {
+    final response = await ApiController.getData('category/problem/$id');
+    if (response is ApiErrorResponseModel) {
+      return response;
+    } else {
+      return DataProblem.fromJson(response);
     }
   }
 }

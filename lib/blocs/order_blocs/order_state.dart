@@ -2,19 +2,26 @@ part of 'order_bloc.dart';
 
 class OrderState extends Equatable {
   final ProblemModel? selectedProblem;
+  final String? selectedSolution;
 
   const OrderState({
-    this.selectedProblem
+    this.selectedProblem,
+    this.selectedSolution,
   });
 
-  OrderState copyWith({
-    ProblemModel? selectedProblem,
-  }) {
-    return OrderState(selectedProblem: selectedProblem ?? this.selectedProblem);
+  OrderState copyWith(
+      {ProblemModel? selectedProblem, String? selectedSolution}) {
+    return OrderState(
+      selectedProblem: selectedProblem ?? this.selectedProblem,
+      selectedSolution: selectedSolution ?? this.selectedSolution,
+    );
   }
-  
+
   @override
-  List<Object?> get props => [selectedProblem];
+  List<Object?> get props => [
+        selectedProblem,
+        selectedSolution,
+      ];
 }
 
 final class OrderInitial extends OrderState {}

@@ -25,9 +25,19 @@ class ProblemSelected extends OrderEvent {
   List<Object> get props => [selectedProblem];
 }
 
+class SolutionSelected extends OrderEvent {
+  final String selectedSolution;
+
+  const SolutionSelected(this.selectedSolution);
+
+  @override
+  List<Object> get props => [selectedSolution];
+}
+
 class ProblemsPop extends OrderEvent {
   const ProblemsPop();
 
   @override
   List<Object> get props => [];
 }
+

@@ -13,13 +13,17 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
   final ApiController apiController;
 
   late ProblemModel? selectedProblem;
+  late String? selectedSolution;
 
   OrderBloc({required this.apiController}) : super(OrderInitial()) {
     on<FetchProblems>(_onFetchProblems);
 
     on<ProblemSelected>((event, emit) {
       selectedProblem = event.selectedProblem;
-      // emit(state.copyWith(selectedProblem: event.selectedProblem));
+    });
+
+    on<SolutionSelected>((event, emit) {
+      selectedSolution = event.selectedSolution;
     });
 
     on<ProblemsPop>((event, emit) {
@@ -27,7 +31,7 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
     });
   }
 
-  Future<void> _onFetchProblems(
+  _onFetchProblems(
     FetchProblems event,
     Emitter<OrderState> emit,
   ) async {

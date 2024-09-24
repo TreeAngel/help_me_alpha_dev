@@ -17,54 +17,55 @@ part 'auth_event.dart';
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final ApiController apiController;
 
-  var fullName = '';
-  var username = '';
-  var password = '';
-  var passwordConfirmation = '';
-  var phoneNumber = '';
+  String fullName = '';
+  String username = '';
+  String password = '';
+  String passwordConfirmation = '';
+  String phoneNumber = '';
   final role = 'user';
   XFile? profilePicture;
-  var isPasswordVisible = false;
-  var rememberMe = false;
+  bool isPasswordVisible = false;
+  bool rememberMe = false;
 
   AuthBloc({required this.apiController}) : super(const AuthState()) {
     on<FullNameChanged>((event, emit) {
-      fullName = event.fullName;
-      emit(state.copyWith(fullName: event.fullName));
+      fullName = event.fullName.trim();
+      emit(state.copyWith(fullName: fullName));
     });
 
     on<UsernameChanged>((event, emit) {
-      username = event.username;
-      emit(state.copyWith(username: event.username));
+      username = event.username.trim();
+      emit(state.copyWith(username: username));
     });
 
     on<PhoneNumberChanged>((event, emit) {
-      phoneNumber = event.phoneNumber;
-      emit(state.copyWith(phoneNumber: event.phoneNumber));
+      phoneNumber = event.phoneNumber.trim();
+      emit(state.copyWith(phoneNumber: phoneNumber));
     });
 
     on<PasswordChanged>((event, emit) {
-      password = event.password;
-      emit(state.copyWith(password: event.password));
+      password = event.password.trim();
+      emit(state.copyWith(password: password));
     });
 
     on<ConfirmPasswordChanged>((event, emit) {
-      passwordConfirmation = event.confirmPassword;
-      emit(state.copyWith(passwordConfirmation: event.confirmPassword));
+      passwordConfirmation = event.confirmPassword.trim();
+      emit(state.copyWith(passwordConfirmation: passwordConfirmation));
     });
 
     on<ProfileImageChanged>((event, emit) {
       profilePicture = event.image;
-      emit(state.copyWith(profilePicture: event.image));
+      emit(state.copyWith(profilePicture: profilePicture));
     });
 
     on<TogglePasswordVisibility>((event, emit) {
-      emit(state.copyWith(isPasswordVisible: !state.isPasswordVisible));
+      isPasswordVisible = !state.isPasswordVisible;
+      emit(state.copyWith(isPasswordVisible: isPasswordVisible));
     });
 
     on<ToggleRememberMe>((event, emit) {
       rememberMe = !state.rememberMe;
-      emit(state.copyWith(rememberMe: !state.rememberMe));
+      emit(state.copyWith(rememberMe: rememberMe));
     });
 
     on<SignInSubmitted>(_onSignInSubmitted);
@@ -73,14 +74,37 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     on<SignUpSubmitted>(_onSignUpSubmitted);
 
+    on<RetryAuthState>((event, emit) {
+      emit(state.copyWith(
+        fullName: fullName,
+        phoneNumber: phoneNumber,
+        username: username,
+        password: password,
+        passwordConfirmation: passwordConfirmation,
+        profilePicture: profilePicture,
+        isPasswordVisible: isPasswordVisible,
+        rememberMe: rememberMe,
+      ));
+    });
+
     on<ResetAuthState>((event, emit) {
-      // fullName = '';
-      // username = '';
-      // password = '';
-      // passwordConfirmation = '';
-      // phoneNumber = '';
-      // profilePicture = null;
-      emit(AuthInitial());
+      fullName = '';
+      username = '';
+      password = '';
+      passwordConfirmation = '';
+      phoneNumber = '';
+      isPasswordVisible = false;
+      rememberMe = false;
+      emit(state.copyWith(
+        fullName: fullName,
+        phoneNumber: phoneNumber,
+        username: username,
+        password: password,
+        passwordConfirmation: passwordConfirmation,
+        profilePicture: profilePicture,
+        isPasswordVisible: isPasswordVisible,
+        rememberMe: rememberMe,
+      ));
     });
   }
 
@@ -95,7 +119,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } else {
       emit(
         const AuthError(
-          errorMessage: MessageErrorModel(message: 'Unknown error occured'),
+          errorMessage: MessageErrorModel(
+            message: 'Unknown error occured',
+          ),
         ),
       );
     }
@@ -105,23 +131,26 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     SignInSubmitted event,
     Emitter<AuthState> emit,
   ) async {
-    if (username.isEmpty || password.isEmpty) {
+    // username = state.username;
+    // password = state.password;
+    if (username.isEmpty) {
       emit(
         const AuthError(
-          errorMessage: MessageErrorModel(message: 'Isi username dan password'),
+          errorMessage: MessageErrorModel(
+            message: 'Isi username',
+          ),
         ),
       );
     } else if (password.length < 8) {
       emit(
         const AuthError(
-          errorMessage:
-              MessageErrorModel(message: 'Password minimal 8 karakter'),
+          errorMessage: MessageErrorModel(
+            message: 'Password minimal 8 karakter',
+          ),
         ),
       );
     } else {
       emit(AuthLoading());
-      username = username.trim();
-      password = password.trim();
       final loginModel = LoginModel(
         username: username,
         password: password,
@@ -147,7 +176,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         } else {
           emit(
             const AuthError(
-              errorMessage: MessageErrorModel(message: 'Unknown error occured'),
+              errorMessage: MessageErrorModel(
+                message: 'Unknown error occured',
+              ),
             ),
           );
         }
@@ -159,25 +190,56 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     SignUpSubmitted event,
     Emitter<AuthState> emit,
   ) async {
-    if (fullName.isEmpty ||
-        username.isEmpty ||
-        password.isEmpty ||
-        passwordConfirmation.isEmpty ||
-        phoneNumber.isEmpty ||
-        password.length < 8 ||
-        passwordConfirmation != password) {
+    // fullName = state.fullName;
+    // username = state.username;
+    // password = state.password;
+    // passwordConfirmation = state.passwordConfirmation;
+    // phoneNumber = state.phoneNumber;
+    if (fullName.isEmpty) {
+      emit(
+        const AuthError(
+          errorMessage: MessageErrorModel(message: 'Isi nama lengkap'),
+        ),
+      );
+    } else if (phoneNumber.isEmpty) {
+      emit(
+        const AuthError(
+          errorMessage: MessageErrorModel(message: 'Isi nomor telepon'),
+        ),
+      );
+    } else if (!phoneNumber.startsWith('08')) {
       emit(
         const AuthError(
           errorMessage:
-              MessageErrorModel(message: 'Isi semua data dengan benar'),
+              MessageErrorModel(message: 'Isi dengan nomor telpon yang valid'),
+        ),
+      );
+    } else if (username.isEmpty) {
+      emit(
+        const AuthError(
+          errorMessage: MessageErrorModel(message: 'Isi username'),
+        ),
+      );
+    } else if (password.isEmpty) {
+      emit(
+        const AuthError(
+          errorMessage:
+              MessageErrorModel(message: 'Password minimal 8 karakter'),
+        ),
+      );
+    } else if (passwordConfirmation.isEmpty) {
+      emit(
+        const AuthError(
+          errorMessage: MessageErrorModel(message: 'Isi konfirmasi password'),
+        ),
+      );
+    } else if (passwordConfirmation != password) {
+      emit(
+        const AuthError(
+          errorMessage: MessageErrorModel(message: 'Konfirmasi password salah'),
         ),
       );
     } else {
-      fullName = fullName.trim();
-      username = username.trim();
-      password = password.trim();
-      passwordConfirmation = passwordConfirmation.trim();
-      phoneNumber = '+62${phoneNumber.trim()}';
       emit(AuthLoading());
       final signUpModel = RegisterModel(
         fullName: fullName,

@@ -116,9 +116,7 @@ class SignUpPage extends StatelessWidget {
                             ],
                             if (state is AuthLoading) ...[
                               const Center(
-                                child: CircularProgressIndicator(
-                                  color: AppColors.primary,
-                                ),
+                                child: CircularProgressIndicator(),
                               ),
                             ] else ...[
                               _signUpButton(textTheme, context, state),
@@ -155,7 +153,10 @@ class SignUpPage extends StatelessWidget {
                 decoration: TextDecoration.underline,
               ),
               recognizer: TapGestureRecognizer()
-                ..onTap = () => context.goNamed('signInPage'),
+                ..onTap = () {
+                  context.read<AuthBloc>().add(ResetAuthState());
+                  context.goNamed('signUpPage');
+                },
             )
           ],
         ),
@@ -168,10 +169,11 @@ class SignUpPage extends StatelessWidget {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ShowDialog.showAlertDialog(
         context,
-        'Error',
+        'Peringatan!',
         errorMessage,
         null,
       );
+      context.read<AuthBloc>().add(RetryAuthState());
     });
     return const SizedBox.shrink();
   }
@@ -181,7 +183,7 @@ class SignUpPage extends StatelessWidget {
       ShowDialog.showAlertDialog(
         context,
         'Berhasil Sign Up!',
-        null,
+        'Periksa pesan masuk',
         TextButton.icon(
           onPressed: () {
             context.canPop() == true
@@ -222,7 +224,7 @@ class SignUpPage extends StatelessWidget {
           ),
         ),
         child: Text(
-          'Sign In',
+          'Sign Up',
           style: textTheme.titleMedium?.copyWith(
             color: AppColors.lightTextColor,
             fontWeight: FontWeight.bold,
@@ -275,15 +277,15 @@ class SignUpPage extends StatelessWidget {
       onChanged: (phoneNumber) =>
           context.read<AuthBloc>().add(PhoneNumberChanged(phoneNumber)),
       decoration: InputDecoration(
-        prefixText: '+62 | ',
-        prefixStyle: textTheme.bodyLarge?.copyWith(
-          color: AppColors.lightTextColor,
-          fontWeight: FontWeight.normal,
-        ),
-        floatingLabelBehavior: FloatingLabelBehavior.always,
+        // prefixText: '+62 | ',
+        // prefixStyle: textTheme.bodyLarge?.copyWith(
+        //   color: AppColors.lightTextColor,
+        //   fontWeight: FontWeight.normal,
+        // ),
+        // floatingLabelBehavior: FloatingLabelBehavior.always,
         filled: true,
         fillColor: Colors.white,
-        hintText: 'Masukan nomor handphone',
+        hintText: '08xxxxxxxxxx',
         hintStyle:
             textTheme.bodyLarge?.copyWith(color: AppColors.hintTextColor),
         border: OutlineInputBorder(
