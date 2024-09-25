@@ -75,16 +75,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<SignUpSubmitted>(_onSignUpSubmitted);
 
     on<RetryAuthState>((event, emit) {
-      emit(state.copyWith(
-        fullName: fullName,
-        phoneNumber: phoneNumber,
-        username: username,
-        password: password,
-        passwordConfirmation: passwordConfirmation,
-        profilePicture: profilePicture,
-        isPasswordVisible: isPasswordVisible,
-        rememberMe: rememberMe,
-      ));
+      // emit(state.copyWith(
+      //   fullName: fullName,
+      //   phoneNumber: phoneNumber,
+      //   username: username,
+      //   password: password,
+      //   passwordConfirmation: passwordConfirmation,
+      //   profilePicture: profilePicture,
+      //   isPasswordVisible: isPasswordVisible,
+      //   rememberMe: rememberMe,
+      // ));
+      emit(AuthInitial());
     });
 
     on<ResetAuthState>((event, emit) {

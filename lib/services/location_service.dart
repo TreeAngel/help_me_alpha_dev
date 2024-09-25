@@ -22,7 +22,12 @@ class LocationService {
         'Location permission denied forever, we cannot access your location',
       );
     }
-    return await Geolocator.getCurrentPosition();
+    return await Geolocator.getCurrentPosition(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 100,
+      ),
+    );
   }
 
   static Future<void> fetchLocation(BuildContext context) async {

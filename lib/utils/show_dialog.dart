@@ -17,7 +17,7 @@ class ShowDialog {
     );
   }
 
-  static confirmRegister(BuildContext context, TextTheme textTheme) {
+  static confirmAccount(BuildContext context, TextTheme textTheme) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

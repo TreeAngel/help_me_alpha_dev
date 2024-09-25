@@ -13,6 +13,11 @@ class MenuItems {
     ApiController.token != null ? itemSignOut : itemSignIn,
   ];
 
+  static List<MenuItemModel> pickImageItems = [
+    itemFromCamera,
+    itemFromGallery,
+  ];
+
   static const itemHome = MenuItemModel(
     id: 1,
     title: 'Home',
@@ -37,5 +42,15 @@ class MenuItems {
     id: 5,
     title: 'Order History',
     icon: Icons.history,
+  );
+  static const itemFromCamera = MenuItemModel(
+    id: 6,
+    title: 'Camera',
+    icon: Icons.camera_alt_outlined,
+  );
+  static const itemFromGallery = MenuItemModel(
+    id: 7,
+    title: 'Gallery',
+    icon: Icons.photo_outlined,
   );
 }

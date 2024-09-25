@@ -1,9 +1,17 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 
+import '../../blocs/order_blocs/order_bloc.dart';
 import '../../configs/app_colors.dart';
-import '../../data/problem_questions_data.dart';
+import '../../data/menu_items_data.dart';
+import '../../models/menu_item_model.dart';
 import '../../services/location_service.dart';
+import '../../utils/logging.dart';
+import '../../utils/question_builder.dart';
 import '../../utils/show_dialog.dart';
 
 class AddTaskPage extends StatefulWidget {
@@ -18,17 +26,26 @@ class AddTaskPage extends StatefulWidget {
 }
 
 class _AddTaskPageState extends State<AddTaskPage> {
-  late List<String> questions;
+  late List<String?> questions;
   List<String> questionChoices = [];
+  List<XFile?> problemPictures = [];
   String? selectedChoice;
   double lat = LocationService.lat;
   double long = LocationService.long;
+  final TextEditingController _serabutanInputController =
+      TextEditingController();
+
+  List<Widget> showedPicture = [];
 
   @override
   void initState() {
     super.initState();
-    questions = questionsBuilder(widget.problem!);
+    questionChoices.clear();
+    problemPictures.clear();
+    questions = questionsBuilder(widget.problem!, questionChoices);
     LocationService.fetchLocation(context);
+    lat = LocationService.lat;
+    long = LocationService.long;
   }
 
   @override
@@ -81,25 +98,89 @@ class _AddTaskPageState extends State<AddTaskPage> {
                         thickness: 3,
                         color: AppColors.lightTextColor,
                       ),
-                      const SizedBox(height: 20),
-                      Text(
-                        questions.first,
-                        style: textTheme.titleLarge?.copyWith(
-                          color: AppColors.lightTextColor,
-                          fontWeight: FontWeight.bold,
+                      if (questions.first != null) ...[
+                        const SizedBox(height: 20),
+                        Text(
+                          questions.first.toString(),
+                          style: textTheme.titleLarge?.copyWith(
+                            color: AppColors.lightTextColor,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 10),
-                      if (questionChoices.isNotEmpty) ...[
-                        _drowdownQuesitonChoices(textTheme),
-                      ] else ...[
-                        TextFormField()
+                        const SizedBox(height: 10),
                       ],
+                      if (questionChoices.isNotEmpty) ...[
+                        _drowdownQuesitonChoices(context, textTheme)
+                      ],
+                      if (widget.problem!
+                          .toLowerCase()
+                          .contains('serabutan')) ...[
+                        _serabutanInputField(textTheme)
+                      ],
+                      if (!widget.problem!
+                          .toLowerCase()
+                          .contains('butuh pijet')) ...[
+                        const SizedBox(height: 20),
+                        Text(
+                          questions.last.toString(),
+                          style: textTheme.titleLarge?.copyWith(
+                            color: AppColors.lightTextColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        BlocBuilder<OrderBloc, OrderState>(
+                          builder: (context, state) {
+                            if (state is ImagePicked) {
+                              state.pickedImage != null &&
+                                      problemPictures.length < 2
+                                  ? problemPictures.add(state.pickedImage)
+                                  : null;
+                              showedPicture.clear();
+                              for (var i = 0; i < problemPictures.length; i++) {
+                                XFile? picture = problemPictures[i];
+                                showedPicture.add(
+                                  _previewImage(
+                                    picture!.path,
+                                    picture.name,
+                                    i,
+                                  ),
+                                );
+                              }
+                              context.read<OrderBloc>().add(OrderIsIdle());
+                            }
+                            if (state is ImageDeleted) {
+                              problemPictures.removeAt(state.imageIndex);
+                              showedPicture.clear();
+                              for (var i = 0; i < problemPictures.length; i++) {
+                                XFile? picture = problemPictures[i];
+                                showedPicture.add(
+                                  _previewImage(
+                                    picture!.path,
+                                    picture.name,
+                                    i,
+                                  ),
+                                );
+                              }
+                              context.read<OrderBloc>().add(OrderIsIdle());
+                            }
+                            return Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                ...showedPicture,
+                                if (problemPictures.length < 2)
+                                  _addImage(context, state),
+                              ],
+                            );
+                          },
+                        ),
+                      ]
                     ] else ...[
                       ShowDialog.showAlertDialog(
                         context,
                         'Terjadi kesalahan!',
-                        'Ada masalah di aplikasinya,\n kakak bisa coba buat kembali ke halaman sebelumnya atau hubungin CS kami',
+                        'Ada masalah di aplikasinya\nkakak bisa coba buat kembali ke halaman sebelumnya\natau hubungin CS kami',
                         ElevatedButton.icon(
                           onPressed: () => context.pop(),
                           label: const Text('Kembali'),
@@ -117,7 +198,142 @@ class _AddTaskPageState extends State<AddTaskPage> {
     );
   }
 
-  DropdownMenu<String> _drowdownQuesitonChoices(TextTheme textTheme) {
+  Widget _previewImage(String imagePath, String imageName, int imageIndex) {
+    return GestureDetector(
+      onTap: () => context.pushNamed(
+        'imageZoomPage',
+        queryParameters: {
+          'imagePath': imagePath,
+          'imageName': imageName,
+        },
+      ),
+      onLongPress: () =>
+          context.read<OrderBloc>().add(DeleteImage(imageIndex: imageIndex)),
+      child: Padding(
+        padding: const EdgeInsets.only(right: 10),
+        child: SizedBox(
+          width: 68,
+          height: 68,
+          child: Hero(
+            tag: imageName,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Container(
+                  decoration: const BoxDecoration(
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(5),
+                    ),
+                    color: AppColors.lightTextColor,
+                  ),
+                  child: Image.file(
+                    File(imagePath),
+                    isAntiAlias: true,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  SizedBox _addImage(BuildContext context, OrderState state) {
+    return SizedBox(
+      width: 68,
+      height: 68,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.all(
+                Radius.circular(5),
+              ),
+              color: AppColors.lightTextColor,
+            ),
+          ),
+          _pickImageBtn(context, state),
+        ],
+      ),
+    );
+  }
+
+  PopupMenuButton<MenuItemModel> _pickImageBtn(
+    BuildContext context,
+    OrderState state,
+  ) {
+    return PopupMenuButton<MenuItemModel>(
+      color: AppColors.surface,
+      shape: RoundedRectangleBorder(
+        side: const BorderSide(
+          color: AppColors.lightTextColor,
+        ),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      shadowColor: Colors.transparent,
+      tooltip: 'Ambil gambar',
+      position: PopupMenuPosition.under,
+      icon: const Icon(
+        Icons.add,
+        color: AppColors.primary,
+      ),
+      onSelected: (value) => _pickImageMenuFunction(context, state, value),
+      itemBuilder: (context) => [...MenuItems.pickImageItems.map(_buildItem)],
+    );
+  }
+
+  PopupMenuItem<MenuItemModel> _buildItem(MenuItemModel item) =>
+      PopupMenuItem<MenuItemModel>(
+        value: item,
+        child: Row(
+          children: [
+            Icon(item.icon),
+            const SizedBox(width: 10),
+            Text(item.title),
+          ],
+        ),
+      );
+
+  void _pickImageMenuFunction(
+      BuildContext context, OrderState state, MenuItemModel item) {
+    switch (item) {
+      case MenuItems.itemFromCamera:
+        context.read<OrderBloc>().add(CameraCapture());
+        break;
+      case MenuItems.itemFromGallery:
+        context.read<OrderBloc>().add(GalleryImagePicker());
+        break;
+      default:
+        printError('What are you tapping? $item');
+        break;
+    }
+  }
+
+  TextFormField _serabutanInputField(TextTheme textTheme) {
+    return TextFormField(
+      controller: _serabutanInputController,
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: Colors.white,
+        hintText: 'Butuh bantuan apa?',
+        hintStyle:
+            textTheme.bodyLarge?.copyWith(color: AppColors.hintTextColor),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+      style: textTheme.bodyLarge?.copyWith(
+        color: AppColors.lightTextColor,
+        fontWeight: FontWeight.normal,
+      ),
+    );
+  }
+
+  DropdownMenu<String> _drowdownQuesitonChoices(
+      BuildContext context, TextTheme textTheme) {
     return DropdownMenu<String>(
       expandedInsets: const EdgeInsets.all(0),
       textStyle: textTheme.bodyLarge?.copyWith(
@@ -136,6 +352,9 @@ class _AddTaskPageState extends State<AddTaskPage> {
         setState(() {
           selectedChoice = value;
         });
+        context
+            .read<OrderBloc>()
+            .add(SolutionSelected(selectedChoice.toString()));
       },
       dropdownMenuEntries:
           questionChoices.map<DropdownMenuEntry<String>>((String value) {
@@ -154,6 +373,9 @@ class _AddTaskPageState extends State<AddTaskPage> {
           top: Radius.circular(25),
         ),
       ),
+      // leading: BackButton(
+      //   onPressed: () => context.goNamed('homePage'),
+      // ),
       centerTitle: true,
       backgroundColor: AppColors.surface,
       foregroundColor: AppColors.lightTextColor,
@@ -165,156 +387,5 @@ class _AddTaskPageState extends State<AddTaskPage> {
         ),
       ),
     );
-  }
-
-  List<String> questionsBuilder(String problemName) {
-    // Kendaraan
-    // Motor
-    if (problemName.toLowerCase().contains('ban motor')) {
-      questionChoices.clear;
-      questionChoices.addAll(ProblemQuestions.banMotor);
-      return ['Jenis bannya apa?', 'Fotoin kendaraannya'];
-    }
-    if (problemName.toLowerCase().contains('motor mogok')) {
-      questionChoices.clear;
-      questionChoices.addAll(ProblemQuestions.motorMogok);
-      return ['Kenapa mogoknya?', 'Fotoin kendaraannya'];
-    }
-    if (problemName.toLowerCase().contains('kunci motor')) {
-      questionChoices.clear;
-      questionChoices.addAll(ProblemQuestions.kunciMotor);
-      return ['Jenis kuncinya apa?', 'Fotoin kendaraannya'];
-    }
-    if (problemName.toLowerCase().contains('motor perlu servis')) {
-      questionChoices.clear;
-      questionChoices.addAll(ProblemQuestions.motorServiceRingan);
-      return ['Jenis servis', 'Fotoin kendaraannya'];
-    }
-    if (problemName.toLowerCase().contains('motor perlu dicuci')) {
-      questionChoices.clear;
-      questionChoices.addAll(ProblemQuestions.cuciMotor);
-      return ['Pilihan cuci', 'Fotoin kendaraannya'];
-    }
-    // Mobil
-    if (problemName.toLowerCase().contains('ban mobil')) {
-      questionChoices.clear;
-      questionChoices.addAll(ProblemQuestions.banMobil);
-      return ['Jenis servis?', 'Fotoin kendaraannya'];
-    }
-    if (problemName.toLowerCase().contains('mobil mogok')) {
-      questionChoices.clear;
-      questionChoices.addAll(ProblemQuestions.mobilMogok);
-      return ['Kenapa mogoknya?', 'Fotoin kendaraannya'];
-    }
-    if (problemName.toLowerCase().contains('kunci mobil')) {
-      questionChoices.clear;
-      questionChoices.addAll(ProblemQuestions.kunciMobil);
-      return ['Jenis kuncinya apa?', 'Fotoin kendaraannya'];
-    }
-    if (problemName.toLowerCase().contains('mobil perlu servis')) {
-      questionChoices.clear;
-      questionChoices.addAll(ProblemQuestions.mobilServiceRingan);
-      return ['Jenis servis', 'Fotoin kendaraannya'];
-    }
-    if (problemName.toLowerCase().contains('mobil perlu dicuci')) {
-      questionChoices.clear;
-      questionChoices.addAll(ProblemQuestions.cuciMobil);
-      return ['Pilihan cuci', 'Fotoin kendaraannya'];
-    }
-    if (problemName.toLowerCase().contains('ac mobil')) {
-      return [
-        'Kasih liat foto AC mobilnya biar kami tau!',
-        'Fotoin kendaraannya'
-      ];
-    }
-    // Sepeda
-    if (problemName.toLowerCase().contains('ban sepeda')) {
-      questionChoices.clear;
-      questionChoices.addAll(ProblemQuestions.banSepeda);
-      return ['Jenis bannya apa?', 'Fotoin kendaraannya'];
-    }
-    if (problemName.toLowerCase().contains('setel sepeda')) {
-      questionChoices.clear;
-      questionChoices.addAll(ProblemQuestions.setelSepeda);
-      return ['Pilih jenis servisnya', 'Fotoin kendaraannya'];
-    }
-
-    // Bantuan rumah
-    if (problemName.toLowerCase().contains('masalah air')) {
-      questionChoices.clear;
-      questionChoices.addAll(ProblemQuestions.masalahAirledeng);
-      return ['Masalahnya apa?', 'Fotoin masalahnya'];
-    }
-    if (problemName.toLowerCase().contains('septic tank penuh')) {
-      questionChoices.clear;
-      questionChoices.addAll(ProblemQuestions.septicTankPenuh);
-      return ['Posisi sepric tanknya bagaimana?', 'Fotoin masalahnya'];
-    }
-    if (problemName.toLowerCase().contains('masalah listrik')) {
-      questionChoices.clear;
-      questionChoices.addAll(ProblemQuestions.masalahListrik);
-      return ['Masalahnya apa?', 'Fotoin masalahnya'];
-    }
-    if (problemName.toLowerCase().contains('kunci rumah hilang')) {
-      questionChoices.clear;
-      questionChoices.addAll(ProblemQuestions.kunciRumah);
-      return ['Jenis kuncinya apa?', 'Fotoin masalahnya'];
-    }
-    if (problemName.toLowerCase().contains('panggil tukang bangunan')) {
-      questionChoices.clear;
-      questionChoices.addAll(ProblemQuestions.tukangBangunan);
-      return ['Masalahnya apa?', 'Fotoin masalahnya'];
-    }
-
-    // Bantuan elektronik
-    if (problemName.toLowerCase().contains('masalah ac')) {
-      questionChoices.clear;
-      questionChoices.addAll(ProblemQuestions.masalahAC);
-      return ['Kenapa AC nya?', 'Fotoin AC nya'];
-    }
-    if (problemName.toLowerCase().contains('masalah kulkas')) {
-      questionChoices.clear;
-      questionChoices.addAll(ProblemQuestions.masalahKulkas);
-      return ['Kenapa kulkas nya?', 'Fotoin kulkas nya'];
-    }
-    if (problemName.toLowerCase().contains('masalah Mesin Cuci')) {
-      questionChoices.clear;
-      questionChoices.addAll(ProblemQuestions.masalahMesinCuci);
-      return ['Kenapa Mesin Cuci nya?', 'Fotoin Mesin Cuci nya'];
-    }
-    if (problemName.toLowerCase().contains('masalah tv')) {
-      questionChoices.clear;
-      questionChoices.addAll(ProblemQuestions.masalahTV);
-      return ['Kenapa TV nya?', 'Fotoin TV nya'];
-    }
-    if (problemName.toLowerCase().contains('masalah laptop')) {
-      questionChoices.clear;
-      questionChoices.addAll(ProblemQuestions.masalahLaptop);
-      return ['Kenapa laptop nya?', 'Fotoin laptop nya'];
-    }
-    if (problemName.toLowerCase().contains('masalah hp')) {
-      questionChoices.clear;
-      questionChoices.addAll(ProblemQuestions.masalahHP);
-      return ['Kenapa HP nya?', 'Fotoin HP nya'];
-    }
-
-    // Bantuan personal
-    if (problemName.toLowerCase().contains('keseleo')) {
-      questionChoices.clear;
-      questionChoices.addAll(ProblemQuestions.keseleo);
-      return ['Kategori usia', 'Fotoin masalahnya'];
-    }
-    if (problemName.toLowerCase().contains('butuh pijet')) {
-      questionChoices.clear;
-      questionChoices.addAll(ProblemQuestions.genderTerapis);
-      return ['Gender terapis'];
-    }
-
-    // Serabutan
-    if (problemName.toLowerCase().contains('serabutan')) {
-      return ['Kasih tau kami apa masalahmu', 'Fotoin masalahnya\nOpsional'];
-    }
-
-    return [];
   }
 }

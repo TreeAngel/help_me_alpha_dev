@@ -183,8 +183,8 @@ class SignUpPage extends StatelessWidget {
       ShowDialog.showAlertDialog(
         context,
         'Berhasil Sign Up!',
-        'Periksa pesan masuk',
-        TextButton.icon(
+        null,
+        OutlinedButton.icon(
           onPressed: () {
             context.canPop() == true
                 ? context.pop()
@@ -196,7 +196,7 @@ class SignUpPage extends StatelessWidget {
             iconColor: WidgetStateProperty.all(AppColors.lightTextColor),
           ),
           label: const Text(
-            'Halaman utama',
+            'Lanjut Sign In',
             style: TextStyle(color: AppColors.lightTextColor),
           ),
           icon: const Icon(Icons.arrow_forward_ios_rounded),
@@ -204,7 +204,6 @@ class SignUpPage extends StatelessWidget {
         ),
       );
     });
-    return const SizedBox.shrink();
   }
 
   SizedBox _signUpButton(

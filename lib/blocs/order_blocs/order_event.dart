@@ -34,6 +34,15 @@ class SolutionSelected extends OrderEvent {
   List<Object> get props => [selectedSolution];
 }
 
+final class DeleteImage extends OrderEvent {
+  final int imageIndex;
+
+  const DeleteImage({required this.imageIndex});
+
+  @override
+  List<Object> get props => [imageIndex];
+}
+
 class ProblemsPop extends OrderEvent {
   const ProblemsPop();
 
@@ -41,3 +50,8 @@ class ProblemsPop extends OrderEvent {
   List<Object> get props => [];
 }
 
+class CameraCapture extends OrderEvent {}
+
+class GalleryImagePicker extends OrderEvent {}
+
+class OrderIsIdle extends OrderEvent {}

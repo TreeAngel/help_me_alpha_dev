@@ -40,29 +40,54 @@ class HomePage extends StatelessWidget {
               ),
             ),
             Positioned.fill(
-              child: RefreshIndicator(
-                triggerMode: RefreshIndicatorTriggerMode.onEdge,
-                onRefresh: () async {
-                  context.read<HomeBloc>().add(FetchProfile());
+              child: BlocBuilder<AuthBloc, AuthState>(
+                builder: (context, state) {
+                  if (state is AuthLoading) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                  if (state is AuthError) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      ShowDialog.showAlertDialog(
+                        context,
+                        'Error Sing Out',
+                        state.errorMessage.toString(),
+                        null,
+                      );
+                      context.read<AuthBloc>().add(ResetAuthState());
+                    });
+                  }
+                  if (state is SignOutLoaded) {
+                    ManageAuthToken.deleteToken();
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      context.goNamed('signInPage');
+                    });
+                  }
+                  return RefreshIndicator(
+                    triggerMode: RefreshIndicatorTriggerMode.onEdge,
+                    onRefresh: () async {
+                      context.read<HomeBloc>().add(FetchProfile());
+                    },
+                    child: CustomScrollView(
+                      slivers: <Widget>[
+                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                        _appBarBlocBuilder(username, textTheme, colorScheme),
+                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                        _searchTextField(),
+                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                        _categoryTextHeader(textTheme),
+                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                        _categoryBlocBuilder(textTheme),
+                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                        _orderHistoryTextHeader(textTheme),
+                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                        _lastOrderHistory(textTheme),
+                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                      ],
+                    ),
+                  );
                 },
-                child: CustomScrollView(
-                  slivers: <Widget>[
-                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                    _appBarBlocBuilder(username, textTheme, colorScheme),
-                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                    _searchTextField(),
-                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                    _categoryTextHeader(textTheme),
-                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                    _categoryBlocBuilder(textTheme),
-                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                    _orderHistoryTextHeader(textTheme),
-                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                    _lastOrderHistory(textTheme),
-                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                    _logoutBlocBuilder(context),
-                  ],
-                ),
               ),
             ),
           ],
@@ -71,8 +96,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  BlocBuilder<AuthBloc, AuthState> _logoutBlocBuilder(
-      BuildContext contextl) {
+  BlocBuilder<AuthBloc, AuthState> _logoutBlocBuilder(BuildContext contextl) {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
         if (state is AuthLoading) {
@@ -84,8 +108,9 @@ class HomePage extends StatelessWidget {
         }
         if (state is SignOutLoaded) {
           ManageAuthToken.deleteToken();
-          context.goNamed('signInPage');
-          return const SliverToBoxAdapter(child: SizedBox.shrink());
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            contextl.goNamed('signInPage');
+          });
         }
         return const SliverToBoxAdapter(child: SizedBox.shrink());
       },
@@ -536,7 +561,7 @@ class HomePage extends StatelessWidget {
           context,
           'Sign Out',
           'Are you sure want to sign out?',
-          TextButton(
+          OutlinedButton(
             onPressed: () {
               context.pop();
               context.read<AuthBloc>().add(SignOutSubmitted());

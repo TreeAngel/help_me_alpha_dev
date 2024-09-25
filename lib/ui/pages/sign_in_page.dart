@@ -248,7 +248,6 @@ class SignInPage extends StatelessWidget {
 
   TextFormField _usernameInputField(BuildContext context, TextTheme textTheme) {
     return TextFormField(
-      cursorColor: Colors.black,
       onChanged: (username) =>
           context.read<AuthBloc>().add(UsernameChanged(username)),
       decoration: InputDecoration(
