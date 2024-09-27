@@ -90,6 +90,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       // email = '';
       emit(AuthInitial());
     });
+
+    // on<ForgotPasswordSubmitted>(_onForgotPasswordSubmitted);
+
   }
 
   Future<void> _onSignOutSubmitted(
@@ -113,55 +116,105 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     SignInSubmitted event,
     Emitter<AuthState> emit,
   ) async {
-    if (username.isEmpty || password.isEmpty) {
-      emit(
-        const AuthError(
-          errorMessage: MessageErrorModel(message: 'Isi username dan password'),
-        ),
-      );
-    } else if (password.length < 8) {
-      emit(
-        const AuthError(
-          errorMessage:
-              MessageErrorModel(message: 'Password minimal 8 karakter'),
-        ),
-      );
-    } else {
-      emit(AuthLoading());
-      username = username.trim();
-      password = password.trim();
-      final loginModel = LoginModel(
-        username: username,
-        password: password,
-      );
-      final signInResponse = await ApiHelper.authLogin(loginModel);
-      if (signInResponse is AuthResponseModel) {
-        final authMessage = signInResponse.message.toString();
-        final authToken = signInResponse.token;
-        if (authToken != null) {
-          ApiController.token = authToken;
-          emit(
-            SignInLoaded(
-              message: authMessage.toString(),
-              token: authToken,
-            ),
-          );
-          rememberMe == true ? ManageAuthToken.writeToken() : null;
-        }
-      } else if (signInResponse is ApiErrorResponseModel) {
-        final error = signInResponse.error;
-        if (error != null) {
-          emit(AuthError(errorMessage: error));
-        } else {
-          emit(
-            const AuthError(
-              errorMessage: MessageErrorModel(message: 'Unknown error occured'),
-            ),
-          );
+    try {
+      if (username.isEmpty || password.isEmpty) {
+        emit(
+          const AuthError(
+            errorMessage: MessageErrorModel(message: 'Isi username dan password'),
+          ),
+        );
+      } else if (password.length < 8) {
+        emit(
+          const AuthError(
+            errorMessage:
+                MessageErrorModel(message: 'Password minimal 8 karakter'),
+          ),
+        );
+      } else {
+        emit(AuthLoading());
+        username = username.trim();
+        password = password.trim();
+        final loginModel = LoginModel(
+          username: username,
+          password: password,
+        );
+        final signInResponse = await ApiHelper.authLogin(loginModel);
+        if (signInResponse is AuthResponseModel) {
+          final authMessage = signInResponse.message.toString();
+          final authToken = signInResponse.token;
+          if (authToken != null) {
+            ApiController.token = authToken;
+            emit(
+              SignInLoaded(
+                message: authMessage.toString(),
+                token: authToken,
+              ),
+            );
+            rememberMe == true ? ManageAuthToken.writeToken() : null;
+          }
+        } else if (signInResponse is ApiErrorResponseModel) {
+          final error = signInResponse.error;
+          if (error != null) {
+            emit(AuthError(errorMessage: error));
+          } else {
+            emit(
+              const AuthError(
+                errorMessage: MessageErrorModel(message: 'Unknown error occured'),
+              ),
+            );
+          }
         }
       }
+    } catch (e) {
+      emit(
+        AuthError(
+          errorMessage: MessageErrorModel(message: 'An unexpected error occurred: $e'),
+        ),
+      );
     }
   }
+
+  // Future<void> _onForgotPasswordSubmitted(
+  //   ForgotPasswordSubmitted event,
+  //   Emitter<AuthState> emit,
+  // ) async {
+  //   try {
+  //     if (event.email.isEmpty || !EmailValidator.validate(event.email)) {
+  //       emit(
+  //         const AuthError(
+  //           errorMessage: MessageErrorModel(message: 'Email tidak valid'),
+  //         ),
+  //       );
+  //     } else {
+  //       emit(AuthLoading());
+
+  //       // Panggil API untuk reset password
+  //       final forgotPasswordResponse = await ApiHelper.authForgotPassword(event.email);
+
+  //       if (forgotPasswordResponse is AuthResponseModel) {
+  //         final message = forgotPasswordResponse.message.toString();
+  //         emit(ForgotPasswordLoaded(message: message));
+  //       } else if (forgotPasswordResponse is ApiErrorResponseModel) {
+  //         final error = forgotPasswordResponse.error;
+  //         if (error != null) {
+  //           emit(AuthError(errorMessage: error));
+  //         } else {
+  //           emit(
+  //             const AuthError(
+  //               errorMessage: MessageErrorModel(message: 'Unknown error occured'),
+  //             ),
+  //           );
+  //         }
+  //       }
+  //     }
+  //   } catch (e) {
+  //     emit(
+  //       AuthError(
+  //         errorMessage: MessageErrorModel(message: 'An unexpected error occurred: $e'),
+  //       ),
+  //     );
+  //   }
+  // }
 
   Future<void> _onSignUpSubmitted(
     SignUpSubmitted event,
@@ -226,4 +279,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
     }
   }
+
+  
 }

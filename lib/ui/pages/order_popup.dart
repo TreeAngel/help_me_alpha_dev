@@ -22,7 +22,30 @@ class OrderPop extends StatelessWidget {
                   decoration: const BoxDecoration(
                     color: AppColors.mitraGreen,
                   ),
-                  padding: const EdgeInsets.only(top: 50, left: 30, bottom: 0),
+                  padding: const EdgeInsets.only(top: 50, left: 30, right: 30, bottom: 770),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        iconSize: 30,
+                        color: Colors.black,
+                        onPressed: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+                        },
+                      ),
+                      IconButton(
+                        icon: const CircleAvatar(
+                          backgroundImage: AssetImage('assets/images/girl1.png'), // TODO: Ganti ke NetwordkImage buat ambil profile image dari api
+                          radius: 22,
+                        ),
+                        onPressed: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+                        },
+                      ),
+                    ],
+                  ),
                 ),
                 Container(
                   margin: EdgeInsets.only(top: MediaQuery.of(context).size.height / 1.95),
@@ -36,8 +59,8 @@ class OrderPop extends StatelessWidget {
                     ),
                   ),
                 ),
-                const Exit(),
-                const Profile(),
+                // const Exit(),
+                // const Profile(),
                 const Orderan(),
               ],
             ),
@@ -47,58 +70,60 @@ class OrderPop extends StatelessWidget {
   }
 }
 
-class Profile extends StatelessWidget {
-  const Profile({
-    super.key,
-  });
+// class Profile extends StatelessWidget {
+//   const Profile({
+//     super.key,
+//   });
 
-  @override
-  Widget build(BuildContext context) {
-    return Positioned(
-      top: 65,
-      right: 30,
-      child: GestureDetector(
-        onTap: () {
-          //aksi saat profil ditekan
-          //misalnya, buka halaman profil
-        },
-        child: const CircleAvatar(
-          backgroundColor: Colors.white,
-          radius: 20,
-          child: Icon(
-            Icons.person,
-            color: Colors.black,
-          ),
-        ),
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Positioned(
+//       top: 65,
+//       right: 30,
+//       child: GestureDetector(
+//         onTap: () {
+//           //aksi saat profil ditekan
+//           //misalnya, buka halaman profil
+//         },
+//         child: const CircleAvatar(
+//           backgroundColor: Colors.white,
+//           radius: 20,
+//           child: Icon(
+//             Icons.person,
+//             color: Colors.black,
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }
 
-class Exit extends StatelessWidget {
-  const Exit({
-    super.key,
-  });
+// class Exit extends StatelessWidget {
+//   const Exit({
+//     super.key,
+//   });
 
-  @override
-  Widget build(BuildContext context) {
-    return Positioned(
-      top: 60, // Margin top 10
-      left: 30, // Margin left 10
-      child: IconButton(
-        icon: Icon(Icons.close),
-        color: Colors.white,
-        iconSize: 24.0,
-        onPressed: () {
-          Navigator.of(context).pushReplacementNamed('/home'); // Redirect ke halaman Home
-        },
-        padding: EdgeInsets.all(0),
-        constraints: BoxConstraints(),
-        splashRadius: 24, // Ukuran splash radius lingkaran
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Container(
+//       margin: const EdgeInsets.only(
+//           top: 70, left: 25, right: 25),
+//       child: Column(
+//         children: [
+//           IconButton(
+//             icon: const Icon(Icons.close), // Set the icon
+//             iconSize: 30, // Adjust size as needed
+//             color: Colors.white, // Set the color
+//             onPressed: () {
+//               // Navigate to orderPop when pressed
+//               Navigator.push(context, MaterialPageRoute(builder: (context) => OrderPop()));
+//             },
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
 
 class Orderan extends StatefulWidget {
   const Orderan({super.key});
@@ -216,6 +241,7 @@ class FormTawar extends StatelessWidget {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(50),
                 ),
+                contentPadding: EdgeInsets.symmetric(vertical: .0, horizontal: 12.0),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(50),
                   borderSide: const BorderSide(
@@ -260,6 +286,7 @@ class FormTawar extends StatelessWidget {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(50),
                 ),
+                contentPadding: EdgeInsets.symmetric(vertical: .0, horizontal: 12.0),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(50),
                   borderSide: const BorderSide(
@@ -297,6 +324,7 @@ class FormTawar extends StatelessWidget {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(50),
                 ),
+                contentPadding: EdgeInsets.symmetric(vertical: .0, horizontal: 12.0),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(50),
                   borderSide: const BorderSide(

@@ -243,8 +243,7 @@ class SignInPage extends StatelessWidget {
 
   GestureDetector _forgetPassword(BuildContext context) {
     return GestureDetector(
-      onTap: () => ShowDialog.showAlertDialog(context, 'Lupa kata sandi?',
-          'Sabar bang, nanti dibuat fiturnya', null),
+      onTap: () => context.goNamed('forgotPasswordPage'),
       child: Text(
         'Lupa kata sandi?',
         style: GoogleFonts.poppins(
@@ -270,7 +269,7 @@ class SignInPage extends StatelessWidget {
           },
         ),
         Text(
-          'Tetap login',
+          'Tetap Masuk',
           style: GoogleFonts.poppins(
             decoration: TextDecoration.underline,
             color: AppColors.white,

@@ -70,6 +70,24 @@ class EmailChanged extends AuthEvent {
   List<Object> get props => [email];
 }
 
+// class ForgotPasswordSubmitted extends AuthEvent {
+//   final String email;
+
+//   const ForgotPasswordSubmitted({required this.email});
+
+//   @override
+//   List<Object> get props => [email];
+// }
+
+// class SendResetPasswordEmail extends AuthEvent {
+//   final String email;
+
+//   SendResetPasswordEmail(this.email);
+// }
+
+// class StartPasswordChangePolling extends AuthEvent {}
+
+
 class TogglePasswordVisibility extends AuthEvent {}
 
 class ToggleRememberMe extends AuthEvent {}

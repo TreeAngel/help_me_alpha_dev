@@ -19,7 +19,7 @@ class ApiHelper {
 
   static Future authLogin(LoginModel user) async {
     Map<String, dynamic> userData = user.toJson();
-    final response = await ApiController.postData('auth/login', userData);
+    final response = await ApiController.postData('auth/login?app_type=mitra', userData);
     if (response is ApiErrorResponseModel) {
       return response;
     } else {
@@ -36,6 +36,15 @@ class ApiHelper {
       return AuthResponseModel.fromMap(response);
     }
   }
+
+  // static Future authForgotPassword(String email) async {
+  //   final response = await ApiController.postData('auth/forgot-password', {'email': email});
+  //   if (response is ApiErrorResponseModel) {
+  //     return response;
+  //   } else {
+  //     return AuthResponseModel.fromMap(response);
+  //   }
+  // }
 
   static Future<ApiErrorResponseModel> authLogout() async {
     final response = await ApiController.postData('auth/logout');

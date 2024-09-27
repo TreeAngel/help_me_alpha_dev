@@ -114,3 +114,18 @@ final class SignOutLoaded extends AuthState {
   @override
   List<Object> get props => [message];
 }
+
+
+// class ForgotPasswordLoaded extends AuthState {
+//   final String message;
+
+//   const ForgotPasswordLoaded({required this.message});
+
+//   @override
+//   List<Object?> get props => [message];
+// }
+
+
+
+// class EmailSentSuccess extends AuthState {}
+

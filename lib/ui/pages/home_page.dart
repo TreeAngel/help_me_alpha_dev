@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:help_me_mitra_alpha_ver/blocs/home_blocs/home_bloc.dart';
 import 'package:help_me_mitra_alpha_ver/data/menu_items_data.dart';
+// import 'package:help_me_mitra_alpha_ver/ui/pages/order_popup.dart';
+// import 'package:help_me_mitra_alpha_ver/ui/pages/selected_popup.dart';
 
 import '../../blocs/auth_blocs/auth_bloc.dart';
 import '../../configs/app_colors.dart';
@@ -28,7 +30,7 @@ class HomePage extends StatelessWidget {
           _homeHeaderBlocBuilder(screenWidth, screenHeight, username),
           _pageWhiteContainer(screenHeight, screenWidth),
           _orderanTextHeader(screenHeight),
-          _orderanContainer(screenWidth, screenHeight),
+          _orderanContainer(screenWidth, screenHeight, context),
           _riwayatTextHeader(screenHeight),
           _riwayatContainer(screenWidth, screenHeight),
           _saldoCard(screenWidth, screenHeight, username,)
@@ -205,10 +207,10 @@ class HomePage extends StatelessWidget {
         ));
   }
 
-  Container _orderanContainer(double screenWidth, double screenHeight) {
+  Container _orderanContainer(double screenWidth, double screenHeight, context) {
     return Container(
       margin: const EdgeInsets.only(
-          top: 130, left: 25, right: 25), // Menambah margin top
+          top: 100, left: 25, right: 25),
       child: Column(
         children: [
           Container(
@@ -228,7 +230,24 @@ class HomePage extends StatelessWidget {
                 fontSize: 15
               ),),
             ),
-          )
+          ),
+          // ICON BUTTON UNTUK JALAN PINTAS KE ORDERAN (dev mode selama belum menyambung ke client)
+          // IconButton(
+          //   icon: const Icon(Icons.arrow_forward),
+          //   iconSize: 30,
+          //   color: const Color.fromARGB(255, 200, 119, 53),
+          //   onPressed: () {
+          //     Navigator.push(context, MaterialPageRoute(builder: (context) => OrderPop()));
+          //   },
+          // ),
+          // IconButton(
+          //   icon: const Icon(Icons.arrow_forward),
+          //   iconSize: 30,
+          //   color: Colors.black,
+          //   onPressed: () {
+          //     Navigator.push(context, MaterialPageRoute(builder: (context) => SelectedPop()));
+          //   },
+          // ),
         ],
       ),
     );
@@ -244,7 +263,8 @@ class HomePage extends StatelessWidget {
             fontWeight: FontWeight.bold,
             color: Colors.black,
           ),
-        ));
+        )
+    );
   }
 
   Container _pageWhiteContainer(double screenHeight, double screenWidth) {
