@@ -56,10 +56,7 @@ List<String?> questionsBuilder(
     return ['Pilihan cuci', 'Fotoin kendaraannya'];
   }
   if (problemName.toLowerCase().contains('ac mobil')) {
-    return [
-      null,
-      'Fotoin kendaraannya'
-    ];
+    return [null, 'Fotoin kendaraannya'];
   }
   // Sepeda
   if (problemName.toLowerCase().contains('ban sepeda')) {

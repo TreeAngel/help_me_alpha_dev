@@ -13,7 +13,6 @@ class LaunchPage extends StatefulWidget {
 }
 
 class _LaunchPageState extends State<LaunchPage> {
-  
   @override
   void initState() {
     super.initState();

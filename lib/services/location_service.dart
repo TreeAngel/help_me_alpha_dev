@@ -5,8 +5,8 @@ import 'package:help_me_client_alpha_ver/utils/logging.dart';
 import '../utils/show_dialog.dart';
 
 class LocationService {
-  static double lat = 0;
-  static double long = 0;
+  static double? lat;
+  static double? long;
 
   static Future<Position> getLocation() async {
     LocationPermission permission;

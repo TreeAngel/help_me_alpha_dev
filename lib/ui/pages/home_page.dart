@@ -48,15 +48,7 @@ class HomePage extends StatelessWidget {
                     );
                   }
                   if (state is AuthError) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      ShowDialog.showAlertDialog(
-                        context,
-                        'Error Sing Out',
-                        state.errorMessage.toString(),
-                        null,
-                      );
-                      context.read<AuthBloc>().add(ResetAuthState());
-                    });
+                    _onSignOutError(context, state);
                   }
                   if (state is SignOutLoaded) {
                     ManageAuthToken.deleteToken();
@@ -96,25 +88,30 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  BlocBuilder<AuthBloc, AuthState> _logoutBlocBuilder(BuildContext contextl) {
-    return BlocBuilder<AuthBloc, AuthState>(
-      builder: (context, state) {
-        if (state is AuthLoading) {
-          return const SliverFillRemaining(
-            child: Center(
-              child: CircularProgressIndicator(),
-            ),
-          );
-        }
-        if (state is SignOutLoaded) {
-          ManageAuthToken.deleteToken();
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            contextl.goNamed('signInPage');
-          });
-        }
-        return const SliverToBoxAdapter(child: SizedBox.shrink());
-      },
-    );
+  void _onSignOutError(BuildContext context, AuthError state) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ShowDialog.showAlertDialog(
+        context,
+        'Error Sing Out',
+        state.errorMessage.toString(),
+        state.errorMessage.toString().toLowerCase().contains('unauthorized')
+            ? OutlinedButton.icon(
+                onPressed: () {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    ManageAuthToken.deleteToken();
+                    context.pop();
+                    context.read<AuthBloc>().add(RetryAuthState());
+                    context.goNamed('signInPage');
+                  });
+                },
+                label: const Text('Sign In ulang'),
+                icon: const Icon(Icons.arrow_forward_ios),
+                iconAlignment: IconAlignment.end,
+              )
+            : null,
+      );
+      context.read<AuthBloc>().add(ResetAuthState());
+    });
   }
 
   BlocBuilder<HomeBloc, HomeState> _appBarBlocBuilder(
@@ -136,20 +133,7 @@ class HomePage extends StatelessWidget {
             username,
           );
         } else if (state is ProfileError) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            ShowDialog.showAlertDialog(
-              context,
-              'Error fetching profile',
-              state.errorMessage,
-              IconButton.outlined(
-                onPressed: () {
-                  context.pop();
-                  context.read<HomeBloc>().add(FetchProfile());
-                },
-                icon: const Icon(Icons.refresh_outlined),
-              ),
-            );
-          });
+          _onProfileError(context, state);
         }
         return _homeAppBar(
           context,
@@ -159,6 +143,37 @@ class HomePage extends StatelessWidget {
         );
       },
     );
+  }
+
+  void _onProfileError(BuildContext context, ProfileError state) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ShowDialog.showAlertDialog(
+        context,
+        'Error fetching profile',
+        state.errorMessage,
+        state.errorMessage.toString().toLowerCase().contains('unauthorized')
+            ? OutlinedButton.icon(
+                onPressed: () {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    ManageAuthToken.deleteToken();
+                    context.read<AuthBloc>().add(RetryAuthState());
+                    context.pop();
+                    context.goNamed('signInPage');
+                  });
+                },
+                label: const Text('Sign In ulang'),
+                icon: const Icon(Icons.arrow_forward_ios),
+                iconAlignment: IconAlignment.end,
+              )
+            : IconButton.outlined(
+                onPressed: () {
+                  context.pop();
+                  context.read<HomeBloc>().add(FetchProfile());
+                },
+                icon: const Icon(Icons.refresh_outlined),
+              ),
+      );
+    });
   }
 
   BlocBuilder<HomeBloc, HomeState> _categoryBlocBuilder(TextTheme textTheme) {
@@ -174,26 +189,43 @@ class HomePage extends StatelessWidget {
           final categories = state.categories.take(4).toList();
           return _categoriesGrid(categories, textTheme);
         } else if (state is CategoryError) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            ShowDialog.showAlertDialog(
-              context,
-              'Error fetching categories',
-              state.errorMessage,
-              IconButton.outlined(
-                onPressed: () {
-                  context.pop();
-                  context.read<HomeBloc>().add(FetchCategories());
-                },
-                icon: const Icon(Icons.refresh_outlined),
-              ),
-            );
-          });
+          _onCategoryError(context, state);
         }
         return const SliverToBoxAdapter(
           child: SizedBox.shrink(),
         );
       },
     );
+  }
+
+  void _onCategoryError(BuildContext context, CategoryError state) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ShowDialog.showAlertDialog(
+        context,
+        'Error fetching categories',
+        state.errorMessage,
+        state.errorMessage.toString().toLowerCase().contains('unauthorized')
+            ? OutlinedButton.icon(
+                onPressed: () {
+                  ManageAuthToken.deleteToken();
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    context.pop();
+                    context.goNamed('signInPage');
+                  });
+                },
+                label: const Text('Sign In ulang'),
+                icon: const Icon(Icons.arrow_forward_ios),
+                iconAlignment: IconAlignment.end,
+              )
+            : IconButton.outlined(
+                onPressed: () {
+                  context.pop();
+                  context.read<HomeBloc>().add(FetchProfile());
+                },
+                icon: const Icon(Icons.refresh_outlined),
+              ),
+      );
+    });
   }
 
   SliverGrid _categoriesGrid(

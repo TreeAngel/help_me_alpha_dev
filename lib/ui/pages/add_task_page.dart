@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -15,8 +16,11 @@ import '../../utils/question_builder.dart';
 import '../../utils/show_dialog.dart';
 
 class AddTaskPage extends StatefulWidget {
-  const AddTaskPage(
-      {super.key, required this.problemId, required this.problem});
+  const AddTaskPage({
+    super.key,
+    required this.problemId,
+    required this.problem,
+  });
 
   final int? problemId;
   final String? problem;
@@ -30,11 +34,10 @@ class _AddTaskPageState extends State<AddTaskPage> {
   List<String> questionChoices = [];
   List<XFile?> problemPictures = [];
   String? selectedChoice;
-  double lat = LocationService.lat;
-  double long = LocationService.long;
+  double? lat;
+  double? long;
   final TextEditingController _serabutanInputController =
       TextEditingController();
-
   List<Widget> showedPicture = [];
 
   @override
@@ -54,6 +57,27 @@ class _AddTaskPageState extends State<AddTaskPage> {
     final textTheme = appTheme.textTheme;
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
+    final successLocationSnackBar = SnackBar(
+      duration: const Duration(seconds: 2),
+      content: Text(
+        'Berhasil membagikan lokasi!\nlat: $lat | long: $long',
+        textAlign: TextAlign.center,
+        style: textTheme.labelLarge?.copyWith(color: AppColors.lightTextColor),
+      ),
+      backgroundColor: AppColors.surface,
+      margin: const EdgeInsets.only(
+        bottom: 40,
+        left: 20,
+        right: 20,
+      ),
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(
+        side: const BorderSide(
+          color: AppColors.lightTextColor,
+        ),
+        borderRadius: BorderRadius.circular(10),
+      ),
+    );
 
     return SafeArea(
       child: Scaffold(
@@ -65,7 +89,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
               top: 0,
               width: screenWidth,
               child: Container(
-                height: screenHeight / 1 - (screenHeight / 2.8),
+                height: screenHeight / 1 - (screenHeight / 3),
                 decoration: const BoxDecoration(
                   color: AppColors.surface,
                   borderRadius: BorderRadius.vertical(
@@ -74,121 +98,107 @@ class _AddTaskPageState extends State<AddTaskPage> {
                 ),
               ),
             ),
-            Positioned(
-              top: 0,
-              width: screenWidth,
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  top: 20,
-                  left: 30,
-                  right: 30,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (questions.isNotEmpty) ...[
-                      Text(
-                        'Mencari bantuan \nuntuk ${widget.problem.toString()}',
-                        style: textTheme.titleLarge?.copyWith(
+            Positioned.fill(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    top: 20,
+                    left: 30,
+                    right: 30,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (questions.isNotEmpty) ...[
+                        Text(
+                          'Mencari bantuan \nuntuk ${widget.problem.toString()}',
+                          style: textTheme.titleLarge?.copyWith(
+                            color: AppColors.lightTextColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const Divider(
+                          thickness: 3,
                           color: AppColors.lightTextColor,
-                          fontWeight: FontWeight.bold,
                         ),
-                      ),
-                      const Divider(
-                        thickness: 3,
-                        color: AppColors.lightTextColor,
-                      ),
-                      if (questions.first != null) ...[
-                        const SizedBox(height: 20),
-                        Text(
-                          questions.first.toString(),
-                          style: textTheme.titleLarge?.copyWith(
-                            color: AppColors.lightTextColor,
-                            fontWeight: FontWeight.bold,
+                        if (questions.first != null) ...[
+                          const SizedBox(height: 20),
+                          Text(
+                            questions.first.toString(),
+                            style: textTheme.titleLarge?.copyWith(
+                              color: AppColors.lightTextColor,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 10),
-                      ],
-                      if (questionChoices.isNotEmpty) ...[
-                        _drowdownQuesitonChoices(context, textTheme)
-                      ],
-                      if (widget.problem!
-                          .toLowerCase()
-                          .contains('serabutan')) ...[
-                        _serabutanInputField(textTheme)
-                      ],
-                      if (!widget.problem!
-                          .toLowerCase()
-                          .contains('butuh pijet')) ...[
+                          const SizedBox(height: 10),
+                        ],
+                        if (questionChoices.isNotEmpty) ...[
+                          _drowdownQuesitonChoices(context, textTheme)
+                        ],
+                        if (widget.problem!.toLowerCase().contains('serabutan'))
+                          _serabutanInputField(textTheme),
+                        if (!widget.problem!
+                            .toLowerCase()
+                            .contains('butuh pijet'))
+                          ..._addPictureSection(textTheme),
                         const SizedBox(height: 20),
-                        Text(
-                          questions.last.toString(),
-                          style: textTheme.titleLarge?.copyWith(
-                            color: AppColors.lightTextColor,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        _shareLocationBtn(
+                          context,
+                          successLocationSnackBar,
+                          textTheme,
                         ),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 20),
                         BlocBuilder<OrderBloc, OrderState>(
                           builder: (context, state) {
-                            if (state is ImagePicked) {
-                              state.pickedImage != null &&
-                                      problemPictures.length < 2
-                                  ? problemPictures.add(state.pickedImage)
-                                  : null;
-                              showedPicture.clear();
-                              for (var i = 0; i < problemPictures.length; i++) {
-                                XFile? picture = problemPictures[i];
-                                showedPicture.add(
-                                  _previewImage(
-                                    picture!.path,
-                                    picture.name,
-                                    i,
-                                  ),
+                            if (state is OrderError) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                ShowDialog.showAlertDialog(
+                                  context,
+                                  'Error upload order',
+                                  state.errorMessage,
+                                  null,
                                 );
-                              }
+                              });
                               context.read<OrderBloc>().add(OrderIsIdle());
+                              return const SizedBox.shrink();
                             }
-                            if (state is ImageDeleted) {
-                              problemPictures.removeAt(state.imageIndex);
-                              showedPicture.clear();
-                              for (var i = 0; i < problemPictures.length; i++) {
-                                XFile? picture = problemPictures[i];
-                                showedPicture.add(
-                                  _previewImage(
-                                    picture!.path,
-                                    picture.name,
-                                    i,
-                                  ),
+                            if (state is OrderUploaded) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                ShowDialog.showAlertDialog(
+                                  context,
+                                  'Success',
+                                  '${state.message}\n${state.order}',
+                                  null,
                                 );
-                              }
-                              context.read<OrderBloc>().add(OrderIsIdle());
+                              });
                             }
-                            return Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                ...showedPicture,
-                                if (problemPictures.length < 2)
-                                  _addImage(context, state),
-                              ],
-                            );
+                            if (state is OrderLoading) {
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            } else {
+                              return _requestHelpBtn(context, textTheme);
+                            }
                           },
                         ),
-                      ]
-                    ] else ...[
-                      ShowDialog.showAlertDialog(
-                        context,
-                        'Terjadi kesalahan!',
-                        'Ada masalah di aplikasinya\nkakak bisa coba buat kembali ke halaman sebelumnya\natau hubungin CS kami',
-                        ElevatedButton.icon(
-                          onPressed: () => context.pop(),
-                          label: const Text('Kembali'),
-                          icon: const Icon(Icons.arrow_forward_ios),
-                        ),
-                      )
+                      ] else ...[
+                        ShowDialog.showAlertDialog(
+                          context,
+                          'Terjadi kesalahan!',
+                          'Ada masalah di aplikasinya\nkakak bisa coba buat kembali ke halaman sebelumnya\natau hubungin CS kami',
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              context.pop();
+                              context.pop();
+                            },
+                            label: const Text('Kembali'),
+                            icon: const Icon(Icons.arrow_forward_ios),
+                            iconAlignment: IconAlignment.end,
+                          ),
+                        )
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -196,6 +206,125 @@ class _AddTaskPageState extends State<AddTaskPage> {
         ),
       ),
     );
+  }
+
+  SizedBox _requestHelpBtn(BuildContext context, TextTheme textTheme) {
+    return SizedBox(
+      width: double.infinity,
+      height: 71,
+      child: TextButton(
+        onPressed: () {
+          context.read<OrderBloc>().add(OrderSubmitted());
+        },
+        style: const ButtonStyle(
+          backgroundColor: WidgetStatePropertyAll(
+            AppColors.primary,
+          ),
+        ),
+        child: Text(
+          'Minta Bantuan',
+          style: textTheme.bodyLarge?.copyWith(
+            color: AppColors.lightTextColor,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
+  GestureDetector _shareLocationBtn(BuildContext context,
+      SnackBar successLocationSnackBar, TextTheme textTheme) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          LocationService.fetchLocation(context);
+          lat = LocationService.lat;
+          long = LocationService.long;
+          if (lat != null && long != null) {
+            ScaffoldMessenger.of(context).showSnackBar(successLocationSnackBar);
+            context
+                .read<OrderBloc>()
+                .add(ShareLocation(lat: lat!, long: long!));
+          }
+        });
+      },
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SvgPicture.asset(
+            'assets/icons/assistant_navigation.svg',
+            width: 28,
+            height: 28,
+          ),
+          const SizedBox(width: 10),
+          Text(
+            'Bagikan Lokasi Saya',
+            style: textTheme.bodyLarge?.copyWith(
+              color: AppColors.lightTextColor,
+              fontSize: 21,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _addPictureSection(TextTheme textTheme) {
+    return [
+      const SizedBox(height: 20),
+      Text(
+        questions.last.toString(),
+        style: textTheme.titleLarge?.copyWith(
+          color: AppColors.lightTextColor,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      const SizedBox(height: 10),
+      BlocBuilder<OrderBloc, OrderState>(
+        builder: (context, state) {
+          if (state is ImagePicked) {
+            state.pickedImage != null && problemPictures.length < 2
+                ? problemPictures.add(state.pickedImage)
+                : null;
+            showedPicture.clear();
+            for (var i = 0; i < problemPictures.length; i++) {
+              XFile? picture = problemPictures[i];
+              showedPicture.add(
+                _previewImage(
+                  picture!.path,
+                  picture.name,
+                  i,
+                ),
+              );
+            }
+            context.read<OrderBloc>().add(OrderIsIdle());
+          }
+          if (state is ImageDeleted) {
+            problemPictures.removeAt(state.imageIndex);
+            showedPicture.clear();
+            for (var i = 0; i < problemPictures.length; i++) {
+              XFile? picture = problemPictures[i];
+              showedPicture.add(
+                _previewImage(
+                  picture!.path,
+                  picture.name,
+                  i,
+                ),
+              );
+            }
+            context.read<OrderBloc>().add(OrderIsIdle());
+          }
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              ...showedPicture,
+              if (problemPictures.length < 2) _addImage(context, state),
+            ],
+          );
+        },
+      ),
+    ];
   }
 
   Widget _previewImage(String imagePath, String imageName, int imageIndex) {
@@ -341,7 +470,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
         fontWeight: FontWeight.w500,
       ),
       menuStyle: const MenuStyle(
-        backgroundColor: WidgetStatePropertyAll(Colors.transparent),
+        backgroundColor: WidgetStatePropertyAll(AppColors.surface),
         shadowColor: WidgetStatePropertyAll(Colors.transparent),
         side: WidgetStatePropertyAll(
           BorderSide(color: Colors.black),
@@ -368,6 +497,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
 
   AppBar _appBar(BuildContext context, TextTheme textTheme) {
     return AppBar(
+      scrolledUnderElevation: 0,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(25),

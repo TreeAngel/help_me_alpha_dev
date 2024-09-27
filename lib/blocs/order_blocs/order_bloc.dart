@@ -1,8 +1,11 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../models/api_error_response/api_error_response_model.dart';
+import '../../models/order_request_model.dart';
+import '../../models/order_response_model/order_model.dart';
 import '../../models/problem_model.dart';
 import '../../services/api/api_controller.dart';
 import '../../services/api/api_helper.dart';
@@ -17,6 +20,8 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
 
   late ProblemModel? selectedProblem;
   late String? selectedSolution;
+  late double? lat;
+  late double? long;
   List<XFile?> problemPictures = [];
 
   OrderBloc({required this.apiController, required this.imagePickerUtil})
@@ -35,30 +40,73 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
       selectedProblem = null;
       selectedSolution = null;
       problemPictures.clear();
+      lat = null;
+      long = null;
       emit(OrderInitial());
     });
 
     on<CameraCapture>((event, emit) async {
       XFile? file = await imagePickerUtil.cameraCapture();
       problemPictures.add(file);
-      state.copyWith(pictures: problemPictures);
       emit(ImagePicked(pickedImage: file));
     });
 
     on<GalleryImagePicker>((event, emit) async {
       XFile? file = await imagePickerUtil.imageFromGallery();
       problemPictures.add(file);
-      state.copyWith(pictures: problemPictures);
       emit(ImagePicked(pickedImage: file));
     });
 
     on<DeleteImage>((event, emit) {
       problemPictures.removeAt(event.imageIndex);
-      state.copyWith(pictures: problemPictures);
       emit(ImageDeleted(imageIndex: event.imageIndex));
     });
 
     on<OrderIsIdle>((event, emit) => emit(OrderIdle()));
+
+    on<OrderSubmitted>(_orderSubmitted);
+
+    on<ShareLocation>((event, emit) {
+      lat = event.lat;
+      long = event.long;
+    });
+  }
+
+  _orderSubmitted(event, emit) async {
+    emit(OrderLoading());
+    if (selectedProblem != null && selectedSolution != null && lat != null && long != null) {
+      if (selectedSolution!.isNotEmpty) {
+        List<MultipartFile> images = [];
+        if (problemPictures.isNotEmpty) {
+          for (XFile? file in problemPictures) {
+            if (file != null) {
+              images.add(
+                await MultipartFile.fromFile(
+                  file.path,
+                  filename: file.name,
+                  contentType: DioMediaType.parse('image'),
+                ),
+              );
+            }
+          }
+        }
+        final orderRequest = OrderRequestModel(
+          problemId: selectedProblem?.id,
+          description: selectedSolution,
+          attachments: images,
+          lat: lat!,
+          long: long!,
+        );
+        final response = await ApiHelper.postOrder(orderRequest);
+        if (response is ApiErrorResponseModel) {
+          emit(OrderError(errorMessage: response.error!.error.toString()));
+        } else {
+          emit(OrderUploaded(message: response.message, order: response.order));
+        }
+      }
+    } else {
+      emit(const OrderError(errorMessage: 'Isi semua data yang diperlukan'));
+    }
   }
 
   _onFetchProblems(
@@ -67,14 +115,14 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
   ) async {
     emit(OrderLoading());
     try {
-      final response = await ApiHelper.getProblems(event.id);
+      final response = await ApiHelper.getProblems(event.problemName);
       if (response is ApiErrorResponseModel) {
-        emit(ProblemsError(errorMessage: response.error!.error.toString()));
+        emit(OrderError(errorMessage: response.error!.error.toString()));
       } else {
-        emit(ProblemsLoaded(problems: response.data));
+        emit(ProblemsLoaded(problems: response));
       }
     } catch (e) {
-      emit(ProblemsError(errorMessage: e.toString()));
+      emit(OrderError(errorMessage: e.toString()));
     }
   }
 }

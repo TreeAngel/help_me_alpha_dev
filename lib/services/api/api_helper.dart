@@ -1,3 +1,7 @@
+import 'package:dio/dio.dart';
+
+import '../../models/order_request_model.dart';
+import '../../models/order_response_model/order_response_model.dart';
 import 'api_controller.dart';
 import '../../models/problem_model.dart';
 import '../../models/user_model.dart';
@@ -11,7 +15,7 @@ import '../../models/api_error_response/message_error_model.dart';
 class ApiHelper {
   // Auth
   static Future authLogin(LoginModel user) async {
-    Map<String, dynamic> userData = user.toJson();
+    final userData = user.toJson();
     final response =
         await ApiController.postData('auth/login?app_type=user', userData);
     if (response is ApiErrorResponseModel) {
@@ -22,7 +26,7 @@ class ApiHelper {
   }
 
   static Future authRegister(RegisterModel user) async {
-    Map<String, dynamic> userData = user.toJson();
+    final userData = user.toJson();
     final response = await ApiController.postData('auth/register', userData);
     if (response is ApiErrorResponseModel) {
       return response;
@@ -93,9 +97,9 @@ class ApiHelper {
     }
   }
 
-  // Home
+  // Problem
   static Future getCategories() async {
-    final response = await ApiController.getData('category/all');
+    final response = await ApiController.getData('categories');
     if (response is ApiErrorResponseModel) {
       return response;
     } else {
@@ -103,12 +107,31 @@ class ApiHelper {
     }
   }
 
-  static Future getProblems(int id) async {
-    final response = await ApiController.getData('category/problem/$id');
+  static Future getProblems(String problemName) async {
+    final response = await ApiController.getData(
+        'categories/problems?category=$problemName');
     if (response is ApiErrorResponseModel) {
       return response;
     } else {
-      return DataProblem.fromJson(response);
+      List<ProblemModel> problems = [];
+      for (var item in response as List<dynamic>) {
+        problems.add(ProblemModel.fromMap(item));
+      }
+      return problems;
+    }
+  }
+
+  // Order
+  static Future postOrder(OrderRequestModel request) async {
+    final response = await ApiController.postData(
+      'user/order',
+      request.toMap(),
+      Headers.multipartFormDataContentType,
+    );
+    if (response is ApiErrorResponseModel) {
+      return response;
+    } else {
+      return OrderResponseModel.fromMap(response);
     }
   }
 }

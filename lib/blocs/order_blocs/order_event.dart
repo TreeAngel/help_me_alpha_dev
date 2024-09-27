@@ -8,12 +8,12 @@ sealed class OrderEvent extends Equatable {
 }
 
 class FetchProblems extends OrderEvent {
-  final int id;
+  final String problemName;
 
-  const FetchProblems({required this.id});
+  const FetchProblems({required this.problemName});
 
   @override
-  List<Object> get props => [id];
+  List<Object> get props => [problemName];
 }
 
 class ProblemSelected extends OrderEvent {
@@ -43,15 +43,22 @@ final class DeleteImage extends OrderEvent {
   List<Object> get props => [imageIndex];
 }
 
-class ProblemsPop extends OrderEvent {
-  const ProblemsPop();
-
-  @override
-  List<Object> get props => [];
-}
+class ProblemsPop extends OrderEvent {}
 
 class CameraCapture extends OrderEvent {}
 
 class GalleryImagePicker extends OrderEvent {}
 
+class ShareLocation extends OrderEvent {
+  final double lat;
+  final double long;
+
+  const ShareLocation({required this.lat, required this.long});
+
+  @override
+  List<Object> get props => [lat, long];
+}
+
 class OrderIsIdle extends OrderEvent {}
+
+class OrderSubmitted extends OrderEvent {}

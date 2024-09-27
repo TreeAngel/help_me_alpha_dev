@@ -21,13 +21,13 @@ class DetailPage extends StatefulWidget {
 }
 
 class _DetailPageState extends State<DetailPage> {
-  late List<ProblemModel> problems;
+  List<ProblemModel> problems = [];
   ProblemModel? selectedProblem;
 
   @override
   void initState() {
     super.initState();
-    context.read<OrderBloc>().add(const ProblemsPop());
+    context.read<OrderBloc>().add(ProblemsPop());
   }
 
   @override
@@ -68,7 +68,7 @@ class _DetailPageState extends State<DetailPage> {
                 color: AppColors.surface,
                 child: BlocBuilder<OrderBloc, OrderState>(
                   builder: (context, state) {
-                    if (state is OrderLoading || state is ProblemsError) {
+                    if (state is OrderLoading || state is OrderError) {
                       return const SizedBox.shrink();
                     } else {
                       return _navigateSection(context, textTheme);
@@ -148,22 +148,19 @@ class _DetailPageState extends State<DetailPage> {
           );
         } else if (state is ProblemsLoaded) {
           problems = state.problems;
-          if (problems.isNotEmpty) {
-            return ListView.builder(
-              itemCount: problems.length,
-              itemBuilder: (BuildContext context, int index) {
-                ProblemModel data = problems[index];
-                return Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: _problemRadioTileList(data, context, textTheme),
-                );
-              },
-            );
-          }
-        } else if (state is ProblemsError) {
+        } else if (state is OrderError) {
           _stateError(context, state);
         }
-        return const SizedBox.shrink();
+        return ListView.builder(
+          itemCount: problems.length,
+          itemBuilder: (BuildContext context, int index) {
+            ProblemModel data = problems[index];
+            return Padding(
+              padding: const EdgeInsets.all(8),
+              child: _problemRadioTileList(data, context, textTheme),
+            );
+          },
+        );
       },
     );
   }
@@ -206,7 +203,7 @@ class _DetailPageState extends State<DetailPage> {
         widget.category?.toLowerCase() != 'serabutan') {
       contextBuilder
           .read<OrderBloc>()
-          .add(FetchProblems(id: widget.categoryId!));
+          .add(FetchProblems(problemName: widget.category!));
     } else if (widget.categoryId != 0 &&
         widget.category?.toLowerCase() == 'serabutan') {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -234,7 +231,7 @@ class _DetailPageState extends State<DetailPage> {
     }
   }
 
-  void _stateError(BuildContext context, ProblemsError state) {
+  void _stateError(BuildContext context, OrderError state) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ShowDialog.showAlertDialog(
         context,
@@ -245,7 +242,7 @@ class _DetailPageState extends State<DetailPage> {
             context.pop();
             context
                 .read<OrderBloc>()
-                .add(FetchProblems(id: widget.categoryId!));
+                .add(FetchProblems(problemName: widget.category!));
           },
           icon: const Icon(Icons.refresh_outlined),
         ),
@@ -259,8 +256,10 @@ class _DetailPageState extends State<DetailPage> {
       'Error',
       'Category tidak ada',
       ElevatedButton.icon(
-        onPressed: () =>
-            context.canPop() ? context.pop() : context.goNamed('homePage'),
+        onPressed: () {
+          context.pop();
+          context.goNamed('homePage');
+        }, 
         label: const Text('Kembali'),
         icon: const Icon(Icons.arrow_forward_ios),
       ),

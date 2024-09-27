@@ -22,7 +22,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   String password = '';
   String passwordConfirmation = '';
   String phoneNumber = '';
-  final role = 'user';
+  final role = 'client';
   XFile? profilePicture;
   bool isPasswordVisible = false;
   bool rememberMe = false;
@@ -262,7 +262,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
               token: authToken,
             ),
           );
-          rememberMe == true ? ManageAuthToken.writeToken() : null;
         }
       } else if (signUpResponse is ApiErrorResponseModel) {
         final error = signUpResponse.error;

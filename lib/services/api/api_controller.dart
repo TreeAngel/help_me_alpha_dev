@@ -8,12 +8,12 @@ import '../../utils/logging.dart';
 class ApiController {
   static const baseUrl = null;
   static const temporaryUrl =
-      'https://087f472dbfb4dde1fbb1433484ab4710.serveo.net';
+      'https://350c72e528c85b3d22da2e96afbc4e6e.serveo.net';
   static String? token;
 
   static var dio = Dio(
     BaseOptions(
-      baseUrl: '$temporaryUrl/api/',
+      baseUrl: '$temporaryUrl/api/v1/',
       contentType: Headers.jsonContentType,
       responseType: ResponseType.json,
       connectTimeout: const Duration(seconds: 120),
@@ -52,7 +52,11 @@ class ApiController {
     }
   }
 
-  static Future postData(String url, [Map<String, dynamic>? data]) async {
+  static Future postData(
+    String url, [
+    Map<String, dynamic>? data,
+    String? extraHeaders,
+  ]) async {
     try {
       final response = await dio.post(
         url,
@@ -60,7 +64,7 @@ class ApiController {
         options: token != null
             ? Options(headers: {
                 'Authorization': 'Bearer $token',
-              })
+              }, contentType: extraHeaders ?? Headers.jsonContentType)
             : null,
       );
       if (response.statusCode! >= 200 && response.statusCode! <= 299) {

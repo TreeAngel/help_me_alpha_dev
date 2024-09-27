@@ -1,4 +1,3 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -101,27 +100,28 @@ class SignInPage extends StatelessWidget {
     );
   }
 
-  Center _notHaveAccountSection(TextTheme textTheme, BuildContext context) {
-    return Center(
-      child: Text.rich(
-        style: textTheme.bodyLarge?.copyWith(
-            color: AppColors.darkTextColor, fontWeight: FontWeight.normal),
-        TextSpan(
-          text: 'Belum memiliki akun? ',
-          children: [
-            TextSpan(
-              text: 'Daftar',
-              style: textTheme.bodyLarge?.copyWith(
-                color: AppColors.primary,
-                decoration: TextDecoration.underline,
-              ),
-              recognizer: TapGestureRecognizer()
-                ..onTap = () {
-                  context.read<AuthBloc>().add(ResetAuthState());
-                  context.goNamed('signUpPage');
-                },
-            )
-          ],
+  Widget _notHaveAccountSection(TextTheme textTheme, BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        context.read<AuthBloc>().add(ResetAuthState());
+        context.goNamed('signUpPage');
+      },
+      child: Center(
+        child: Text.rich(
+          style: textTheme.bodyLarge?.copyWith(
+              color: AppColors.darkTextColor, fontWeight: FontWeight.normal),
+          TextSpan(
+            text: 'Belum memiliki akun? ',
+            children: [
+              TextSpan(
+                text: 'Daftar',
+                style: textTheme.bodyLarge?.copyWith(
+                  color: AppColors.primary,
+                  decoration: TextDecoration.underline,
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -129,8 +129,12 @@ class SignInPage extends StatelessWidget {
 
   GestureDetector _forgetPassword(BuildContext context, TextTheme textTheme) {
     return GestureDetector(
-      onTap: () => ShowDialog.showAlertDialog(context, 'Lupa kata sandi?',
-          'Sabar bang, nanti dibuat fiturnya', null),
+      onTap: () => ShowDialog.showAlertDialog(
+        context,
+        'Lupa kata sandi?',
+        'Sabar bang, nanti dibuat fiturnya',
+        null,
+      ),
       child: Text(
         'Lupa kata sandi?',
         style: textTheme.bodyLarge?.copyWith(

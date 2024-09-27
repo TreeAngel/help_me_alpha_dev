@@ -1,4 +1,3 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -138,27 +137,28 @@ class SignUpPage extends StatelessWidget {
     );
   }
 
-  Center _haveAccountSection(TextTheme textTheme, BuildContext context) {
-    return Center(
-      child: Text.rich(
-        style: textTheme.bodyLarge?.copyWith(
-            color: AppColors.darkTextColor, fontWeight: FontWeight.normal),
-        TextSpan(
-          text: 'Sudah memiliki akun? ',
-          children: [
-            TextSpan(
-              text: 'Masuk',
-              style: textTheme.bodyLarge?.copyWith(
-                color: AppColors.primary,
-                decoration: TextDecoration.underline,
-              ),
-              recognizer: TapGestureRecognizer()
-                ..onTap = () {
-                  context.read<AuthBloc>().add(ResetAuthState());
-                  context.goNamed('signUpPage');
-                },
-            )
-          ],
+  Widget _haveAccountSection(TextTheme textTheme, BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        context.read<AuthBloc>().add(ResetAuthState());
+        context.goNamed('signInPage');
+      },
+      child: Center(
+        child: Text.rich(
+          style: textTheme.bodyLarge?.copyWith(
+              color: AppColors.darkTextColor, fontWeight: FontWeight.normal),
+          TextSpan(
+            text: 'Sudah memiliki akun? ',
+            children: [
+              TextSpan(
+                text: 'Masuk',
+                style: textTheme.bodyLarge?.copyWith(
+                  color: AppColors.primary,
+                  decoration: TextDecoration.underline,
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -186,9 +186,11 @@ class SignUpPage extends StatelessWidget {
         null,
         OutlinedButton.icon(
           onPressed: () {
-            context.canPop() == true
-                ? context.pop()
-                : context.goNamed('signInPage');
+            context.read<AuthBloc>().add(ResetAuthState());
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              context.pop();
+              context.goNamed('homePage');
+            });
           },
           style: ButtonStyle(
             backgroundColor: WidgetStateProperty.all(Colors.transparent),
@@ -196,7 +198,7 @@ class SignUpPage extends StatelessWidget {
             iconColor: WidgetStateProperty.all(AppColors.lightTextColor),
           ),
           label: const Text(
-            'Lanjut Sign In',
+            'Lanjut ke halaman utama',
             style: TextStyle(color: AppColors.lightTextColor),
           ),
           icon: const Icon(Icons.arrow_forward_ios_rounded),
@@ -204,6 +206,7 @@ class SignUpPage extends StatelessWidget {
         ),
       );
     });
+    return const SizedBox.shrink();
   }
 
   SizedBox _signUpButton(

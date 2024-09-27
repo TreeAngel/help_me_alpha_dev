@@ -32,7 +32,8 @@ class MainApp extends StatelessWidget {
           create: (context) => AuthBloc(apiController: apiHelper),
         ),
         BlocProvider(
-          create: (context) => OrderBloc(apiController: apiHelper, imagePickerUtil: ImagePickerUtil()),
+          create: (context) => OrderBloc(
+              apiController: apiHelper, imagePickerUtil: ImagePickerUtil()),
         ),
         // TODO: Add other blocs here
       ],
