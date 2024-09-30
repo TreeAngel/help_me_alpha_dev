@@ -23,9 +23,10 @@ class ApiException {
         };
       case DioExceptionType.badResponse:
         if (dioException.response?.statusCode == 400) {
-          return {
-            'error': 'Bad Request',
-          };
+          final message = dioException.response?.data as Map<String, dynamic>;
+          return
+              // 'error': 'Bad Request',
+              message;
         } else if (dioException.response?.statusCode == 401) {
           return {
             'error': 'Unauthorized',
@@ -57,7 +58,7 @@ class ApiException {
   }
 
   static String errorMessageBuilder(MessageErrorModel errorModel) {
-    String errorMessage = '';
+    String errorMessage = ' ';
     if (errorModel.error != null) {
       errorMessage += '${errorModel.error}, ';
     }
@@ -81,8 +82,7 @@ class ApiException {
     }
     errorMessage = errorMessage.trim();
     errorMessage = errorMessage.endsWith(',')
-        ? errorMessage.substring(
-            errorMessage.length - errorMessage.length, errorMessage.length)
+        ? errorMessage.substring(0, errorMessage.length - 1)
         : errorMessage;
     return errorMessage;
   }

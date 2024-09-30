@@ -10,7 +10,8 @@ class OrderResponseModel extends Equatable {
 
   const OrderResponseModel({this.message, this.order});
 
-  factory OrderResponseModel.fromMap(Map<String, dynamic> data) => OrderResponseModel(
+  factory OrderResponseModel.fromMap(Map<String, dynamic> data) =>
+      OrderResponseModel(
         message: data['message'] as String?,
         order: data['order'] == null
             ? null
@@ -26,7 +27,8 @@ class OrderResponseModel extends Equatable {
   ///
   /// Parses the string and returns the resulting Json object as [OrderResponseModel].
   factory OrderResponseModel.fromJson(String data) {
-    return OrderResponseModel.fromMap(json.decode(data) as Map<String, dynamic>);
+    return OrderResponseModel.fromMap(
+        json.decode(data) as Map<String, dynamic>);
   }
 
   /// `dart:convert`

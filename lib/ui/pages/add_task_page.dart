@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../blocs/order_blocs/order_bloc.dart';
+import '../../blocs/order_bloc/order_bloc.dart';
 import '../../configs/app_colors.dart';
 import '../../data/menu_items_data.dart';
 import '../../models/menu_item_model.dart';
@@ -46,9 +46,15 @@ class _AddTaskPageState extends State<AddTaskPage> {
     questionChoices.clear();
     problemPictures.clear();
     questions = questionsBuilder(widget.problem!, questionChoices);
-    LocationService.fetchLocation(context);
-    lat = LocationService.lat;
-    long = LocationService.long;
+    getLocation();
+  }
+
+  void getLocation() {
+    setState(() {
+      LocationService.fetchLocation(context);
+      lat = LocationService.lat;
+      long = LocationService.long;
+    });
   }
 
   @override
@@ -214,7 +220,9 @@ class _AddTaskPageState extends State<AddTaskPage> {
       height: 71,
       child: TextButton(
         onPressed: () {
-          context.read<OrderBloc>().add(OrderSubmitted());
+          context
+              .read<OrderBloc>()
+              .add(OrderSubmitted(widget.problem.toString()));
         },
         style: const ButtonStyle(
           backgroundColor: WidgetStatePropertyAll(
@@ -236,17 +244,11 @@ class _AddTaskPageState extends State<AddTaskPage> {
       SnackBar successLocationSnackBar, TextTheme textTheme) {
     return GestureDetector(
       onTap: () {
-        setState(() {
-          LocationService.fetchLocation(context);
-          lat = LocationService.lat;
-          long = LocationService.long;
-          if (lat != null && long != null) {
-            ScaffoldMessenger.of(context).showSnackBar(successLocationSnackBar);
-            context
-                .read<OrderBloc>()
-                .add(ShareLocation(lat: lat!, long: long!));
-          }
-        });
+        getLocation();
+        if (lat != null && long != null) {
+          ScaffoldMessenger.of(context).showSnackBar(successLocationSnackBar);
+          context.read<OrderBloc>().add(ShareLocation(lat: lat!, long: long!));
+        }
       },
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -444,6 +446,11 @@ class _AddTaskPageState extends State<AddTaskPage> {
   TextFormField _serabutanInputField(TextTheme textTheme) {
     return TextFormField(
       controller: _serabutanInputController,
+      onChanged: (value) {
+        context
+            .read<OrderBloc>()
+            .add(SolutionSelected(_serabutanInputController.text.toString()));
+      },
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.white,

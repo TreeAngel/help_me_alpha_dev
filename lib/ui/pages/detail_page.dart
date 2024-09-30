@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../blocs/order_blocs/order_bloc.dart';
+import '../../blocs/order_bloc/order_bloc.dart';
 import '../../configs/app_colors.dart';
 import '../../models/problem_model.dart';
 import '../../utils/show_dialog.dart';
@@ -259,7 +259,7 @@ class _DetailPageState extends State<DetailPage> {
         onPressed: () {
           context.pop();
           context.goNamed('homePage');
-        }, 
+        },
         label: const Text('Kembali'),
         icon: const Icon(Icons.arrow_forward_ios),
       ),

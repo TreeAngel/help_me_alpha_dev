@@ -12,4 +12,9 @@ class ImagePickerUtil {
     final XFile? file = await picker.pickImage(source: ImageSource.gallery);
     return file;
   }
+
+  Future<List<XFile?>> multipleImage() async {
+    final List<XFile?> file = await picker.pickMultiImage();
+    return file;
+  }
 }

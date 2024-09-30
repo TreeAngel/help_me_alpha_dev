@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 
-import '../../models/order_request_model.dart';
-import '../../models/order_response_model/order_response_model.dart';
+import '../../models/order_history_model.dart';
 import 'api_controller.dart';
+import '../../models/order_response_model/order_response_model.dart';
 import '../../models/problem_model.dart';
 import '../../models/user_model.dart';
 import '../../models/auth_response_model.dart';
@@ -57,7 +57,7 @@ class ApiHelper {
   static Future<ApiErrorResponseModel> requestVerification(
       String phoneNumber) async {
     final response = await ApiController.postData(
-      'auth/send-verification',
+      'auth/verification',
       {'phone_number': phoneNumber},
     );
     if (response is ApiErrorResponseModel) {
@@ -72,7 +72,7 @@ class ApiHelper {
     String otp,
   ) async {
     final response = await ApiController.postData(
-      'auth/verify-code',
+      'auth/verify',
       {
         'phone_number': phoneNumber,
         'verification_code': otp,
@@ -97,7 +97,27 @@ class ApiHelper {
     }
   }
 
-  // Problem
+  Future<ApiErrorResponseModel> changePassword(
+    String currentPassword,
+    String newPassword,
+    String confirmPassword,
+  ) async {
+    final response = await ApiController.postData(
+      'auth/change-password',
+      {
+        'current_password': currentPassword,
+        'new_password': newPassword,
+        'new_password_confirmation': confirmPassword,
+      },
+    );
+    if (response is ApiErrorResponseModel) {
+      return response;
+    } else {
+      return ApiErrorResponseModel(error: MessageErrorModel.fromMap(response));
+    }
+  }
+
+  // Problem & Category
   static Future getCategories() async {
     final response = await ApiController.getData('categories');
     if (response is ApiErrorResponseModel) {
@@ -122,16 +142,31 @@ class ApiHelper {
   }
 
   // Order
-  static Future postOrder(OrderRequestModel request) async {
+  static Future postOrder(FormData request) async {
     final response = await ApiController.postData(
-      'user/order',
-      request.toMap(),
+      'users/orders',
+      request,
       Headers.multipartFormDataContentType,
     );
     if (response is ApiErrorResponseModel) {
       return response;
     } else {
       return OrderResponseModel.fromMap(response);
+    }
+  }
+
+  static Future getOrderHistory(String status) async {
+    String url = 'users/orders';
+    status.isNotEmpty ? url += '?status=$status' : null;
+    final response = await ApiController.getData(url);
+    if (response is ApiErrorResponseModel) {
+      return response;
+    } else {
+      List<OrderHistoryModel> orderHistorys = [];
+      for (var item in response as List<dynamic>) {
+        orderHistorys.add(OrderHistoryModel.fromMap(item));
+      }
+      return orderHistorys;
     }
   }
 }

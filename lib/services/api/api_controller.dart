@@ -8,7 +8,7 @@ import '../../utils/logging.dart';
 class ApiController {
   static const baseUrl = null;
   static const temporaryUrl =
-      'https://350c72e528c85b3d22da2e96afbc4e6e.serveo.net';
+      'https://874b2c3c8a37bc32d5d920ee50e8e625.serveo.net';
   static String? token;
 
   static var dio = Dio(
@@ -54,7 +54,7 @@ class ApiController {
 
   static Future postData(
     String url, [
-    Map<String, dynamic>? data,
+    dynamic data,
     String? extraHeaders,
   ]) async {
     try {

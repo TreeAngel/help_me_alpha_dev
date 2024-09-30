@@ -61,4 +61,11 @@ class ShareLocation extends OrderEvent {
 
 class OrderIsIdle extends OrderEvent {}
 
-class OrderSubmitted extends OrderEvent {}
+class OrderSubmitted extends OrderEvent {
+  final String problem;
+
+  const OrderSubmitted(this.problem);
+
+  @override
+  List<Object> get props => [problem];
+}

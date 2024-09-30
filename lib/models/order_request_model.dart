@@ -20,7 +20,7 @@ class OrderRequestModel extends Equatable {
 
   factory OrderRequestModel.fromMap(Map<String, dynamic> data) =>
       OrderRequestModel(
-        problemId: data['problemId'] as int?,
+        problemId: data['problem_id'] as int?,
         description: data['description'] as String?,
         attachments: data['attachments'] as List<MultipartFile?>?,
         lat: data['latitude'] as double,
@@ -28,7 +28,7 @@ class OrderRequestModel extends Equatable {
       );
 
   Map<String, dynamic> toMap() => {
-        'problemId': problemId,
+        'problem_id': problemId,
         'description': description,
         'attachments[]': attachments,
         'latitude': lat,

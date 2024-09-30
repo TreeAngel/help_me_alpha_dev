@@ -1,7 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mime/mime.dart';
 
 import '../../models/api_error_response/api_error_response_model.dart';
 import '../../models/order_request_model.dart';
@@ -74,38 +76,60 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
 
   _orderSubmitted(event, emit) async {
     emit(OrderLoading());
-    if (selectedProblem != null && selectedSolution != null && lat != null && long != null) {
-      if (selectedSolution!.isNotEmpty) {
-        List<MultipartFile> images = [];
-        if (problemPictures.isNotEmpty) {
-          for (XFile? file in problemPictures) {
-            if (file != null) {
-              images.add(
-                await MultipartFile.fromFile(
-                  file.path,
-                  filename: file.name,
-                  contentType: DioMediaType.parse('image'),
-                ),
-              );
+    if (selectedProblem != null ||
+        (event as OrderSubmitted).problem.toLowerCase().contains('serabutan')) {
+      if (selectedSolution != null && lat != null && long != null) {
+        if (selectedSolution!.isNotEmpty) {
+          List<MultipartFile> images = [];
+          if (problemPictures.isNotEmpty) {
+            for (XFile? file in problemPictures) {
+              if (file != null) {
+                images.add(
+                  await MultipartFile.fromFile(
+                    file.path,
+                    filename: file.name.split('/').last,
+                    contentType: MediaType.parse(
+                      lookupMimeType(file.path) ?? 'application/octet-stream',
+                    ),
+                  ),
+                );
+              }
             }
           }
+          int? id;
+          selectedProblem != null ? id = selectedProblem?.id : null;
+          final orderRequest = OrderRequestModel(
+            problemId: id,
+            description: selectedSolution,
+            attachments: images,
+            lat: lat!,
+            long: long!,
+          );
+          final formData = FormData.fromMap({
+            if (id != null) 'problem_id': id,
+            'description': orderRequest.description,
+            'latitude': orderRequest.lat,
+            'longitude': orderRequest.long,
+            if (images.isNotEmpty) 'attachments[]': orderRequest.attachments,
+          });
+          final response = await ApiHelper.postOrder(formData);
+          if (response is ApiErrorResponseModel) {
+            emit(OrderError(errorMessage: response.error!.message.toString()));
+          } else {
+            emit(OrderUploaded(
+                message: response.message, order: response.order));
+          }
         }
-        final orderRequest = OrderRequestModel(
-          problemId: selectedProblem?.id,
-          description: selectedSolution,
-          attachments: images,
-          lat: lat!,
-          long: long!,
-        );
-        final response = await ApiHelper.postOrder(orderRequest);
-        if (response is ApiErrorResponseModel) {
-          emit(OrderError(errorMessage: response.error!.error.toString()));
-        } else {
-          emit(OrderUploaded(message: response.message, order: response.order));
-        }
+      } else {
+        emit(const OrderError(errorMessage: 'Isi semua data untuk lanjut!'));
       }
     } else {
-      emit(const OrderError(errorMessage: 'Isi semua data yang diperlukan'));
+      emit(
+        const OrderError(
+          errorMessage:
+              'Terjadi kesalahan pada aplikasi, pilih kembali kategori masalah di halaman home',
+        ),
+      );
     }
   }
 

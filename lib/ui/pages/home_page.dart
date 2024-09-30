@@ -1,11 +1,14 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../services/api/api_controller.dart';
 import '../../data/cards_color.dart';
+import '../../models/order_history_model.dart';
 import '../../utils/manage_auth_token.dart';
-import '../../blocs/home_blocs/home_bloc.dart';
+import '../../blocs/home_bloc/home_cubit.dart';
 import '../../configs/app_colors.dart';
 import '../../data/menu_items_data.dart';
 import '../../models/category_model.dart';
@@ -13,8 +16,8 @@ import '../../models/menu_item_model.dart';
 import '../../ui/widgets/gradient_card.dart';
 import '../../utils/logging.dart';
 import '../../utils/show_dialog.dart';
-import '../../blocs/auth_blocs/auth_bloc.dart';
-import '../../blocs/auth_blocs/auth_state.dart';
+import '../../blocs/auth_bloc/auth_bloc.dart';
+import '../../blocs/auth_bloc/auth_state.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -25,7 +28,10 @@ class HomePage extends StatelessWidget {
     final textTheme = appTheme.textTheme;
     final colorScheme = appTheme.colorScheme;
     final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
     String username = 'Kamu!';
+    List<CategoryModel> categories = [];
+    List<OrderHistoryModel> orderHistory = [];
 
     return SafeArea(
       child: Scaffold(
@@ -40,13 +46,8 @@ class HomePage extends StatelessWidget {
               ),
             ),
             Positioned.fill(
-              child: BlocBuilder<AuthBloc, AuthState>(
-                builder: (context, state) {
-                  if (state is AuthLoading) {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  }
+              child: BlocListener<AuthBloc, AuthState>(
+                listener: (context, state) {
                   if (state is AuthError) {
                     _onSignOutError(context, state);
                   }
@@ -56,36 +57,89 @@ class HomePage extends StatelessWidget {
                       context.goNamed('signInPage');
                     });
                   }
-                  return RefreshIndicator(
-                    triggerMode: RefreshIndicatorTriggerMode.onEdge,
-                    onRefresh: () async {
-                      context.read<HomeBloc>().add(FetchProfile());
-                    },
-                    child: CustomScrollView(
-                      slivers: <Widget>[
-                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                        _appBarBlocBuilder(username, textTheme, colorScheme),
-                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                        _searchTextField(),
-                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                        _categoryTextHeader(textTheme),
-                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                        _categoryBlocBuilder(textTheme),
-                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                        _orderHistoryTextHeader(textTheme),
-                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                        _lastOrderHistory(textTheme),
-                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                      ],
-                    ),
-                  );
                 },
+                child: RefreshIndicator(
+                  triggerMode: RefreshIndicatorTriggerMode.onEdge,
+                  onRefresh: () async {
+                    context.read<HomeCubit>().fetchProfile();
+                  },
+                  child: CustomScrollView(
+                    slivers: <Widget>[
+                      const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                      _appBarBlocBuilder(username, textTheme, colorScheme),
+                      const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                      _searchTextField(),
+                      const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                      _categoryTextHeader(textTheme),
+                      const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                      _categoryBlocBuilder(textTheme, categories),
+                      const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                      _orderHistoryTextHeader(textTheme),
+                      const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                      _lastHistoryBlocBuilder(textTheme, orderHistory),
+                      const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                    ],
+                  ),
+                ),
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  BlocBuilder<HomeCubit, HomeState> _lastHistoryBlocBuilder(
+    TextTheme textTheme,
+    List<OrderHistoryModel> orderHistory,
+  ) {
+    return BlocBuilder<HomeCubit, HomeState>(
+      builder: (context, state) {
+        OrderHistoryModel? lastHistory;
+        if (state is OrderHistoryLoaded) {
+          orderHistory.addAll(state.history);
+          lastHistory = orderHistory.last;
+          context.read<HomeCubit>().fetchCategories();
+          return _orderHistoryCard(lastHistory, textTheme);
+        } else if (state is OrderHistoryError) {
+          _onOrderHistoryError(context, state);
+        }
+        if (orderHistory.isNotEmpty) {
+          lastHistory = orderHistory.last;
+        }
+        return _orderHistoryCard(lastHistory, textTheme);
+      },
+    );
+  }
+
+  void _onOrderHistoryError(BuildContext context, OrderHistoryError state) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ShowDialog.showAlertDialog(
+        context,
+        'Error fetching order history',
+        state.errorMessage,
+        state.errorMessage.toString().toLowerCase().contains('unauthorized')
+            ? OutlinedButton.icon(
+                onPressed: () {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    ManageAuthToken.deleteToken();
+                    context.read<AuthBloc>().add(RetryAuthState());
+                    context.goNamed('signInPage');
+                  });
+                },
+                label: const Text('Sign In ulang'),
+                icon: const Icon(Icons.arrow_forward_ios),
+                iconAlignment: IconAlignment.end,
+              )
+            : IconButton.outlined(
+                onPressed: () {
+                  context.pop();
+                  context.read<HomeCubit>().fetchHistory('');
+                },
+                icon: const Icon(Icons.refresh_outlined),
+              ),
+      );
+    });
   }
 
   void _onSignOutError(BuildContext context, AuthError state) {
@@ -99,9 +153,9 @@ class HomePage extends StatelessWidget {
                 onPressed: () {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     ManageAuthToken.deleteToken();
-                    context.pop();
                     context.read<AuthBloc>().add(RetryAuthState());
                     context.goNamed('signInPage');
+                    context.pop();
                   });
                 },
                 label: const Text('Sign In ulang'),
@@ -114,18 +168,21 @@ class HomePage extends StatelessWidget {
     });
   }
 
-  BlocBuilder<HomeBloc, HomeState> _appBarBlocBuilder(
+  BlocBuilder<HomeCubit, HomeState> _appBarBlocBuilder(
     String username,
     TextTheme textTheme,
     ColorScheme colorScheme,
   ) {
-    return BlocBuilder<HomeBloc, HomeState>(
+    return BlocBuilder<HomeCubit, HomeState>(
       builder: (context, state) {
         if (state is HomeInitial) {
-          context.read<HomeBloc>().add(FetchProfile());
+          context.read<HomeCubit>().fetchProfile();
+          // context.read<HomeCubit>().add(FetchCategories());
+          // context.read<HomeCubit>().add(const FetchHistory(''));
         } else if (state is ProfileLoaded) {
           username = state.user.user.username.toString();
-          context.read<HomeBloc>().add(FetchCategories());
+          // context.read<HomeCubit>().add(FetchCategories());
+          context.read<HomeCubit>().fetchHistory('');
           return _homeAppBar(
             context,
             textTheme,
@@ -157,7 +214,6 @@ class HomePage extends StatelessWidget {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     ManageAuthToken.deleteToken();
                     context.read<AuthBloc>().add(RetryAuthState());
-                    context.pop();
                     context.goNamed('signInPage');
                   });
                 },
@@ -168,7 +224,7 @@ class HomePage extends StatelessWidget {
             : IconButton.outlined(
                 onPressed: () {
                   context.pop();
-                  context.read<HomeBloc>().add(FetchProfile());
+                  context.read<HomeCubit>().fetchProfile();
                 },
                 icon: const Icon(Icons.refresh_outlined),
               ),
@@ -176,8 +232,11 @@ class HomePage extends StatelessWidget {
     });
   }
 
-  BlocBuilder<HomeBloc, HomeState> _categoryBlocBuilder(TextTheme textTheme) {
-    return BlocBuilder<HomeBloc, HomeState>(
+  BlocBuilder<HomeCubit, HomeState> _categoryBlocBuilder(
+    TextTheme textTheme,
+    List<CategoryModel> categories,
+  ) {
+    return BlocBuilder<HomeCubit, HomeState>(
       builder: (context, state) {
         if (state is HomeLoading) {
           return const SliverFillRemaining(
@@ -186,14 +245,13 @@ class HomePage extends StatelessWidget {
             ),
           );
         } else if (state is CategoryLoaded) {
-          final categories = state.categories.take(4).toList();
+          categories.addAll(state.categories.take(4).toList());
+          // context.read<HomeCubit>().add(const FetchHistory(''));
           return _categoriesGrid(categories, textTheme);
         } else if (state is CategoryError) {
           _onCategoryError(context, state);
         }
-        return const SliverToBoxAdapter(
-          child: SizedBox.shrink(),
-        );
+        return _categoriesGrid(categories, textTheme);
       },
     );
   }
@@ -207,9 +265,8 @@ class HomePage extends StatelessWidget {
         state.errorMessage.toString().toLowerCase().contains('unauthorized')
             ? OutlinedButton.icon(
                 onPressed: () {
-                  ManageAuthToken.deleteToken();
                   WidgetsBinding.instance.addPostFrameCallback((_) {
-                    context.pop();
+                    ManageAuthToken.deleteToken();
                     context.goNamed('signInPage');
                   });
                 },
@@ -220,7 +277,7 @@ class HomePage extends StatelessWidget {
             : IconButton.outlined(
                 onPressed: () {
                   context.pop();
-                  context.read<HomeBloc>().add(FetchProfile());
+                  context.read<HomeCubit>().fetchProfile();
                 },
                 icon: const Icon(Icons.refresh_outlined),
               ),
@@ -270,11 +327,14 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  SliverToBoxAdapter _lastOrderHistory(TextTheme textTheme) {
+  SliverToBoxAdapter _orderHistoryCard(
+    OrderHistoryModel? history,
+    TextTheme textTheme,
+  ) {
     return SliverToBoxAdapter(
       child: GradientCard(
         width: 400,
-        height: 220,
+        height: 240,
         cardColor: Colors.black,
         child: Padding(
           padding: const EdgeInsets.only(right: 20, left: 20),
@@ -282,8 +342,8 @@ class HomePage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _orderCardHistoryInfoSection(textTheme),
-              _orderCardHistoryImageSection(),
+              _orderCardHistoryInfoSection(history, textTheme),
+              _orderCardHistoryImageSection(history),
             ],
           ),
         ),
@@ -291,7 +351,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Stack _orderCardHistoryImageSection() {
+  Stack _orderCardHistoryImageSection(OrderHistoryModel? history) {
     return Stack(
       children: [
         Container(
@@ -306,44 +366,57 @@ class HomePage extends StatelessWidget {
           top: 0,
           right: 0,
           left: 0,
-          child: Image.asset(
-            'assets/images/girl1.png',
-            width: 40,
-            isAntiAlias: true,
+          child: CircleAvatar(
+            child: history != null
+                ? CachedNetworkImage(
+                    imageUrl:
+                        '${ApiController.temporaryUrl}/${history.userProfile}',
+                    placeholder: (context, url) =>
+                        const CircularProgressIndicator(),
+                    errorWidget: (context, url, error) => const Icon(
+                      Icons.error_outline,
+                      color: Colors.redAccent,
+                    ),
+                  )
+                : Image.asset('assets/images/girl1.png'),
           ),
         ),
       ],
     );
   }
 
-  Column _orderCardHistoryInfoSection(TextTheme textTheme) {
+  Column _orderCardHistoryInfoSection(
+    OrderHistoryModel? history,
+    TextTheme textTheme,
+  ) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text.rich(
-          TextSpan(
-            children: [
-              TextSpan(
-                text:
-                    'Kunci Hilang\n', // TODO: Get problem subCategory from API
-                style: textTheme.titleLarge?.copyWith(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              TextSpan(
-                text:
-                    'Masalah Kendaraan', // TODO: Get problem category from API
-                style: textTheme.bodyLarge?.copyWith(
-                  color: AppColors.aquamarine,
-                ),
-              )
-            ],
+        LimitedBox(
+          maxWidth: 310,
+          child: Text(
+            history != null
+                ? 'Category'
+                : 'Kamu belum minta bantuan sama sekali', // TODO: Get problem Category from API
+            style: textTheme.titleLarge?.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
+        LimitedBox(
+            maxWidth: 310,
+            child: Text(
+              history != null
+                  ? '${history.description}'
+                  : 'Jangan lupa cari bantuan di HelpMe!',
+              style: textTheme.bodyLarge?.copyWith(
+                color: AppColors.aquamarine,
+              ),
+            )),
         Text(
-          'Rp5.000',
+          history != null ? 'Rp5.000' : 'N/A',
           style: textTheme.titleMedium?.copyWith(
             color: AppColors.primary,
             fontWeight: FontWeight.w800,

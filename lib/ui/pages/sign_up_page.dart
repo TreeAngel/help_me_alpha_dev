@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../services/api/api_exception.dart';
 import '../../configs/app_colors.dart';
-import '../../blocs/auth_blocs/auth_bloc.dart';
-import '../../blocs/auth_blocs/auth_state.dart';
+import '../../blocs/auth_bloc/auth_bloc.dart';
+import '../../blocs/auth_bloc/auth_state.dart';
 import '../../utils/show_dialog.dart';
 
 enum TextInputEvent {
