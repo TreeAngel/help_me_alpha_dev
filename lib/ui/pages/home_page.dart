@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:help_me_mitra_alpha_ver/blocs/home_blocs/home_bloc.dart';
 import 'package:help_me_mitra_alpha_ver/data/menu_items_data.dart';
-// import 'package:help_me_mitra_alpha_ver/ui/pages/order_popup.dart';
-// import 'package:help_me_mitra_alpha_ver/ui/pages/selected_popup.dart';
+import 'package:help_me_mitra_alpha_ver/ui/pages/order_popup.dart';
+import 'package:help_me_mitra_alpha_ver/ui/pages/selected_popup.dart';
 
 import '../../blocs/auth_blocs/auth_bloc.dart';
 import '../../configs/app_colors.dart';
@@ -48,7 +48,7 @@ class HomePage extends StatelessWidget {
           Container(
             margin: const EdgeInsets.only(top: 35),
             width: screenWidth,
-            height: screenHeight / 4.05,
+            height: screenHeight / 3.8,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
@@ -171,7 +171,7 @@ class HomePage extends StatelessWidget {
   Container _riwayatContainer(double screenWidth, double screenHeight) {
     return Container(
       margin: const EdgeInsets.only(
-          top: 355, left: 25, right: 25), // Menambah margin top
+          top: 325, left: 25, right: 25),
       child: Column(
         children: [
           Container(
@@ -196,7 +196,7 @@ class HomePage extends StatelessWidget {
 
   Container _riwayatTextHeader(double screenHeight) {
     return Container(
-        margin: EdgeInsets.only(top: screenHeight / 1.44, left: 25),
+        margin: EdgeInsets.only(top: screenHeight / 1.37, left: 25),
         child: const Text(
           "Riwayat",
           style: TextStyle(
@@ -210,7 +210,7 @@ class HomePage extends StatelessWidget {
   Container _orderanContainer(double screenWidth, double screenHeight, context) {
     return Container(
       margin: const EdgeInsets.only(
-          top: 100, left: 25, right: 25),
+          top: 120, left: 25, right: 25),
       child: Column(
         children: [
           Container(
@@ -232,22 +232,22 @@ class HomePage extends StatelessWidget {
             ),
           ),
           // ICON BUTTON UNTUK JALAN PINTAS KE ORDERAN (dev mode selama belum menyambung ke client)
-          // IconButton(
-          //   icon: const Icon(Icons.arrow_forward),
-          //   iconSize: 30,
-          //   color: const Color.fromARGB(255, 200, 119, 53),
-          //   onPressed: () {
-          //     Navigator.push(context, MaterialPageRoute(builder: (context) => OrderPop()));
-          //   },
-          // ),
-          // IconButton(
-          //   icon: const Icon(Icons.arrow_forward),
-          //   iconSize: 30,
-          //   color: Colors.black,
-          //   onPressed: () {
-          //     Navigator.push(context, MaterialPageRoute(builder: (context) => SelectedPop()));
-          //   },
-          // ),
+          IconButton(
+            icon: const Icon(Icons.arrow_forward),
+            iconSize: 30,
+            color: const Color.fromARGB(255, 200, 119, 53),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => OrderPop()));
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.arrow_forward),
+            iconSize: 30, 
+            color: Colors.black,
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => SelectedPop()));
+            },
+          ),
         ],
       ),
     );
@@ -255,7 +255,7 @@ class HomePage extends StatelessWidget {
 
   Container _orderanTextHeader(double screenHeight) {
     return Container(
-        margin: EdgeInsets.only(top: screenHeight / 2.25, left: 25),
+        margin: EdgeInsets.only(top: screenHeight / 2.10, left: 25),
         child: const Text(
           "Orderan",
           style: TextStyle(

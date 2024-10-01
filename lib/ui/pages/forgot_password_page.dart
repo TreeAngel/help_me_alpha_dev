@@ -1,3 +1,135 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:help_me_mitra_alpha_ver/configs/app_colors.dart';
+import 'package:help_me_mitra_alpha_ver/ui/pages/sign_in_page.dart';
+import '../../blocs/forgot_password_blocs/forgot_password_bloc.dart';
+import '../../blocs/forgot_password_blocs/forgot_password_event.dart';
+import '../../blocs/forgot_password_blocs/forgot_password_state.dart';
+
+class ForgotPasswordPage extends StatelessWidget {
+  final TextEditingController _phoneController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    final appTheme = Theme.of(context);
+    final textTheme = appTheme.textTheme;
+    return BlocProvider(
+      create: (_) => ForgotPasswordBloc(),
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        leading: IconButton(
+          icon: Icon(Icons.keyboard_backspace, color: Colors.white), // Ikon close (X)
+          onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => SignInPage()));
+          },
+        ),
+        title: const Text(
+          'HelpMe!',
+          style: TextStyle(
+            fontSize: 24,
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+      ),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: BlocConsumer<ForgotPasswordBloc, ForgotPasswordState>(
+            listener: (context, state) {
+              if (state is ForgotPasswordSuccess) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                  content: Text('Reset link sent to your phone!'),
+                ));
+              } else if (state is ForgotPasswordError) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(state.error),
+                ));
+              }
+            },
+            builder: (context, state) {
+              if (state is ForgotPasswordLoading) {
+                return const Center(child: CircularProgressIndicator(color: AppColors.mitraGreen,));
+              }
+              
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 5),
+                  Text(
+                    'Lupa Password',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  // TextField(
+                  //   controller: _phoneController,
+                  //   decoration: const InputDecoration(
+                  //     labelText: 'Nomor Telepon',
+                  //     border: OutlineInputBorder(),
+                  //   ),
+                  // ),
+                  TextFormField(
+                    controller: _phoneController,
+                    cursorColor: Colors.black,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
+                      hintText: 'Masukkan nomor telepon',
+                      hintStyle:
+                          textTheme.bodyLarge?.copyWith(color: AppColors.greyinput),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 12.0),
+                    ),
+                    style: textTheme.bodyLarge?.copyWith(
+                      color: AppColors.lightTextColor,
+                      fontWeight: FontWeight.normal,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStatePropertyAll(AppColors.mitraGreen),
+                      shape: MaterialStatePropertyAll(
+                        RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                    onPressed: () {
+                      final phoneNumber = _phoneController.text.trim();
+                      if (phoneNumber.isNotEmpty) {
+                        context.read<ForgotPasswordBloc>().add(ForgotPasswordSubmitted(phoneNumber));
+                      }
+                    },
+                    child: const Text(
+                      'Send Reset Link',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
 // import 'package:flutter/gestures.dart';
 // import 'package:flutter/material.dart';
 // import 'package:flutter_bloc/flutter_bloc.dart';
@@ -144,7 +276,7 @@
 //           context.read<AuthBloc>().add(StartPasswordChangePolling());
 //         },
 //       ),
-//     );
+//     // );
 //   }
 
 //   TextFormField _emailInputField(BuildContext context, TextTheme textTheme) {

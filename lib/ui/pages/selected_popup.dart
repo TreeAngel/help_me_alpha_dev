@@ -1,89 +1,100 @@
 import 'package:flutter/material.dart';
 import 'package:help_me_mitra_alpha_ver/configs/app_colors.dart';
+import 'package:help_me_mitra_alpha_ver/ui/pages/home_page.dart';
 
 class SelectedPop extends StatelessWidget {
   const SelectedPop({super.key});
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-      body: 
-        SingleChildScrollView(
-          child: SizedBox(
-            height: MediaQuery.of(context).size.height,
-            child: Stack(
-              children: [
-                Container(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height,
-                  decoration: const BoxDecoration(
-                    color: AppColors.mitraGreen,
-                  ),
-                  padding: const EdgeInsets.only(top: 10, left: 10, bottom: 0),
-                ),
-                 Center(
-                  child: Card(
-                    color: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    elevation: 5,
-                    margin: const EdgeInsets.fromLTRB(30, 194, 29.64, 303.56),
-                    child: const Padding(
-                      padding: EdgeInsets.fromLTRB(30, 41, 30, 16),
-                      child:Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          SizedBox(height: 8),
-                          Text.rich(
-                            TextSpan(
-                              text: 'Anda Terpilih! \n',
-                              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                              children: [
-                                TextSpan(
-                                  text: 'Uang Transport sudah dibayar, tanya detail infonya lalu segera OTW ya !',
-                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                                )
-                              ]
-                            ),
-                          ),
-                          // TextButton(
-                          //   child: Text('data'),
-                          //   onPressed: (){},
-                          // ),
-                        // SizedBox(
-                        //   width: 100,
-                        //   height: 56,
-                        //   child: ElevatedButton(
-                        //     onPressed: () {
-                        //       // Aksi ketika tombol ditekan
-                        //     },
-                        //     child: Text(
-                        //       'OTW',
-                        //       style: TextStyle(
-                        //         fontSize: 18,
-                        //         fontWeight: FontWeight.bold,
-                        //         color: AppColors.white,
-                        //       ),
-                        //     ),
-                        //   ),
-                        // ),
-
-                          
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                
-                // const Exit(),
-                // const Profile(),
-                // const Orderan(),
-              ],
-            ),
+      backgroundColor: AppColors.mitraGreen, // Background warna hijau
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        leading: IconButton(
+          icon: Icon(Icons.close, color: Colors.black), // Ikon close (X)
+          onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+          },
+        ),
+        title: const Text(
+          'Orderan',
+          style: TextStyle(
+            fontSize: 24,
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
           ),
         ),
+        centerTitle: true,
+        actions: const [
+          Padding(
+            padding: EdgeInsets.all(10.0),
+            child: CircleAvatar(
+              backgroundColor: Colors.white,
+              child: Icon(Icons.person, color: Colors.black), // Ikon avatar
+            ),
+          ),
+        ],
+      ),
+      body: Center(
+        child: Container(
+          padding: EdgeInsets.fromLTRB(24, 31, 23, 16),
+          margin: EdgeInsets.fromLTRB(30, 0, 29.64, 170),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.check_circle_outline,
+                  size: 110, color: Colors.black),
+              const SizedBox(height: 10),
+              const Text(
+                'Anda Terpilih!',
+                style: TextStyle(
+                  fontSize: 27,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                'Uang transport sudah dibayar,\n'
+                'tanya detail infonya lalu\n'
+                'segera OTW ya!',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 17, color: Colors.black, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 60,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black, // Warna tombol
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                  ),
+                  child: Text(
+                    'OTW',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

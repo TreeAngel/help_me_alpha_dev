@@ -19,7 +19,7 @@ class ApiHelper {
 
   static Future authLogin(LoginModel user) async {
     Map<String, dynamic> userData = user.toJson();
-    final response = await ApiController.postData('auth/login?app_type=mitra', userData);
+    final response = await ApiController.postData('auth/login?app_type=mitra', data: userData,);
     if (response is ApiErrorResponseModel) {
       return response;
     } else {
@@ -29,7 +29,7 @@ class ApiHelper {
 
   static Future authRegister(RegisterModel user) async {
     Map<String, dynamic> userData = user.toJson();
-    final response = await ApiController.postData('auth/register', userData);
+    final response = await ApiController.postData('auth/register', data: userData);
     if (response is ApiErrorResponseModel) {
       return response;
     } else {

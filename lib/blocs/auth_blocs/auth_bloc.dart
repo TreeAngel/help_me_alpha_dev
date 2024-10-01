@@ -116,61 +116,58 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     SignInSubmitted event,
     Emitter<AuthState> emit,
   ) async {
-    try {
-      if (username.isEmpty || password.isEmpty) {
-        emit(
-          const AuthError(
-            errorMessage: MessageErrorModel(message: 'Isi username dan password'),
-          ),
-        );
-      } else if (password.length < 8) {
-        emit(
-          const AuthError(
-            errorMessage:
-                MessageErrorModel(message: 'Password minimal 8 karakter'),
-          ),
-        );
-      } else {
-        emit(AuthLoading());
-        username = username.trim();
-        password = password.trim();
-        final loginModel = LoginModel(
-          username: username,
-          password: password,
-        );
-        final signInResponse = await ApiHelper.authLogin(loginModel);
-        if (signInResponse is AuthResponseModel) {
-          final authMessage = signInResponse.message.toString();
-          final authToken = signInResponse.token;
-          if (authToken != null) {
-            ApiController.token = authToken;
-            emit(
-              SignInLoaded(
-                message: authMessage.toString(),
-                token: authToken,
-              ),
-            );
-            rememberMe == true ? ManageAuthToken.writeToken() : null;
-          }
-        } else if (signInResponse is ApiErrorResponseModel) {
-          final error = signInResponse.error;
-          if (error != null) {
-            emit(AuthError(errorMessage: error));
-          } else {
-            emit(
-              const AuthError(
-                errorMessage: MessageErrorModel(message: 'Unknown error occured'),
-              ),
-            );
-          }
-        }
-      }
-    } catch (e) {
+    // username = state.username;
+    // password = state.password;
+    if (username.isEmpty) {
       emit(
-        AuthError(
-          errorMessage: MessageErrorModel(message: 'An unexpected error occurred: $e'),
+        const AuthError(
+          errorMessage: MessageErrorModel(
+            message: 'Isi username',
+          ),
         ),
       );
+    } else if (password.length < 8) {
+      emit(
+        const AuthError(
+          errorMessage: MessageErrorModel(
+            message: 'Password minimal 8 karakter',
+          ),
+        ),
+      );
+    } else {
+      emit(AuthLoading());
+      final loginModel = LoginModel(
+        username: username,
+        password: password,
+      );
+      final signInResponse = await ApiHelper.authLogin(loginModel);
+      if (signInResponse is AuthResponseModel) {
+        final authMessage = signInResponse.message.toString();
+        final authToken = signInResponse.token;
+        if (authToken != null) {
+          ApiController.token = authToken;
+          rememberMe == true ? ManageAuthToken.writeToken() : null;
+          emit(
+            SignInLoaded(
+              message: authMessage.toString(),
+              token: authToken,
+            ),
+          );
+        }
+      } else if (signInResponse is ApiErrorResponseModel) {
+        final error = signInResponse.error;
+        if (error != null) {
+          emit(AuthError(errorMessage: error));
+        } else {
+          emit(
+            const AuthError(
+              errorMessage: MessageErrorModel(
+                message: 'Unknown error occured',
+              ),
+            ),
+          );
+        }
+      }
     }
   }
 

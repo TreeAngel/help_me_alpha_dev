@@ -8,7 +8,7 @@ import '../../utils/logging.dart';
 class ApiController {
   static const baseUrl = null;
   static const temporaryUrl =
-      'https://1020f2d0c412fd3900895aea071c7cc8.serveo.net/api/';
+      'https://945cfe3b44d67f07b49b4ec89d28ebb4.serveo.nets/api/v1/';
   static String? token;
 
   static var dio = Dio(
@@ -66,7 +66,7 @@ class ApiController {
     }
   }
 
-  static Future postData(String url, [Map<String, dynamic>? data]) async {
+  static Future postData(String url, {Map<String, dynamic>? data}) async {
     try {
       final response = await dio.post(
         url,
@@ -85,11 +85,18 @@ class ApiController {
         throw Exception('Failed to post data');
       }
     } on DioException catch (e) {
-      final error = checkException(e);
-      printError(e.toString());
-      return ApiErrorResponseModel(error: MessageErrorModel.fromMap(error));
+      if (e.response != null) {
+        //respons dari server ada
+        // print('DioException response: ${e.response?.data}');
+        final error = checkException(e);
+        return ApiErrorResponseModel(error: MessageErrorModel.fromMap(error));
+      } else {
+        // jika tidak ada respons dari server (mungkin masalah koneksi)
+        printError('Request failed: ${e.message}');
+        return const MessageErrorModel(message: 'Failed to reach server');
+      }
     } on TypeError catch (_) {
-      // final error = checkException(e);
+      //final error = checkException(e);
       return const MessageErrorModel(
           message: 'Error, maybe you are not authorized? 😅');
     } catch (e) {

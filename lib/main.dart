@@ -33,7 +33,7 @@ class MainApp extends StatelessWidget {
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
-        title: 'HelpMe | Mitra',
+        // title: 'HelpMe | Mitra',
         theme: AppTheme.appTheme,
         // home: OrderPop(),
         routerConfig: AppRoute.appRoute,

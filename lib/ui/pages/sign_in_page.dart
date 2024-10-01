@@ -72,7 +72,7 @@ class SignInPage extends StatelessWidget {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                _rememberMeCheckBox(state, context),
+                                _rememberMeCheckBox(state, context, textTheme),
                                 _forgetPassword(context)
                               ],
                             ),
@@ -237,8 +237,7 @@ class SignInPage extends StatelessWidget {
         color: AppColors.lightTextColor,
         fontWeight: FontWeight.normal,
       ),
-    );
-    
+    );  
   }
 
   GestureDetector _forgetPassword(BuildContext context) {
@@ -257,9 +256,7 @@ class SignInPage extends StatelessWidget {
   }
 
   Row _rememberMeCheckBox(
-    AuthState state,
-    BuildContext context,
-  ) {
+      AuthState state, BuildContext context, TextTheme textTheme) {
     return Row(
       children: [
         Checkbox(
@@ -269,12 +266,10 @@ class SignInPage extends StatelessWidget {
           },
         ),
         Text(
-          'Tetap Masuk',
-          style: GoogleFonts.poppins(
-            decoration: TextDecoration.underline,
-            color: AppColors.white,
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
+          'Tetap login',
+          style: textTheme.titleMedium?.copyWith(
+            color: AppColors.darkTextColor,
+            fontWeight: FontWeight.w500,
           ),
         )
       ],
