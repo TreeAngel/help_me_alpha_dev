@@ -117,7 +117,9 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
             emit(OrderError(errorMessage: response.error!.message.toString()));
           } else {
             emit(OrderUploaded(
-                message: response.message, order: response.order));
+              message: response.message,
+              order: response.order,
+            ));
           }
         }
       } else {

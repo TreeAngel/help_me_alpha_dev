@@ -86,6 +86,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
     );
 
     return SafeArea(
+      top: false,
       child: Scaffold(
         backgroundColor: Colors.black,
         appBar: _appBar(context, textTheme),

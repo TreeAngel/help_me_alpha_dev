@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 
 class RegisterModel {
   final String? fullName;
@@ -6,11 +6,11 @@ class RegisterModel {
   final String? phoneNumber;
   final String? password;
   final String? passwordConfirmation;
-  final File? imageProfile;
+  final XFile? imageProfile;
   final String role;
 
   RegisterModel({
-    required this.fullName,
+  required this.fullName,
     required this.username,
     required this.phoneNumber,
     required this.password,

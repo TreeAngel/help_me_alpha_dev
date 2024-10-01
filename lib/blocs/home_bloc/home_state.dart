@@ -65,6 +65,4 @@ final class OrderHistoryError extends HomeState {
   List<Object> get props => [errorMessage];
 }
 
-final class HomePageLoaded extends HomeState {
-  
-}
+final class HomeIdle extends HomeState {}

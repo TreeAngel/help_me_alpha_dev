@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'blocs/home_bloc/home_cubit.dart';
 import 'blocs/auth_bloc/auth_bloc.dart';
 import 'blocs/order_bloc/order_bloc.dart';
+import 'blocs/profile_bloc/profile_bloc.dart';
 import 'configs/app_theme.dart';
 import 'services/api/api_controller.dart';
 import 'utils/image_picker_util.dart';
@@ -29,11 +30,16 @@ class MainApp extends StatelessWidget {
           create: (context) => HomeCubit(apiController: apiHelper),
         ),
         BlocProvider(
+          create: (context) => ProfileBloc(apiController: apiHelper),
+        ),
+        BlocProvider(
           create: (context) => AuthBloc(apiController: apiHelper),
         ),
         BlocProvider(
           create: (context) => OrderBloc(
-              apiController: apiHelper, imagePickerUtil: ImagePickerUtil()),
+            apiController: apiHelper,
+            imagePickerUtil: ImagePickerUtil(),
+          ),
         ),
         // TODO: Add other blocs here
       ],

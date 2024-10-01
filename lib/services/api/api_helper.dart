@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 
-import '../../models/order_history_model.dart';
 import 'api_controller.dart';
+import '../../models/order_history_model.dart';
 import '../../models/order_response_model/order_response_model.dart';
 import '../../models/problem_model.dart';
 import '../../models/user_model.dart';
@@ -17,7 +17,7 @@ class ApiHelper {
   static Future authLogin(LoginModel user) async {
     final userData = user.toJson();
     final response =
-        await ApiController.postData('auth/login?app_type=user', userData);
+        await ApiController.postData('auth/login?app_type=client', userData);
     if (response is ApiErrorResponseModel) {
       return response;
     } else {
@@ -53,7 +53,6 @@ class ApiHelper {
     }
   }
 
-  // Verify account & manage password
   static Future<ApiErrorResponseModel> requestVerification(
       String phoneNumber) async {
     final response = await ApiController.postData(
@@ -114,6 +113,18 @@ class ApiHelper {
       return response;
     } else {
       return ApiErrorResponseModel(error: MessageErrorModel.fromMap(response));
+    }
+  }
+
+  static Future editProfile(FormData request) async {
+    final response = await ApiController.postData(
+      'users/profile',
+      request,
+    );
+    if (response is ApiErrorResponseModel) {
+      return response;
+    } else {
+      return EditUserResponse.fromJson(response);
     }
   }
 

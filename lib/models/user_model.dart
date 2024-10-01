@@ -10,6 +10,20 @@ class DataUser {
       );
 }
 
+class EditUserResponse {
+  final String message;
+  final UserModel? user;
+
+  EditUserResponse({required this.message, this.user});
+
+  factory EditUserResponse.fromJson(Map<String, dynamic> json) => EditUserResponse(
+    message: json['message'],
+    user: UserModel.fromModel(
+      Map<String, dynamic>.from(json['user']),
+    )
+  );
+}
+
 class UserModel {
   final int? id;
   final String? fullName;
@@ -19,7 +33,7 @@ class UserModel {
   final int? isActive;
   final String? identifier;
   final String? imageProfile;
-  final String? phoneNumberVerifiedAt;
+  final dynamic phoneNumberVerifiedAt;
 
   const UserModel({
     this.id,

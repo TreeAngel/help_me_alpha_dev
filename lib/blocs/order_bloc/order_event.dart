@@ -34,7 +34,7 @@ class SolutionSelected extends OrderEvent {
   List<Object> get props => [selectedSolution];
 }
 
-final class DeleteImage extends OrderEvent {
+class DeleteImage extends OrderEvent {
   final int imageIndex;
 
   const DeleteImage({required this.imageIndex});

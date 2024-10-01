@@ -40,7 +40,7 @@ class HomeCubit extends Cubit<HomeState> {
         emit(ProfileLoaded(user: response));
       }
     } catch (e) {
-      emit(CategoryError(errorMessage: e.toString()));
+      emit(ProfileError(errorMessage: e.toString()));
     }
   }
 
@@ -58,5 +58,9 @@ class HomeCubit extends Cubit<HomeState> {
     } catch (e) {
       emit(OrderHistoryError(errorMessage: e.toString()));
     }
+  }
+
+  void homeIdle() {
+    emit(HomeIdle());
   }
 }

@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -28,10 +29,10 @@ class HomePage extends StatelessWidget {
     final textTheme = appTheme.textTheme;
     final colorScheme = appTheme.colorScheme;
     final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
     String username = 'Kamu!';
     List<CategoryModel> categories = [];
     List<OrderHistoryModel> orderHistory = [];
+    OrderHistoryModel? lastHistory;
 
     return SafeArea(
       child: Scaffold(
@@ -46,7 +47,7 @@ class HomePage extends StatelessWidget {
               ),
             ),
             Positioned.fill(
-              child: BlocListener<AuthBloc, AuthState>(
+              child: BlocConsumer<AuthBloc, AuthState>(
                 listener: (context, state) {
                   if (state is AuthError) {
                     _onSignOutError(context, state);
@@ -58,29 +59,37 @@ class HomePage extends StatelessWidget {
                     });
                   }
                 },
-                child: RefreshIndicator(
-                  triggerMode: RefreshIndicatorTriggerMode.onEdge,
-                  onRefresh: () async {
-                    context.read<HomeCubit>().fetchProfile();
-                  },
-                  child: CustomScrollView(
-                    slivers: <Widget>[
-                      const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                      _appBarBlocBuilder(username, textTheme, colorScheme),
-                      const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                      _searchTextField(),
-                      const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                      _categoryTextHeader(textTheme),
-                      const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                      _categoryBlocBuilder(textTheme, categories),
-                      const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                      _orderHistoryTextHeader(textTheme),
-                      const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                      _lastHistoryBlocBuilder(textTheme, orderHistory),
-                      const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                    ],
-                  ),
-                ),
+                builder: (context, state) {
+                  if (state is AuthLoading) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                  return RefreshIndicator(
+                    triggerMode: RefreshIndicatorTriggerMode.onEdge,
+                    onRefresh: () async {
+                      context.read<HomeCubit>().fetchProfile();
+                    },
+                    child: CustomScrollView(
+                      slivers: <Widget>[
+                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                        _appBarBlocBuilder(username, textTheme, colorScheme),
+                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                        _searchTextField(),
+                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                        _categoryTextHeader(textTheme),
+                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                        _categoryBlocBuilder(textTheme, categories),
+                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                        _orderHistoryTextHeader(textTheme),
+                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                        _lastHistoryBlocBuilder(
+                            textTheme, orderHistory, lastHistory),
+                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                      ],
+                    ),
+                  );
+                },
               ),
             ),
           ],
@@ -89,15 +98,12 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  BlocBuilder<HomeCubit, HomeState> _lastHistoryBlocBuilder(
-    TextTheme textTheme,
-    List<OrderHistoryModel> orderHistory,
-  ) {
+  BlocBuilder<HomeCubit, HomeState> _lastHistoryBlocBuilder(TextTheme textTheme,
+      List<OrderHistoryModel> orderHistory, OrderHistoryModel? lastHistory) {
     return BlocBuilder<HomeCubit, HomeState>(
       builder: (context, state) {
-        OrderHistoryModel? lastHistory;
         if (state is OrderHistoryLoaded) {
-          orderHistory.addAll(state.history);
+          orderHistory = state.history;
           lastHistory = orderHistory.last;
           context.read<HomeCubit>().fetchCategories();
           return _orderHistoryCard(lastHistory, textTheme);
@@ -139,6 +145,7 @@ class HomePage extends StatelessWidget {
                 icon: const Icon(Icons.refresh_outlined),
               ),
       );
+      context.read<HomeCubit>().homeIdle();
     });
   }
 
@@ -229,6 +236,7 @@ class HomePage extends StatelessWidget {
                 icon: const Icon(Icons.refresh_outlined),
               ),
       );
+      context.read<HomeCubit>().homeIdle();
     });
   }
 
@@ -245,7 +253,7 @@ class HomePage extends StatelessWidget {
             ),
           );
         } else if (state is CategoryLoaded) {
-          categories.addAll(state.categories.take(4).toList());
+          categories = state.categories.take(4).toList();
           // context.read<HomeCubit>().add(const FetchHistory(''));
           return _categoriesGrid(categories, textTheme);
         } else if (state is CategoryError) {
@@ -282,6 +290,7 @@ class HomePage extends StatelessWidget {
                 icon: const Icon(Icons.refresh_outlined),
               ),
       );
+      context.read<HomeCubit>().homeIdle();
     });
   }
 
@@ -363,22 +372,15 @@ class HomePage extends StatelessWidget {
           ),
         ),
         Positioned(
-          top: 0,
+          top: 10,
           right: 0,
           left: 0,
           child: CircleAvatar(
-            child: history != null
-                ? CachedNetworkImage(
-                    imageUrl:
-                        '${ApiController.temporaryUrl}/${history.userProfile}',
-                    placeholder: (context, url) =>
-                        const CircularProgressIndicator(),
-                    errorWidget: (context, url, error) => const Icon(
-                      Icons.error_outline,
-                      color: Colors.redAccent,
-                    ),
+            backgroundImage: history != null
+                ? CachedNetworkImageProvider(
+                    '${ApiController.temporaryUrl}/${history.userProfile}',
                   )
-                : Image.asset('assets/images/girl1.png'),
+                : const AssetImage('assets/images/girl1.png'),
           ),
         ),
       ],
@@ -397,7 +399,10 @@ class HomePage extends StatelessWidget {
           maxWidth: 310,
           child: Text(
             history != null
-                ? 'Category'
+                ? history.category.toString().replaceFirst(
+                      history.category.toString()[0],
+                      history.category.toString()[0].toUpperCase(),
+                    )
                 : 'Kamu belum minta bantuan sama sekali', // TODO: Get problem Category from API
             style: textTheme.titleLarge?.copyWith(
               color: AppColors.primary,
@@ -416,7 +421,7 @@ class HomePage extends StatelessWidget {
               ),
             )),
         Text(
-          history != null ? 'Rp5.000' : 'N/A',
+          history != null ? 'Rp${history.price}' : 'N/A',
           style: textTheme.titleMedium?.copyWith(
             color: AppColors.primary,
             fontWeight: FontWeight.w800,
@@ -594,6 +599,7 @@ class HomePage extends StatelessWidget {
     String username,
   ) {
     return SliverAppBar(
+      systemOverlayStyle: SystemUiOverlayStyle.dark,
       centerTitle: false,
       backgroundColor: Colors.black,
       actions: [
@@ -653,7 +659,7 @@ class HomePage extends StatelessWidget {
         printInfo('You tap on home');
         break;
       case MenuItems.itemProfile:
-        printInfo('You tap on profile');
+        context.pushNamed('profilePage');
         break;
       case MenuItems.itemOrderHistory:
         printInfo('You tap on order history');
