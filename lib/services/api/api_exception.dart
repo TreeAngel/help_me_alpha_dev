@@ -24,18 +24,14 @@ class ApiException {
       case DioExceptionType.badResponse:
         if (dioException.response?.statusCode == 400) {
           final message = dioException.response?.data as Map<String, dynamic>;
-          return
-              // 'error': 'Bad Request',
-              message;
+          return message;
         } else if (dioException.response?.statusCode == 401) {
           return {
             'error': 'Unauthorized',
           };
-          // } else if (dioException.response?.statusCode == 403) {
-          //   return {
-          //     'error': 'Acount is inactive'
-          //   };
-          // }
+        } else if (dioException.response?.statusCode == 422) {
+          final message = dioException.response?.data as Map<String, dynamic>;
+          return message;
         } else {
           return {
             'error': 'Failed to process data, try again after a few seconds',
@@ -79,6 +75,12 @@ class ApiException {
     }
     if (errorModel.role != null) {
       errorMessage += '${errorModel.role}, ';
+    }
+    if (errorModel.newPassword != null) {
+      errorMessage += '${errorModel.newPassword}, ';
+    }
+    if (errorModel.verificationCode != null) {
+      errorMessage += '${errorModel.verificationCode}, ';
     }
     errorMessage = errorMessage.trim();
     errorMessage = errorMessage.endsWith(',')

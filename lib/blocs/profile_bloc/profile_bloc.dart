@@ -8,57 +8,206 @@ import '../../models/api_error_response/api_error_response_model.dart';
 import '../../models/user_model.dart';
 import '../../services/api/api_controller.dart';
 import '../../services/api/api_helper.dart';
+import '../../ui/pages/verify_phone_number_page.dart';
+import '../../utils/image_picker_util.dart';
 
 part 'profile_event.dart';
 part 'profile_state.dart';
 
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   final ApiController apiController;
+  final ImagePickerUtil imagePickerUtil;
 
-  ProfileBloc({required this.apiController}) : super(ProfileInitial()) {
+  String? oldPassword;
+  String? newPassword;
+  String? newConfirmPassword;
+
+  String? fullname;
+  String? username;
+  String? phoneNumber;
+  XFile? imageProfile;
+
+  String? codeOTP;
+  StatusOTP statusOTP = StatusOTP.waiting;
+
+  ProfileBloc({required this.apiController, required this.imagePickerUtil})
+      : super(ProfileInitial()) {
     on<FetchProfile>(_onFetchProfile);
 
     on<ProfileIsIdle>((event, emit) => emit(ProfileIdle()));
 
-    on<EditProfile>(_onEditProfile);
+    on<EditProfileSubmitted>(_onEditProfile);
+
+    on<EditPasswordSubmitted>(_onEditPasswordSubmitted);
+
+    on<OldPasswordChanged>(
+      (event, emit) => oldPassword = event.oldPassword,
+    );
+
+    on<NewPasswordChanged>(
+      (event, emit) => newPassword = event.newPassword,
+    );
+
+    on<NewConfirmPasswordChanged>(
+      (event, emit) => newConfirmPassword = event.newConfirmPassword,
+    );
+
+    on<NewFullnameChanged>(
+      (event, emit) => fullname = event.fullname,
+    );
+
+    on<NewUsernameChanged>(
+      (event, emit) => username = event.username,
+    );
+
+    on<NewPhoneNumberChanged>(
+      (event, emit) => phoneNumber = event.phoneNumber,
+    );
+
+    on<OTPCodeChanged>(
+      (event, emit) => codeOTP = event.code,
+    );
+
+    on<CameraCapture>(_onCameraCapture);
+
+    on<GalleryImagePicker>(_onGalleryImagePicker);
+
+    on<RequestOTP>(_onRequestOTP);
+
+    on<VerifyOTP>(_onVerifyOTP);
+  }
+
+  FutureOr<void> _onVerifyOTP(event, emit) async {
+    emit(OTPLoading());
+    if (codeOTP == null || codeOTP!.isEmpty) {
+      emit(
+        const ProfileError(errorMessage: 'Isi dengan OTP anda'),
+      );
+    } else {
+      final response = await ApiHelper.verifyOTP(phoneNumber!, codeOTP!);
+      if (response.error != null) {
+        final message = response.error?.message ?? response.error?.error;
+        emit(OTPRequested(
+          message: message.toString(),
+        ));
+      } else {
+        emit(const OTPError(errorMessage: 'Unknown error occured'));
+      }
+    }
+  }
+
+  FutureOr<void> _onRequestOTP(event, emit) async {
+    emit(OTPLoading());
+    if (phoneNumber == null || phoneNumber!.isEmpty) {
+      phoneNumber = phoneNumber!.trim();
+      emit(
+        const OTPError(errorMessage: 'Isi nomor telpon'),
+      );
+    } else if (!phoneNumber!.startsWith('08')) {
+      emit(
+        const OTPError(errorMessage: 'isi dengan nomor telpon yang valid'),
+      );
+    } else {
+      final response = await ApiHelper.requestOTP(phoneNumber!);
+      if (response.error != null) {
+        final message = response.error?.message ?? response.error?.error;
+        emit(OTPRequested(
+          message: message.toString(),
+        ));
+      } else {
+        emit(const OTPError(errorMessage: 'Unknown error occured'));
+      }
+    }
+  }
+
+  FutureOr<void> _onGalleryImagePicker(event, emit) async {
+    XFile? imagePicked = await imagePickerUtil.imageFromGallery();
+    if (imagePicked != null) {
+      imageProfile = imagePicked;
+      emit(ImagePicked(pickedImage: imagePicked));
+    } else {
+      emit(ProfileIdle());
+    }
+  }
+
+  FutureOr<void> _onCameraCapture(event, emit) async {
+    XFile? imagePicked = await imagePickerUtil.cameraCapture();
+    if (imagePicked != null) {
+      imageProfile = imagePicked;
+      emit(ImagePicked(pickedImage: imagePicked));
+    } else {
+      emit(ProfileIdle());
+    }
+  }
+
+  FutureOr<void> _onEditPasswordSubmitted(event, emit) async {
+    emit(ProfileLoading());
+    if (oldPassword == null || oldPassword!.isEmpty) {
+      emit(const EditPasswordError(errorMessage: 'Isi kata sandi lama'));
+    } else if (oldPassword!.length < 8) {
+      emit(const EditPasswordError(
+          errorMessage: 'Kata sandi lama minimal 8 karakter'));
+    } else if (newPassword == null || newPassword!.isEmpty) {
+      emit(const EditPasswordError(errorMessage: 'Isi kata sandi baru'));
+    } else if (newPassword!.length < 8) {
+      emit(const EditPasswordError(
+          errorMessage: 'Kata sandi baru minimal 8 karakter'));
+    } else if (newConfirmPassword == null ||
+        newConfirmPassword != newPassword) {
+      emit(const EditPasswordError(errorMessage: 'Konfirmasi kata sandi baru'));
+    } else {
+      final response = await ApiHelper.changePassword(
+          oldPassword!, newPassword!, newConfirmPassword!);
+      if (response.error != null) {
+        final message = response.error?.message ?? response.error?.error;
+        emit(EditPasswordLoaded(
+          message: message.toString(),
+        ));
+      } else {
+        emit(const EditPasswordError(errorMessage: 'Unknown error occured'));
+      }
+    }
   }
 
   FutureOr<void> _onEditProfile(event, emit) async {
     emit(ProfileLoading());
-    if (event.fullname.isEmpty) {
+    if (fullname == null || fullname!.isEmpty) {
       emit(
         const ProfileError(errorMessage: 'Isi nama lengkap'),
       );
-    } else if (event.username.isEmpty) {
+    } else if (fullname == null || username!.isEmpty) {
       emit(const ProfileError(errorMessage: 'Isi username'));
-    } else if (event.phoneNumber.isEmpty) {
+    } else if (phoneNumber == null || phoneNumber!.isEmpty) {
       emit(
         const ProfileError(errorMessage: 'Isi nomor telpon'),
       );
-    } else if (!event.phoneNumber.startsWith('08')) {
+    } else if (!phoneNumber!.startsWith('08')) {
       emit(
-        const ProfileError(
-            errorMessage: 'isi dengan nomor telpon yang valid'),
+        const ProfileError(errorMessage: 'isi dengan nomor telpon yang valid'),
       );
-    }
-    MultipartFile? profileImage;
-    if (event.imageProfile != null) {
-      profileImage = await MultipartFile.fromFile(
-        event.imageProfile!.path,
-        filename: event.imageProfile!.name.split('/').last,
-      );
-    }
-    final formData = FormData.fromMap({
-      'full_name': event.fullname,
-      'username': event.username,
-      'phone_number': event.phoneNumber,
-      if (profileImage != null) 'image_profile': profileImage,
-    });
-    final response = await ApiHelper.editProfile(formData);
-    if (response is ApiErrorResponseModel) {
-      emit(ProfileError(errorMessage: response.error!.message.toString()));
     } else {
-      emit(ProfileEdited(message: response.message, data: response.user));
+      MultipartFile? profileImage;
+      if (imageProfile != null) {
+        profileImage = await MultipartFile.fromFile(
+          imageProfile!.path,
+          filename: imageProfile!.name.split('/').last,
+        );
+      }
+      final formData = FormData.fromMap({
+        'full_name': fullname,
+        'username': username,
+        'phone_number': phoneNumber,
+        if (profileImage != null) 'image_profile': profileImage,
+      });
+      final response = await ApiHelper.editProfile(formData);
+      if (response is ApiErrorResponseModel) {
+        final message = response.error?.message ?? response.error?.error;
+        emit(EditPasswordLoaded(
+          message: message.toString(),
+        ));
+      } else {
+        emit(ProfileEdited(message: response.message, data: response.user));
+      }
     }
   }
 

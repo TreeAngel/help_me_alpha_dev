@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -30,13 +31,13 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
       : super(OrderInitial()) {
     on<FetchProblems>(_onFetchProblems);
 
-    on<ProblemSelected>((event, emit) {
-      selectedProblem = event.selectedProblem;
-    });
+    on<ProblemSelected>(
+      (event, emit) => selectedProblem = event.selectedProblem,
+    );
 
-    on<SolutionSelected>((event, emit) {
-      selectedSolution = event.selectedSolution;
-    });
+    on<SolutionSelected>(
+      (event, emit) => selectedSolution = event.selectedSolution,
+    );
 
     on<ProblemsPop>((event, emit) {
       selectedProblem = null;
@@ -47,17 +48,9 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
       emit(OrderInitial());
     });
 
-    on<CameraCapture>((event, emit) async {
-      XFile? file = await imagePickerUtil.cameraCapture();
-      problemPictures.add(file);
-      emit(ImagePicked(pickedImage: file));
-    });
+    on<CameraCapture>(_onCameraCapture);
 
-    on<GalleryImagePicker>((event, emit) async {
-      XFile? file = await imagePickerUtil.imageFromGallery();
-      problemPictures.add(file);
-      emit(ImagePicked(pickedImage: file));
-    });
+    on<GalleryImagePicker>(_onGalleryImagePicker);
 
     on<DeleteImage>((event, emit) {
       problemPictures.removeAt(event.imageIndex);
@@ -72,6 +65,26 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
       lat = event.lat;
       long = event.long;
     });
+  }
+
+  FutureOr<void> _onGalleryImagePicker(event, emit) async {
+    XFile? imagePicked = await imagePickerUtil.imageFromGallery();
+    if (imagePicked != null) {
+      problemPictures.add(imagePicked);
+      emit(ImagePicked(pickedImage: imagePicked));
+    } else {
+      emit(OrderIdle());
+    }
+  }
+
+  FutureOr<void> _onCameraCapture(event, emit) async {
+    XFile? imagePicked = await imagePickerUtil.cameraCapture();
+    if (imagePicked != null) {
+      problemPictures.add(imagePicked);
+      emit(ImagePicked(pickedImage: imagePicked));
+    } else {
+      emit(OrderIdle());
+    }
   }
 
   _orderSubmitted(event, emit) async {

@@ -21,7 +21,8 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ApiController apiHelper = ApiController();
+    final apiHelper = ApiController();
+    final imagePicker = ImagePickerUtil();
     ManageAuthToken.readToken();
 
     return MultiBlocProvider(
@@ -30,7 +31,7 @@ class MainApp extends StatelessWidget {
           create: (context) => HomeCubit(apiController: apiHelper),
         ),
         BlocProvider(
-          create: (context) => ProfileBloc(apiController: apiHelper),
+          create: (context) => ProfileBloc(apiController: apiHelper, imagePickerUtil: imagePicker),
         ),
         BlocProvider(
           create: (context) => AuthBloc(apiController: apiHelper),
@@ -38,7 +39,7 @@ class MainApp extends StatelessWidget {
         BlocProvider(
           create: (context) => OrderBloc(
             apiController: apiHelper,
-            imagePickerUtil: ImagePickerUtil(),
+            imagePickerUtil: imagePicker,
           ),
         ),
         // TODO: Add other blocs here

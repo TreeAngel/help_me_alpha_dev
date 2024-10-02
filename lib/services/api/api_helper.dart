@@ -53,7 +53,7 @@ class ApiHelper {
     }
   }
 
-  static Future<ApiErrorResponseModel> requestVerification(
+  static Future<ApiErrorResponseModel> requestOTP(
       String phoneNumber) async {
     final response = await ApiController.postData(
       'auth/verification',
@@ -84,7 +84,7 @@ class ApiHelper {
     }
   }
 
-  Future<ApiErrorResponseModel> forgotPassword(String phoneNumber) async {
+  static Future<ApiErrorResponseModel> forgotPassword(String phoneNumber) async {
     final response = await ApiController.postData(
       'auth/forgot-password',
       {'phone_number': phoneNumber},
@@ -96,17 +96,17 @@ class ApiHelper {
     }
   }
 
-  Future<ApiErrorResponseModel> changePassword(
-    String currentPassword,
+  static Future<ApiErrorResponseModel> changePassword(
+    String oldPassword,
     String newPassword,
-    String confirmPassword,
+    String newConfirmPassword,
   ) async {
     final response = await ApiController.postData(
       'auth/change-password',
       {
-        'current_password': currentPassword,
+        'current_password': oldPassword,
         'new_password': newPassword,
-        'new_password_confirmation': confirmPassword,
+        'new_password_confirmation': newConfirmPassword,
       },
     );
     if (response is ApiErrorResponseModel) {

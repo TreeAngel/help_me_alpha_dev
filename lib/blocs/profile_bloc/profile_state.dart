@@ -4,7 +4,7 @@ sealed class ProfileState extends Equatable {
   const ProfileState();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 final class ProfileInitial extends ProfileState {}
@@ -39,4 +39,60 @@ final class ProfileEdited extends ProfileState {
 
   @override
   List<Object> get props => [message, data];
+}
+
+final class EditPasswordLoaded extends ProfileState {
+  final String message;
+
+  const EditPasswordLoaded({required this.message});
+
+  @override
+  List<Object> get props => [message];
+}
+
+final class EditPasswordError extends ProfileState {
+  final String errorMessage;
+
+  const EditPasswordError({required this.errorMessage});
+
+  @override
+  List<Object> get props => [errorMessage];
+}
+
+final class ImagePicked extends ProfileState {
+  final XFile? pickedImage;
+
+  const ImagePicked({required this.pickedImage});
+
+  @override
+  List<Object?> get props => [pickedImage];
+}
+
+final class OTPRequested extends ProfileState {
+  final String message;
+
+  const OTPRequested({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+
+final class OTPError extends ProfileState {
+  final String errorMessage;
+
+  const OTPError({required this.errorMessage});
+
+  @override
+  List<Object> get props => [errorMessage];
+}
+
+final class OTPLoading extends ProfileState {}
+
+final class OTPVerified extends ProfileState {
+  final String message; // TODO: I don't know the response
+
+  const OTPVerified({required this.message});
+
+  @override
+  List<Object?> get props => [message];
 }

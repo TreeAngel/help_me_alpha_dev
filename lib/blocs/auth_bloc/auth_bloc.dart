@@ -116,7 +116,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(AuthLoading());
     final signOutResponse = await ApiHelper.authLogout();
     if (signOutResponse.error != null) {
-      emit(SignOutLoaded(message: signOutResponse.error!.message.toString()));
+      final message = signOutResponse.error?.message ?? signOutResponse.error?.error;
+        emit(SignOutLoaded(
+          message: message.toString(),
+        ));
     } else {
       emit(
         const AuthError(

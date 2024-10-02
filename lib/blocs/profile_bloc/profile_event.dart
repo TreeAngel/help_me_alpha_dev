@@ -9,21 +9,79 @@ sealed class ProfileEvent extends Equatable {
 
 class FetchProfile extends ProfileEvent {}
 
-class EditProfile extends ProfileEvent {
+class NewFullnameChanged extends ProfileEvent {
   final String fullname;
-  final String username;
-  final String phoneNumber;
-  final XFile? imageProfile;
 
-  const EditProfile({
-    required this.fullname,
-    required this.username,
-    required this.phoneNumber,
-    this.imageProfile,
-  });
+  const NewFullnameChanged({required this.fullname});
 
   @override
-  List<dynamic> get props => [fullname, username, phoneNumber, imageProfile];
+  List get props => [fullname];
 }
 
+class NewUsernameChanged extends ProfileEvent {
+  final String username;
+
+  const NewUsernameChanged({required this.username});
+
+  @override
+  List get props => [username];
+}
+
+class NewPhoneNumberChanged extends ProfileEvent {
+  final String phoneNumber;
+
+  const NewPhoneNumberChanged({required this.phoneNumber});
+
+  @override
+  List get props => [phoneNumber];
+}
+
+class CameraCapture extends ProfileEvent {}
+
+class GalleryImagePicker extends ProfileEvent {}
+
+class EditProfileSubmitted extends ProfileEvent {}
+
 class ProfileIsIdle extends ProfileEvent {}
+
+class EditPasswordSubmitted extends ProfileEvent {}
+
+class OldPasswordChanged extends ProfileEvent {
+  final String oldPassword;
+
+  const OldPasswordChanged({required this.oldPassword});
+
+  @override
+  List get props => [oldPassword];
+}
+
+class NewPasswordChanged extends ProfileEvent {
+  final String newPassword;
+
+  const NewPasswordChanged({required this.newPassword});
+
+  @override
+  List get props => [newPassword];
+}
+
+class NewConfirmPasswordChanged extends ProfileEvent {
+  final String newConfirmPassword;
+
+  const NewConfirmPasswordChanged({required this.newConfirmPassword});
+
+  @override
+  List get props => [newConfirmPassword];
+}
+
+class RequestOTP extends ProfileEvent {}
+
+class VerifyOTP extends ProfileEvent {}
+
+class OTPCodeChanged extends ProfileEvent {
+  final String code;
+
+  const OTPCodeChanged({required this.code});
+
+  @override
+  List get props => [code];
+}

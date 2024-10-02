@@ -80,6 +80,7 @@ class SignInPage extends StatelessWidget {
                               const Center(
                                 child: CircularProgressIndicator(),
                               ),
+                              const SizedBox(height: 10),
                             ] else ...[
                               _signInButton(textTheme, context, state),
                             ],

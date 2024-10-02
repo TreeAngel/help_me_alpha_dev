@@ -6,9 +6,10 @@ import '../../services/api/api_exception.dart';
 import '../../utils/logging.dart';
 
 class ApiController {
-  static const baseUrl = null;
+  static const baseUrl =
+      null; // TODO: Add base url untuk akses api saat sudah dihosting
   static const temporaryUrl =
-      'https://945cfe3b44d67f07b49b4ec89d28ebb4.serveo.net';
+      'https://96ffa04e64f3014f6453adf9714de1f5.serveo.net';
   static String? token;
 
   static var dio = Dio(
@@ -78,10 +79,6 @@ class ApiController {
       final error = checkException(e);
       printError(e.toString());
       return ApiErrorResponseModel(error: MessageErrorModel.fromMap(error));
-    } on TypeError catch (_) {
-      // final error = checkException(e);
-      return const MessageErrorModel(
-          message: 'Error, maybe you are not authorized? 😅');
     } catch (e) {
       printError(e.toString());
       throw Exception(e);

@@ -63,7 +63,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   }
                   return Padding(
                     padding: EdgeInsets.only(
-                      top: (screenHeight / 20),
+                      top: (screenHeight / 30),
                       left: 20,
                       right: 20,
                     ),
@@ -85,7 +85,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           SliverToBoxAdapter(child: _usernameText(textTheme)),
                           const SliverToBoxAdapter(child: SizedBox(height: 10)),
                           SliverToBoxAdapter(
-                              child: _phoneNumberSection(textTheme)),
+                              child: _phoneNumberSection(context, textTheme)),
                           const SliverToBoxAdapter(child: SizedBox(height: 20)),
                           SliverToBoxAdapter(child: _editProfileBtn(textTheme)),
                           const SliverToBoxAdapter(child: SizedBox(height: 20)),
@@ -111,29 +111,24 @@ class _ProfilePageState extends State<ProfilePage> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         _passwordText(textTheme),
-        _passwordBtn(textTheme),
+        _changePasswordBtn(textTheme),
       ],
     );
   }
 
-  SizedBox _passwordBtn(TextTheme textTheme) {
+  SizedBox _changePasswordBtn(TextTheme textTheme) {
     return SizedBox(
       width: 90,
       height: 40,
       child: OutlinedButton(
-        style: ButtonStyle(
-          side: const WidgetStatePropertyAll(
+        style: const ButtonStyle(
+          side: WidgetStatePropertyAll(
             BorderSide(
               color: AppColors.surface,
             ),
           ),
-          shape: WidgetStatePropertyAll(
-            RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-          ),
         ),
-        onPressed: () {}, // TODO: Implement edit password
+        onPressed: () => context.pushNamed('changePasswordPage'),
         child: Text(
           'Ubah',
           style: textTheme.labelLarge?.copyWith(
@@ -205,39 +200,48 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Row _phoneNumberSection(TextTheme textTheme) {
+  Row _phoneNumberSection(BuildContext context, TextTheme textTheme) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         _phoneNumberText(textTheme),
         profile?.phoneNumberVerifiedAt != null
             ? _numberVerified()
-            : _numberNotVerified(textTheme),
+            : _numberNotVerified(context, textTheme),
       ],
     );
   }
 
-  SizedBox _numberNotVerified(TextTheme textTheme) {
+  SizedBox _numberNotVerified(BuildContext context, TextTheme textTheme) {
     return SizedBox(
-      width: 90,
+      width: 100,
       height: 40,
-      child: TextButton(
-        onPressed: () {}, // TODO: Implement number verification
-        style: ButtonStyle(
-          backgroundColor: WidgetStateProperty.all(
-            AppColors.primary,
-          ),
-          shape: WidgetStateProperty.all(
-            RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+      child: OutlinedButton(
+        onPressed: () {
+          context.read<ProfileBloc>().add(
+                NewFullnameChanged(fullname: profile!.fullName.toString()),
+              );
+          context.read<ProfileBloc>().add(
+                NewUsernameChanged(username: profile!.username.toString()),
+              );
+          context.read<ProfileBloc>().add(
+                NewPhoneNumberChanged(
+                    phoneNumber: profile!.fullName.toString()),
+              );
+          context.pushNamed('verifyPhoneNumberPage');
+        },
+        style: const ButtonStyle(
+          side: WidgetStatePropertyAll(
+            BorderSide(
+              color: AppColors.primary,
             ),
           ),
         ),
         child: Text(
           'Verifikasi',
           style: textTheme.labelLarge?.copyWith(
-            fontSize: 13,
-            color: AppColors.lightTextColor,
+            fontSize: 11,
+            color: AppColors.primary,
             fontWeight: FontWeight.w100,
           ),
           textAlign: TextAlign.center,

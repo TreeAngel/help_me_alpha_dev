@@ -117,6 +117,7 @@ class SignUpPage extends StatelessWidget {
                               const Center(
                                 child: CircularProgressIndicator(),
                               ),
+                              const SizedBox(height: 10),
                             ] else ...[
                               _signUpButton(textTheme, context, state),
                             ],

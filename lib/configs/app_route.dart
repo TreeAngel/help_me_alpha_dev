@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 
 import '../services/api/api_controller.dart';
+import '../ui/pages/change_password_page.dart';
 import '../ui/pages/image_zoom_page.dart';
 import '../ui/pages/launch_page.dart';
 import '../ui/pages/add_task_page.dart';
@@ -9,6 +10,7 @@ import '../ui/pages/profile_page.dart';
 import '../ui/pages/sign_in_page.dart';
 import '../ui/pages/sign_up_page.dart';
 import '../ui/pages/detail_page.dart';
+import '../ui/pages/verify_phone_number_page.dart';
 
 class AppRoute {
   static final GoRouter appRoute = GoRouter(
@@ -67,6 +69,16 @@ class AppRoute {
         path: '/profile',
         name: 'profilePage',
         builder: (context, state) => const ProfilePage(),
+      ),
+      GoRoute(
+        path: '/changePassword',
+        name: 'changePasswordPage',
+        builder: (context, state) => const ChangePasswordPage(),
+      ),
+      GoRoute(
+        path: '/verifyPhoneNumber',
+        name: 'verifyPhoneNumberPage',
+        builder: (context, state) => const VerifyPhoneNumberPage(),
       ),
       GoRoute(
         path: '/detail',
