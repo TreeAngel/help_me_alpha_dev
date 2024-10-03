@@ -6,14 +6,14 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../blocs/order_bloc/order_bloc.dart';
-import '../../configs/app_colors.dart';
-import '../../data/menu_items_data.dart';
-import '../../models/menu_item_model.dart';
-import '../../services/location_service.dart';
-import '../../utils/logging.dart';
-import '../../utils/question_builder.dart';
-import '../../utils/show_dialog.dart';
+import '../../../blocs/order_bloc/order_bloc.dart';
+import '../../../configs/app_colors.dart';
+import '../../../data/menu_items_data.dart';
+import '../../../models/misc/menu_item_model.dart';
+import '../../../services/location_service.dart';
+import '../../../utils/logging.dart';
+import '../../../utils/question_builder.dart';
+import '../../../utils/show_dialog.dart';
 
 class AddTaskPage extends StatefulWidget {
   const AddTaskPage({

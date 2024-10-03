@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/menu_item_model.dart';
+import '../models/misc/menu_item_model.dart';
 import '../services/api/api_controller.dart';
 
 class MenuItems {

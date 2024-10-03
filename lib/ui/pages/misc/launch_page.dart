@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
-import '../../configs/app_colors.dart';
+import '../../../configs/app_colors.dart';
 
 class LaunchPage extends StatefulWidget {
   const LaunchPage({super.key});

@@ -1,14 +1,14 @@
 import 'package:dio/dio.dart';
 
 import 'api_controller.dart';
-import '../../models/order_history_model.dart';
-import '../../models/order_response_model/order_response_model.dart';
-import '../../models/problem_model.dart';
-import '../../models/user_model.dart';
-import '../../models/auth_response_model.dart';
-import '../../models/category_model.dart';
-import '../../models/login_model.dart';
-import '../../models/register_model.dart';
+import '../../models/order/order_history_model.dart';
+import '../../models/order/order_response_model.dart';
+import '../../models/category_problem/problem_model.dart';
+import '../../models/auth/user_model.dart';
+import '../../models/auth/auth_response_model.dart';
+import '../../models/category_problem/category_model.dart';
+import '../../models/auth/login_model.dart';
+import '../../models/auth/register_model.dart';
 import '../../models/api_error_response/api_error_response_model.dart';
 import '../../models/api_error_response/message_error_model.dart';
 
@@ -53,8 +53,7 @@ class ApiHelper {
     }
   }
 
-  static Future<ApiErrorResponseModel> requestOTP(
-      String phoneNumber) async {
+  static Future<ApiErrorResponseModel> requestOTP(String phoneNumber) async {
     final response = await ApiController.postData(
       'auth/verification',
       {'phone_number': phoneNumber},
@@ -84,7 +83,8 @@ class ApiHelper {
     }
   }
 
-  static Future<ApiErrorResponseModel> forgotPassword(String phoneNumber) async {
+  static Future<ApiErrorResponseModel> forgotPassword(
+      String phoneNumber) async {
     final response = await ApiController.postData(
       'auth/forgot-password',
       {'phone_number': phoneNumber},
@@ -173,11 +173,15 @@ class ApiHelper {
     if (response is ApiErrorResponseModel) {
       return response;
     } else {
-      List<OrderHistoryModel> orderHistorys = [];
-      for (var item in response as List<dynamic>) {
-        orderHistorys.add(OrderHistoryModel.fromMap(item));
+      if (response is Map<String, dynamic> && response.keys.contains('message')) {
+        return ApiErrorResponseModel(error: MessageErrorModel.fromMap(response));
+      } else {
+        List<OrderHistoryModel> orderHistorys = [];
+        for (var item in response as List<dynamic>) {
+          orderHistorys.add(OrderHistoryModel.fromMap(item));
+        }
+        return orderHistorys;
       }
-      return orderHistorys;
     }
   }
 }

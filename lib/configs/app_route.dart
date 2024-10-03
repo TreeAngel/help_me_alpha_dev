@@ -1,16 +1,18 @@
 import 'package:go_router/go_router.dart';
 
 import '../services/api/api_controller.dart';
-import '../ui/pages/change_password_page.dart';
-import '../ui/pages/image_zoom_page.dart';
-import '../ui/pages/launch_page.dart';
-import '../ui/pages/add_task_page.dart';
-import '../ui/pages/home_page.dart';
-import '../ui/pages/profile_page.dart';
-import '../ui/pages/sign_in_page.dart';
-import '../ui/pages/sign_up_page.dart';
-import '../ui/pages/detail_page.dart';
-import '../ui/pages/verify_phone_number_page.dart';
+import '../ui/pages/auth/change_password_page.dart';
+import '../ui/pages/auth/forget_password_page.dart';
+import '../ui/pages/home/edit_profile_page.dart';
+import '../ui/pages/misc/image_zoom_page.dart';
+import '../ui/pages/misc/launch_page.dart';
+import '../ui/pages/order/add_task_page.dart';
+import '../ui/pages/home/home_page.dart';
+import '../ui/pages/home/profile_page.dart';
+import '../ui/pages/auth/sign_in_page.dart';
+import '../ui/pages/auth/sign_up_page.dart';
+import '../ui/pages/order/detail_page.dart';
+import '../ui/pages/auth/verify_phone_number_page.dart';
 
 class AppRoute {
   static final GoRouter appRoute = GoRouter(
@@ -23,6 +25,9 @@ class AppRoute {
         return '/signIn';
       } else if (isAuthenticated == false &&
           state.matchedLocation == '/profile') {
+        return '/signIn';
+      } else if (isAuthenticated == false &&
+          state.matchedLocation == '/editProfile') {
         return '/signIn';
       } else if (isAuthenticated == false &&
           state.matchedLocation == '/detail') {
@@ -61,6 +66,11 @@ class AppRoute {
         builder: (context, state) => const SignUpPage(),
       ),
       GoRoute(
+        path: '/forgetPassword',
+        name: 'forgetPasswordPage',
+        builder: (context, state) => const ForgetPasswordPage(),
+      ),
+      GoRoute(
         path: '/home',
         name: 'homePage',
         builder: (context, state) => const HomePage(),
@@ -69,6 +79,11 @@ class AppRoute {
         path: '/profile',
         name: 'profilePage',
         builder: (context, state) => const ProfilePage(),
+      ),
+      GoRoute(
+        path: '/editProfile',
+        name: 'editProfilePage',
+        builder: (context, state) => const EditProfilePage(),
       ),
       GoRoute(
         path: '/changePassword',

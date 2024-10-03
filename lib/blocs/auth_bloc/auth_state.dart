@@ -1,69 +1,21 @@
-import 'package:image_picker/image_picker.dart';
-import 'package:equatable/equatable.dart';
+part of 'auth_bloc.dart';
 
-import '../../models/api_error_response/message_error_model.dart';
-
-class AuthState extends Equatable {
-  final String fullName;
-  final String username;
-  final String phoneNumber;
-  final String password;
-  final String passwordConfirmation;
-  final String role;
-  final XFile? profilePicture;
-  final bool isPasswordVisible;
-  final bool rememberMe;
-
-  const AuthState({
-    this.fullName = '',
-    this.username = '',
-    this.phoneNumber = '',
-    this.password = '',
-    this.passwordConfirmation = '',
-    this.role = 'user',
-    this.profilePicture,
-    this.isPasswordVisible = false,
-    this.rememberMe = false,
-  });
-
-  AuthState copyWith({
-    String? fullName,
-    String? phoneNumber,
-    String? username,
-    String? password,
-    String? passwordConfirmation,
-    XFile? profilePicture,
-    bool? isPasswordVisible,
-    bool? rememberMe,
-  }) {
-    return AuthState(
-      fullName: fullName ?? this.fullName,
-      username: username ?? this.username,
-      password: password ?? this.password,
-      phoneNumber: phoneNumber ?? this.phoneNumber,
-      passwordConfirmation: passwordConfirmation ?? this.passwordConfirmation,
-      profilePicture: profilePicture ?? this.profilePicture,
-      isPasswordVisible: isPasswordVisible ?? this.isPasswordVisible,
-      rememberMe: rememberMe ?? this.rememberMe,
-    );
-  }
+sealed class AuthState extends Equatable {
+  const AuthState();
 
   @override
-  List<Object?> get props => [
-        fullName,
-        username,
-        password,
-        phoneNumber,
-        passwordConfirmation,
-        profilePicture,
-        isPasswordVisible,
-        rememberMe
-      ];
+  List<Object?> get props => [];
 }
 
 final class AuthInitial extends AuthState {}
 
 final class AuthLoading extends AuthState {}
+
+final class AuthIdle extends AuthState {}
+
+final class PasswordToggled extends AuthState {}
+
+final class RememberMeToggled extends AuthState {}
 
 final class AuthError extends AuthState {
   final MessageErrorModel errorMessage;
@@ -101,6 +53,24 @@ final class SignOutLoaded extends AuthState {
   final String message;
 
   const SignOutLoaded({required this.message});
+
+  @override
+  List<Object> get props => [message];
+}
+
+final class ForgetPasswordLoaded extends AuthState {
+  final String message;
+
+  const ForgetPasswordLoaded({required this.message});
+
+  @override
+  List<Object> get props => [message];
+}
+
+final class ForgetPasswordError extends AuthState {
+  final String message;
+
+  const ForgetPasswordError({required this.message});
 
   @override
   List<Object> get props => [message];

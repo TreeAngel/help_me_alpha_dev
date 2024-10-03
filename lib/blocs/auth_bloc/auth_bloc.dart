@@ -1,17 +1,17 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../../models/api_error_response/api_error_response_model.dart';
 import '../../models/api_error_response/message_error_model.dart';
-import '../../models/auth_response_model.dart';
-import '../../models/login_model.dart';
+import '../../models/auth/auth_response_model.dart';
+import '../../models/auth/login_model.dart';
 import '../../services/api/api_controller.dart';
 import '../../utils/manage_auth_token.dart';
-import '../../models/register_model.dart';
+import '../../models/auth/register_model.dart';
 import '../../services/api/api_helper.dart';
 
-import 'auth_state.dart';
+part 'auth_state.dart';
 part 'auth_event.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
@@ -23,49 +23,36 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   String passwordConfirmation = '';
   String phoneNumber = '';
   final role = 'client';
-  XFile? profilePicture;
   bool isPasswordVisible = false;
   bool rememberMe = false;
 
-  AuthBloc({required this.apiController}) : super(const AuthState()) {
-    on<FullNameChanged>((event, emit) {
-      fullName = event.fullName.trim();
-      emit(state.copyWith(fullName: fullName));
-    });
+  AuthBloc({required this.apiController}) : super(AuthInitial()) {
+    on<FullNameChanged>(
+      (event, emit) => fullName = event.fullName.trim(),
+    );
 
-    on<UsernameChanged>((event, emit) {
-      username = event.username.trim();
-      emit(state.copyWith(username: username));
-    });
+    on<UsernameChanged>(
+      (event, emit) => username = event.username.trim(),
+    );
 
-    on<PhoneNumberChanged>((event, emit) {
-      phoneNumber = event.phoneNumber.trim();
-      emit(state.copyWith(phoneNumber: phoneNumber));
-    });
+    on<PhoneNumberChanged>(
+      (event, emit) => phoneNumber = event.phoneNumber.trim(),
+    );
 
-    on<PasswordChanged>((event, emit) {
-      password = event.password.trim();
-      emit(state.copyWith(password: password));
-    });
+    on<PasswordChanged>((event, emit) => password = event.password.trim());
 
-    on<ConfirmPasswordChanged>((event, emit) {
-      passwordConfirmation = event.confirmPassword.trim();
-      emit(state.copyWith(passwordConfirmation: passwordConfirmation));
-    });
-
-    on<ProfileImageChanged>((event, emit) {
-      profilePicture = event.image;
-      emit(state.copyWith(profilePicture: profilePicture));
-    });
+    on<ConfirmPasswordChanged>(
+      (event, emit) => passwordConfirmation = event.confirmPassword.trim(),
+    );
 
     on<TogglePasswordVisibility>((event, emit) {
-      isPasswordVisible = !state.isPasswordVisible;
-      emit(state.copyWith(isPasswordVisible: isPasswordVisible));
+      isPasswordVisible = !isPasswordVisible;
+      emit(PasswordToggled());
     });
 
     on<ToggleRememberMe>((event, emit) {
-      rememberMe = !state.rememberMe;
-      emit(state.copyWith(rememberMe: rememberMe));
+      rememberMe = !rememberMe;
+      emit(RememberMeToggled());
     });
 
     on<SignInSubmitted>(_onSignInSubmitted);
@@ -74,19 +61,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     on<SignUpSubmitted>(_onSignUpSubmitted);
 
-    on<RetryAuthState>((event, emit) {
-      // emit(state.copyWith(
-      //   fullName: fullName,
-      //   phoneNumber: phoneNumber,
-      //   username: username,
-      //   password: password,
-      //   passwordConfirmation: passwordConfirmation,
-      //   profilePicture: profilePicture,
-      //   isPasswordVisible: isPasswordVisible,
-      //   rememberMe: rememberMe,
-      // ));
-      emit(AuthInitial());
-    });
+    on<ForgetPasswordSubmitted>(_onForgetPasswordSubmitted);
+
+    on<AuthIsIdle>((event, emit) => emit(AuthIdle()));
 
     on<ResetAuthState>((event, emit) {
       fullName = '';
@@ -96,17 +73,27 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       phoneNumber = '';
       isPasswordVisible = false;
       rememberMe = false;
-      emit(state.copyWith(
-        fullName: fullName,
-        phoneNumber: phoneNumber,
-        username: username,
-        password: password,
-        passwordConfirmation: passwordConfirmation,
-        profilePicture: profilePicture,
-        isPasswordVisible: isPasswordVisible,
-        rememberMe: rememberMe,
-      ));
+      emit(AuthInitial());
     });
+  }
+
+  FutureOr<void> _onForgetPasswordSubmitted(event, emit) async {
+    emit(AuthLoading());
+    if (phoneNumber.isEmpty) {
+      emit(const ForgetPasswordError(message: 'Isi nomor telpon'));
+    } else if (!phoneNumber.startsWith('08')) {
+      emit(const ForgetPasswordError(
+          message: 'Isi dengan nomor telpon yang valid'));
+    } else {
+      final response = await ApiHelper.forgotPassword(phoneNumber);
+      if (response.error != null) {
+        var message = response.error?.message ?? response.error?.error;
+        message ??= 'Nomor yang anda masukan tidak terdaftar';
+        emit(ForgetPasswordLoaded(message: message.toString()));
+      } else {
+        emit(const ForgetPasswordError(message: 'Unknown error occured'));
+      }
+    }
   }
 
   Future<void> _onSignOutSubmitted(
@@ -116,10 +103,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(AuthLoading());
     final signOutResponse = await ApiHelper.authLogout();
     if (signOutResponse.error != null) {
-      final message = signOutResponse.error?.message ?? signOutResponse.error?.error;
-        emit(SignOutLoaded(
-          message: message.toString(),
-        ));
+      final message =
+          signOutResponse.error?.message ?? signOutResponse.error?.error;
+      emit(SignOutLoaded(
+        message: message.toString(),
+      ));
     } else {
       emit(
         const AuthError(

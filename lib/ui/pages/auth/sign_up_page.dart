@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../services/api/api_exception.dart';
-import '../../configs/app_colors.dart';
-import '../../blocs/auth_bloc/auth_bloc.dart';
-import '../../blocs/auth_bloc/auth_state.dart';
-import '../../utils/show_dialog.dart';
+import '../../../services/api/api_exception.dart';
+import '../../../configs/app_colors.dart';
+import '../../../blocs/auth_bloc/auth_bloc.dart';
+import '../../../utils/show_dialog.dart';
 
 enum TextInputEvent {
   fullname,
@@ -45,7 +44,16 @@ class SignUpPage extends StatelessWidget {
                           fontWeight: FontWeight.w800),
                     ),
                     const SizedBox(height: 20),
-                    BlocBuilder<AuthBloc, AuthState>(
+                    BlocConsumer<AuthBloc, AuthState>(
+                      listener: (context, state) {
+                        if (state is SignUpLoaded) {
+                          _stateLoaded(context);
+                        } else if (state is AuthError) {
+                          _stateError(context, state);
+                        } else if (state is PasswordToggled) {
+                          context.read<AuthBloc>().add(AuthIsIdle());
+                        }
+                      },
                       builder: (context, state) {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -107,12 +115,6 @@ class SignUpPage extends StatelessWidget {
                             _passwordInputField(state, context, textTheme,
                                 'Konfirmasi kata sandi', !isPassword),
                             const SizedBox(height: 40),
-                            if (state is SignUpLoaded) ...[
-                              _stateLoaded(context),
-                            ],
-                            if (state is AuthError) ...[
-                              _stateError(context, state),
-                            ],
                             if (state is AuthLoading) ...[
                               const Center(
                                 child: CircularProgressIndicator(),
@@ -167,47 +169,42 @@ class SignUpPage extends StatelessWidget {
 
   _stateError(BuildContext context, AuthError state) {
     final errorMessage = ApiException.errorMessageBuilder(state.errorMessage);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ShowDialog.showAlertDialog(
-        context,
-        'Peringatan!',
-        errorMessage,
-        null,
-      );
-      context.read<AuthBloc>().add(RetryAuthState());
-    });
+    ShowDialog.showAlertDialog(
+      context,
+      'Peringatan!',
+      errorMessage,
+      null,
+    );
+    context.read<AuthBloc>().add(AuthIsIdle());
     return const SizedBox.shrink();
   }
 
   _stateLoaded(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ShowDialog.showAlertDialog(
-        context,
-        'Berhasil Sign Up!',
-        null,
-        OutlinedButton.icon(
-          onPressed: () {
-            context.read<AuthBloc>().add(ResetAuthState());
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              context.pop();
-              context.goNamed('homePage');
-            });
-          },
-          style: ButtonStyle(
-            backgroundColor: WidgetStateProperty.all(Colors.transparent),
-            elevation: WidgetStateProperty.all(0),
-            iconColor: WidgetStateProperty.all(AppColors.lightTextColor),
-          ),
-          label: const Text(
-            'Lanjut ke halaman utama',
-            style: TextStyle(color: AppColors.lightTextColor),
-          ),
-          icon: const Icon(Icons.arrow_forward_ios_rounded),
-          iconAlignment: IconAlignment.end,
+    ShowDialog.showAlertDialog(
+      context,
+      'Berhasil Sign Up!',
+      null,
+      OutlinedButton.icon(
+        onPressed: () {
+          context.read<AuthBloc>().add(ResetAuthState());
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            context.pop();
+            context.goNamed('homePage');
+          });
+        },
+        style: ButtonStyle(
+          backgroundColor: WidgetStateProperty.all(Colors.transparent),
+          elevation: WidgetStateProperty.all(0),
+          iconColor: WidgetStateProperty.all(AppColors.lightTextColor),
         ),
-      );
-    });
-    return const SizedBox.shrink();
+        label: const Text(
+          'Lanjut ke halaman utama',
+          style: TextStyle(color: AppColors.lightTextColor),
+        ),
+        icon: const Icon(Icons.arrow_forward_ios_rounded),
+        iconAlignment: IconAlignment.end,
+      ),
+    );
   }
 
   SizedBox _signUpButton(
@@ -243,7 +240,7 @@ class SignUpPage extends StatelessWidget {
   TextFormField _passwordInputField(AuthState state, BuildContext context,
       TextTheme textTheme, String hintText, bool passwordC) {
     return TextFormField(
-      obscureText: !state.isPasswordVisible,
+      obscureText: !context.watch<AuthBloc>().isPasswordVisible,
       onChanged: (password) => context.read<AuthBloc>().add(passwordC
           ? PasswordChanged(password)
           : ConfirmPasswordChanged(password)),
@@ -259,7 +256,9 @@ class SignUpPage extends StatelessWidget {
         suffixIconColor: Colors.black,
         suffixIcon: IconButton(
           icon: Icon(
-            state.isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+            context.watch<AuthBloc>().isPasswordVisible
+                ? Icons.visibility
+                : Icons.visibility_off,
           ),
           onPressed: () {
             context.read<AuthBloc>().add(TogglePasswordVisibility());

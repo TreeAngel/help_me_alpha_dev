@@ -5,10 +5,10 @@ import 'package:equatable/equatable.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../models/api_error_response/api_error_response_model.dart';
-import '../../models/user_model.dart';
+import '../../models/auth/user_model.dart';
 import '../../services/api/api_controller.dart';
 import '../../services/api/api_helper.dart';
-import '../../ui/pages/verify_phone_number_page.dart';
+import '../../ui/pages/auth/verify_phone_number_page.dart';
 import '../../utils/image_picker_util.dart';
 
 part 'profile_event.dart';
@@ -17,6 +17,8 @@ part 'profile_state.dart';
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   final ApiController apiController;
   final ImagePickerUtil imagePickerUtil;
+
+  UserModel? profile;
 
   String? oldPassword;
   String? newPassword;
@@ -36,36 +38,36 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
     on<ProfileIsIdle>((event, emit) => emit(ProfileIdle()));
 
-    on<EditProfileSubmitted>(_onEditProfile);
+    on<EditProfileSubmitted>(_onEditProfileSubmitted);
 
     on<EditPasswordSubmitted>(_onEditPasswordSubmitted);
 
     on<OldPasswordChanged>(
-      (event, emit) => oldPassword = event.oldPassword,
+      (event, emit) => oldPassword = event.oldPassword.trim(),
     );
 
     on<NewPasswordChanged>(
-      (event, emit) => newPassword = event.newPassword,
+      (event, emit) => newPassword = event.newPassword.trim(),
     );
 
     on<NewConfirmPasswordChanged>(
-      (event, emit) => newConfirmPassword = event.newConfirmPassword,
+      (event, emit) => newConfirmPassword = event.newConfirmPassword.trim(),
     );
 
     on<NewFullnameChanged>(
-      (event, emit) => fullname = event.fullname,
+      (event, emit) => fullname = event.fullname.trim(),
     );
 
     on<NewUsernameChanged>(
-      (event, emit) => username = event.username,
+      (event, emit) => username = event.username.trim(),
     );
 
     on<NewPhoneNumberChanged>(
-      (event, emit) => phoneNumber = event.phoneNumber,
+      (event, emit) => phoneNumber = event.phoneNumber.trim(),
     );
 
     on<OTPCodeChanged>(
-      (event, emit) => codeOTP = event.code,
+      (event, emit) => codeOTP = event.code.trim(),
     );
 
     on<CameraCapture>(_onCameraCapture);
@@ -81,13 +83,13 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     emit(OTPLoading());
     if (codeOTP == null || codeOTP!.isEmpty) {
       emit(
-        const ProfileError(errorMessage: 'Isi dengan OTP anda'),
+        const ProfileError(errorMessage: 'Isi dengan kode OTP'),
       );
     } else {
       final response = await ApiHelper.verifyOTP(phoneNumber!, codeOTP!);
       if (response.error != null) {
         final message = response.error?.message ?? response.error?.error;
-        emit(OTPRequested(
+        emit(OTPVerified(
           message: message.toString(),
         ));
       } else {
@@ -99,13 +101,12 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   FutureOr<void> _onRequestOTP(event, emit) async {
     emit(OTPLoading());
     if (phoneNumber == null || phoneNumber!.isEmpty) {
-      phoneNumber = phoneNumber!.trim();
       emit(
         const OTPError(errorMessage: 'Isi nomor telpon'),
       );
     } else if (!phoneNumber!.startsWith('08')) {
       emit(
-        const OTPError(errorMessage: 'isi dengan nomor telpon yang valid'),
+        const OTPError(errorMessage: 'Isi dengan nomor telpon yang valid'),
       );
     } else {
       final response = await ApiHelper.requestOTP(phoneNumber!);
@@ -169,21 +170,19 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     }
   }
 
-  FutureOr<void> _onEditProfile(event, emit) async {
+  FutureOr<void> _onEditProfileSubmitted(event, emit) async {
     emit(ProfileLoading());
     if (fullname == null || fullname!.isEmpty) {
-      emit(
-        const ProfileError(errorMessage: 'Isi nama lengkap'),
-      );
+      emit(const EditProfileError(message: 'Isi nama lengkap'));
     } else if (fullname == null || username!.isEmpty) {
-      emit(const ProfileError(errorMessage: 'Isi username'));
+      emit(const EditProfileError(message: 'Isi username'));
     } else if (phoneNumber == null || phoneNumber!.isEmpty) {
       emit(
-        const ProfileError(errorMessage: 'Isi nomor telpon'),
+        const EditProfileError(message: 'Isi nomor telpon'),
       );
     } else if (!phoneNumber!.startsWith('08')) {
       emit(
-        const ProfileError(errorMessage: 'isi dengan nomor telpon yang valid'),
+        const EditProfileError(message: 'isi dengan nomor telpon yang valid'),
       );
     } else {
       MultipartFile? profileImage;

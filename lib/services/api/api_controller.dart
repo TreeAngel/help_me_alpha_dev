@@ -6,10 +6,10 @@ import '../../services/api/api_exception.dart';
 import '../../utils/logging.dart';
 
 class ApiController {
-  static const baseUrl =
-      null; // TODO: Add base url untuk akses api saat sudah dihosting
+  // TODO: Add base url untuk akses api saat sudah dihosting
+  static const baseUrl = null;
   static const temporaryUrl =
-      'https://96ffa04e64f3014f6453adf9714de1f5.serveo.net';
+      'https://2e81a8db123a6bfb95aa1ac75a5851b3.serveo.net';
   static String? token;
 
   static var dio = Dio(

@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../services/api/api_exception.dart';
-import '../../configs/app_colors.dart';
-import '../../blocs/auth_bloc/auth_bloc.dart';
-import '../../blocs/auth_bloc/auth_state.dart';
-import '../../utils/show_dialog.dart';
+import '../../../services/api/api_exception.dart';
+import '../../../configs/app_colors.dart';
+import '../../../blocs/auth_bloc/auth_bloc.dart';
+import '../../../utils/show_dialog.dart';
 
 class SignInPage extends StatelessWidget {
   const SignInPage({super.key});
@@ -37,7 +36,17 @@ class SignInPage extends StatelessWidget {
                           fontWeight: FontWeight.w800),
                     ),
                     const SizedBox(height: 20),
-                    BlocBuilder<AuthBloc, AuthState>(
+                    BlocConsumer<AuthBloc, AuthState>(
+                      listener: (context, state) {
+                        if (state is SignInLoaded) {
+                          _stateLoaded(context);
+                        } else if (state is AuthError) {
+                          _stateError(context, state);
+                        } else if (state is PasswordToggled ||
+                            state is RememberMeToggled) {
+                          context.read<AuthBloc>().add(AuthIsIdle());
+                        }
+                      },
                       builder: (context, state) {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,12 +79,6 @@ class SignInPage extends StatelessWidget {
                               ],
                             ),
                             const SizedBox(height: 20),
-                            if (state is SignInLoaded) ...[
-                              _stateLoaded(context),
-                            ],
-                            if (state is AuthError) ...[
-                              _stateError(context, state),
-                            ],
                             if (state is AuthLoading) ...[
                               const Center(
                                 child: CircularProgressIndicator(),
@@ -130,12 +133,10 @@ class SignInPage extends StatelessWidget {
 
   GestureDetector _forgetPassword(BuildContext context, TextTheme textTheme) {
     return GestureDetector(
-      onTap: () => ShowDialog.showAlertDialog(
-        context,
-        'Lupa kata sandi?',
-        'Sabar bang, nanti dibuat fiturnya',
-        null,
-      ),
+      onTap: () {
+        context.read<AuthBloc>().add(AuthIsIdle());
+        context.pushNamed('forgetPasswordPage');
+      },
       child: Text(
         'Lupa kata sandi?',
         style: textTheme.bodyLarge?.copyWith(
@@ -151,7 +152,7 @@ class SignInPage extends StatelessWidget {
     return Row(
       children: [
         Checkbox(
-          value: state.rememberMe,
+          value: context.watch<AuthBloc>().rememberMe,
           onChanged: (value) {
             context.read<AuthBloc>().add(ToggleRememberMe());
           },
@@ -169,24 +170,19 @@ class SignInPage extends StatelessWidget {
 
   _stateError(BuildContext context, AuthError state) {
     String errorMessage = ApiException.errorMessageBuilder(state.errorMessage);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ShowDialog.showAlertDialog(
-        context,
-        'Peringatan!',
-        errorMessage,
-        null,
-      );
-      context.read<AuthBloc>().add(RetryAuthState());
-    });
+    ShowDialog.showAlertDialog(
+      context,
+      'Peringatan!',
+      errorMessage,
+      null,
+    );
+    context.read<AuthBloc>().add(AuthIsIdle());
     return const SizedBox.shrink();
   }
 
   _stateLoaded(BuildContext context) {
     context.read<AuthBloc>().add(ResetAuthState());
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.goNamed('homePage');
-    });
-    return const SizedBox.shrink();
+    context.goNamed('homePage');
   }
 
   SizedBox _signInButton(
@@ -222,7 +218,7 @@ class SignInPage extends StatelessWidget {
   TextFormField _passwordInputField(
       AuthState state, BuildContext context, TextTheme textTheme) {
     return TextFormField(
-      obscureText: !state.isPasswordVisible,
+      obscureText: !context.watch<AuthBloc>().isPasswordVisible,
       onChanged: (password) =>
           context.read<AuthBloc>().add(PasswordChanged(password)),
       decoration: InputDecoration(
@@ -237,7 +233,9 @@ class SignInPage extends StatelessWidget {
         suffixIconColor: Colors.black,
         suffixIcon: IconButton(
           icon: Icon(
-            state.isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+            context.watch<AuthBloc>().isPasswordVisible
+                ? Icons.visibility
+                : Icons.visibility_off,
           ),
           onPressed: () {
             context.read<AuthBloc>().add(TogglePasswordVisibility());

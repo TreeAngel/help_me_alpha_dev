@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../blocs/profile_bloc/profile_bloc.dart';
-import '../../configs/app_colors.dart';
+import '../../../blocs/profile_bloc/profile_bloc.dart';
+import '../../../configs/app_colors.dart';
+import '../../../services/api/api_controller.dart';
+import '../../../utils/show_dialog.dart';
 
 enum StatusOTP {
   waiting,
@@ -17,82 +19,116 @@ class VerifyPhoneNumberPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final appTheme = Theme.of(context);
     final textTheme = appTheme.textTheme;
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-    String message = 'Masukan nomor telpon anda';
+    StatusOTP currentStatus = context.watch<ProfileBloc>().statusOTP;
+    String message = 'Message that will showed after every button pressed';
+    bool canPop = true;
 
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: Colors.black,
-        appBar: _appBar(context, textTheme),
-        body: BlocConsumer<ProfileBloc, ProfileState>(
-          listener: (context, state) {
-            if (state is OTPRequested) {
-              context.read<ProfileBloc>().statusOTP = StatusOTP.requested;
-              message = state.message;
-            } else if (state is OTPError) {
-              context.read<ProfileBloc>().statusOTP = StatusOTP.waiting;
-              message = state.errorMessage;
-            } else if (state is OTPVerified) {
-              context.read<ProfileBloc>().statusOTP = StatusOTP.done;
-              message = state.message;
-            }
-          },
-          builder: (context, state) {
-            return ListView(
-              padding: const EdgeInsetsDirectional.all(20),
-              children: [
-                Text(
-                  message,
-                  style: textTheme.titleLarge
-                      ?.copyWith(color: AppColors.darkTextColor),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  'Nomor telpon',
-                  style: textTheme.titleLarge?.copyWith(
-                    color: AppColors.darkTextColor,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                _phoneNumberInput(
-                  context.watch<ProfileBloc>().statusOTP,
-                  context.read<ProfileBloc>().phoneNumber,
+    return PopScope(
+      canPop: canPop,
+      child: SafeArea(
+        child: Scaffold(
+          backgroundColor: Colors.black,
+          appBar: _appBar(context, textTheme),
+          body: BlocConsumer<ProfileBloc, ProfileState>(
+            listener: (context, state) {
+              if (state is OTPRequested) {
+                context.read<ProfileBloc>().statusOTP = StatusOTP.requested;
+                message = state.message;
+                ShowDialog.showAlertDialog(
                   context,
-                  textTheme,
-                ),
-                if (state is OTPRequested) ...[
-                  const SizedBox(height: 10),
+                  'Berhasil!',
+                  message,
+                  null,
+                );
+              } else if (state is OTPError) {
+                message = state.errorMessage;
+                ShowDialog.showAlertDialog(
+                  context,
+                  'Verifikasi Gagal!',
+                  message,
+                  null,
+                );
+              } else if (state is OTPVerified) {
+                message = state.message;
+                if (!message.toLowerCase().trim().contains('salah')) {
+                  context.read<ProfileBloc>().statusOTP = StatusOTP.done;
+                } else {
+                  context.read<ProfileBloc>().statusOTP = StatusOTP.requested;
+                }
+                ShowDialog.showAlertDialog(
+                  context,
+                  'Verifikasi Terkirim!',
+                  message,
+                  null,
+                );
+                ApiController.token != null
+                    ? context.read<ProfileBloc>().add(FetchProfile())
+                    : null;
+              }
+              if (state is ProfileLoading) {
+                canPop = false;
+              } else {
+                canPop = true;
+              }
+            },
+            builder: (context, state) {
+              return ListView(
+                padding: const EdgeInsetsDirectional.all(20),
+                children: [
+                  Center(
+                    child: Text(
+                      'Verifikasi nomor telpon',
+                      style: textTheme.titleLarge
+                          ?.copyWith(color: AppColors.darkTextColor),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
                   Text(
-                    'Kode OTP',
+                    'Nomor telpon',
                     style: textTheme.titleLarge?.copyWith(
                       color: AppColors.darkTextColor,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                   const SizedBox(height: 10),
-                  _codeOTPInput(
-                    context.watch<ProfileBloc>().statusOTP,
+                  _phoneNumberInput(
+                    currentStatus,
+                    context.read<ProfileBloc>().phoneNumber,
                     context,
                     textTheme,
                   ),
-                ],
-                if (state is OTPLoading) ...[
-                  const Center(
-                    child: CircularProgressIndicator(),
-                  ),
-                ] else ...[
+                  if (currentStatus != StatusOTP.waiting) ...[
+                    const SizedBox(height: 10),
+                    Text(
+                      'Kode OTP',
+                      style: textTheme.titleLarge?.copyWith(
+                        color: AppColors.darkTextColor,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    _codeOTPInput(
+                      currentStatus,
+                      context,
+                      textTheme,
+                    ),
+                  ],
                   const SizedBox(height: 20),
-                  _confirmBtn(
-                    context.watch<ProfileBloc>().statusOTP,
-                    context,
-                    textTheme,
-                  ),
+                  if (state is OTPLoading || state is ProfileLoading) ...[
+                    const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  ] else ...[
+                    _confirmBtn(
+                      currentStatus,
+                      context,
+                      textTheme,
+                    ),
+                  ],
                 ],
-              ],
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );
@@ -186,7 +222,7 @@ class VerifyPhoneNumberPage extends StatelessWidget {
             NewPhoneNumberChanged(phoneNumber: value),
           ),
       cursorColor: Colors.black,
-      keyboardType: TextInputType.number,
+      keyboardType: TextInputType.phone,
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.white,
@@ -210,7 +246,7 @@ class VerifyPhoneNumberPage extends StatelessWidget {
       backgroundColor: Colors.black,
       foregroundColor: AppColors.darkTextColor,
       title: Text(
-        'Konfirmasi nomor telpon',
+        'HelpMe!',
         style: textTheme.titleLarge?.copyWith(
           color: AppColors.darkTextColor,
           fontWeight: FontWeight.bold,

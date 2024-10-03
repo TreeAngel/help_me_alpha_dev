@@ -7,7 +7,7 @@ sealed class AuthEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class RetryAuthState extends AuthEvent {}
+class AuthIsIdle extends AuthEvent {}
 
 class ResetAuthState extends AuthEvent {}
 
@@ -56,15 +56,6 @@ class ConfirmPasswordChanged extends AuthEvent {
   List<Object> get props => [confirmPassword];
 }
 
-class ProfileImageChanged extends AuthEvent {
-  final XFile image;
-
-  const ProfileImageChanged(this.image);
-
-  @override
-  List<XFile> get props => [image];
-}
-
 class TogglePasswordVisibility extends AuthEvent {}
 
 class ToggleRememberMe extends AuthEvent {}
@@ -74,3 +65,5 @@ class SignInSubmitted extends AuthEvent {}
 class SignUpSubmitted extends AuthEvent {}
 
 class SignOutSubmitted extends AuthEvent {}
+
+class ForgetPasswordSubmitted extends AuthEvent {}

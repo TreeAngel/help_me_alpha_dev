@@ -7,9 +7,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mime/mime.dart';
 
 import '../../models/api_error_response/api_error_response_model.dart';
-import '../../models/order_request_model.dart';
-import '../../models/order_response_model/order_model.dart';
-import '../../models/problem_model.dart';
+import '../../models/order/order_request_model.dart';
+import '../../models/order/order_model.dart';
+import '../../models/category_problem/problem_model.dart';
 import '../../services/api/api_controller.dart';
 import '../../services/api/api_helper.dart';
 import '../../utils/image_picker_util.dart';

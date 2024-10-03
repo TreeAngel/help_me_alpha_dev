@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../configs/app_colors.dart';
+import '../../../configs/app_colors.dart';
 
 class ImageZoomPage extends StatelessWidget {
   const ImageZoomPage({

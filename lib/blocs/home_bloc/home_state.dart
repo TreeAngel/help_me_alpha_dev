@@ -30,12 +30,12 @@ final class CategoryError extends HomeState {
 }
 
 final class ProfileLoaded extends HomeState {
-  final DataUser user;
+  final DataUser data;
 
-  const ProfileLoaded({required this.user});
+  const ProfileLoaded({required this.data});
 
   @override
-  List<Object> get props => [user];
+  List<Object> get props => [data];
 }
 
 final class ProfileError extends HomeState {

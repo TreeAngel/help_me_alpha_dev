@@ -33,12 +33,21 @@ final class ProfileError extends ProfileState {
 
 final class ProfileEdited extends ProfileState {
   final String message;
-  final DataUser data;
+  final UserModel data;
 
   const ProfileEdited({required this.message, required this.data});
 
   @override
   List<Object> get props => [message, data];
+}
+
+final class EditProfileError extends ProfileState {
+  final String message;
+
+  const EditProfileError({required this.message});
+
+  @override
+  List<Object?> get props => [message];
 }
 
 final class EditPasswordLoaded extends ProfileState {
@@ -89,7 +98,7 @@ final class OTPError extends ProfileState {
 final class OTPLoading extends ProfileState {}
 
 final class OTPVerified extends ProfileState {
-  final String message; // TODO: I don't know the response
+  final String message;
 
   const OTPVerified({required this.message});
 

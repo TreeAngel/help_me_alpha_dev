@@ -16,12 +16,12 @@ class EditUserResponse {
 
   EditUserResponse({required this.message, this.user});
 
-  factory EditUserResponse.fromJson(Map<String, dynamic> json) => EditUserResponse(
-    message: json['message'],
-    user: UserModel.fromModel(
-      Map<String, dynamic>.from(json['user']),
-    )
-  );
+  factory EditUserResponse.fromJson(Map<String, dynamic> json) =>
+      EditUserResponse(
+          message: json['message'],
+          user: UserModel.fromModel(
+            Map<String, dynamic>.from(json['user']),
+          ));
 }
 
 class UserModel {

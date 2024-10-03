@@ -4,20 +4,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../services/api/api_controller.dart';
-import '../../data/cards_color.dart';
-import '../../models/order_history_model.dart';
-import '../../utils/manage_auth_token.dart';
-import '../../blocs/home_bloc/home_cubit.dart';
-import '../../configs/app_colors.dart';
-import '../../data/menu_items_data.dart';
-import '../../models/category_model.dart';
-import '../../models/menu_item_model.dart';
-import '../../ui/widgets/gradient_card.dart';
-import '../../utils/logging.dart';
-import '../../utils/show_dialog.dart';
-import '../../blocs/auth_bloc/auth_bloc.dart';
-import '../../blocs/auth_bloc/auth_state.dart';
+import '../../../services/api/api_controller.dart';
+import '../../../data/cards_color.dart';
+import '../../../models/order/order_history_model.dart';
+import '../../../utils/manage_auth_token.dart';
+import '../../../blocs/home_bloc/home_cubit.dart';
+import '../../../configs/app_colors.dart';
+import '../../../data/menu_items_data.dart';
+import '../../../models/category_problem/category_model.dart';
+import '../../../models/misc/menu_item_model.dart';
+import '../../widgets/gradient_card.dart';
+import '../../../utils/logging.dart';
+import '../../../utils/show_dialog.dart';
+import '../../../blocs/auth_bloc/auth_bloc.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -28,10 +27,13 @@ class HomePage extends StatelessWidget {
     final textTheme = appTheme.textTheme;
     final colorScheme = appTheme.colorScheme;
     final screenWidth = MediaQuery.of(context).size.width;
-    String username = 'Kamu!';
-    List<CategoryModel> categories = [];
-    List<OrderHistoryModel> orderHistory = [];
-    OrderHistoryModel? lastHistory;
+
+    String username = context.watch<HomeCubit>().username;
+    List<CategoryModel> fourCategories =
+        context.watch<HomeCubit>().fourCategories;
+    List<OrderHistoryModel> orderHistory =
+        context.watch<HomeCubit>().orderHistory;
+    OrderHistoryModel? lastHistory = context.watch<HomeCubit>().lastHistory;
 
     return SafeArea(
       child: Scaffold(
@@ -72,17 +74,17 @@ class HomePage extends StatelessWidget {
                     child: CustomScrollView(
                       slivers: <Widget>[
                         const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                        _appBarBlocBuilder(username, textTheme, colorScheme),
+                        _appBarBlocConsumer(username, textTheme, colorScheme),
                         const SliverToBoxAdapter(child: SizedBox(height: 20)),
                         _searchTextField(),
                         const SliverToBoxAdapter(child: SizedBox(height: 20)),
                         _categoryTextHeader(textTheme),
                         const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                        _categoryBlocBuilder(textTheme, categories),
+                        _categoryBlocConsumer(textTheme, fourCategories),
                         const SliverToBoxAdapter(child: SizedBox(height: 20)),
                         _orderHistoryTextHeader(textTheme),
                         const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                        _lastHistoryBlocBuilder(
+                        _lastHistoryBlocConsumer(
                             textTheme, orderHistory, lastHistory),
                         const SliverToBoxAdapter(child: SizedBox(height: 20)),
                       ],
@@ -97,55 +99,64 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  BlocBuilder<HomeCubit, HomeState> _lastHistoryBlocBuilder(TextTheme textTheme,
-      List<OrderHistoryModel> orderHistory, OrderHistoryModel? lastHistory) {
-    return BlocBuilder<HomeCubit, HomeState>(
-      builder: (context, state) {
+  BlocConsumer<HomeCubit, HomeState> _lastHistoryBlocConsumer(
+      TextTheme textTheme,
+      List<OrderHistoryModel> orderHistory,
+      OrderHistoryModel? lastHistory) {
+    return BlocConsumer<HomeCubit, HomeState>(
+      listener: (context, state) {
         if (state is OrderHistoryLoaded) {
-          orderHistory = state.history;
-          lastHistory = orderHistory.last;
-          context.read<HomeCubit>().fetchCategories();
-          return _orderHistoryCard(lastHistory, textTheme);
+          context.read<HomeCubit>().orderHistory = state.history;
+          // if (context.read<HomeCubit>().orderHistory.isNotEmpty) {
+          //   context.read<HomeCubit>().lastHistory = orderHistory.last;
+          // }
+          // context.read<HomeCubit>().fetchCategories();
         } else if (state is OrderHistoryError) {
           _onOrderHistoryError(context, state);
         }
         if (orderHistory.isNotEmpty) {
-          lastHistory = orderHistory.last;
+          context.read<HomeCubit>().lastHistory = orderHistory.last;
         }
-        return _orderHistoryCard(lastHistory, textTheme);
+      },
+      builder: (context, state) {
+        if (state is HomeLoading) {
+          return const SliverToBoxAdapter(
+            child: SizedBox.shrink(),
+          );
+        } else {
+          return _orderHistoryCard(lastHistory, textTheme);
+        }
       },
     );
   }
 
   void _onOrderHistoryError(BuildContext context, OrderHistoryError state) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ShowDialog.showAlertDialog(
-        context,
-        'Error fetching order history',
-        state.errorMessage,
-        state.errorMessage.toString().toLowerCase().contains('unauthorized')
-            ? OutlinedButton.icon(
-                onPressed: () {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    ManageAuthToken.deleteToken();
-                    context.read<AuthBloc>().add(RetryAuthState());
-                    context.goNamed('signInPage');
-                  });
-                },
-                label: const Text('Sign In ulang'),
-                icon: const Icon(Icons.arrow_forward_ios),
-                iconAlignment: IconAlignment.end,
-              )
-            : IconButton.outlined(
-                onPressed: () {
-                  context.pop();
-                  context.read<HomeCubit>().fetchHistory('');
-                },
-                icon: const Icon(Icons.refresh_outlined),
-              ),
-      );
-      context.read<HomeCubit>().homeIdle();
-    });
+    ShowDialog.showAlertDialog(
+      context,
+      'Error fetching order history',
+      state.errorMessage,
+      state.errorMessage.toString().toLowerCase().contains('unauthorized')
+          ? OutlinedButton.icon(
+              onPressed: () {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  ManageAuthToken.deleteToken();
+                  context.read<AuthBloc>().add(AuthIsIdle());
+                  context.goNamed('signInPage');
+                });
+              },
+              label: const Text('Sign In ulang'),
+              icon: const Icon(Icons.arrow_forward_ios),
+              iconAlignment: IconAlignment.end,
+            )
+          : IconButton.outlined(
+              onPressed: () {
+                context.pop();
+                context.read<HomeCubit>().fetchHistory('');
+              },
+              icon: const Icon(Icons.refresh_outlined),
+            ),
+    );
+    context.read<HomeCubit>().homeIdle();
   }
 
   void _onSignOutError(BuildContext context, AuthError state) {
@@ -159,7 +170,7 @@ class HomePage extends StatelessWidget {
                 onPressed: () {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     ManageAuthToken.deleteToken();
-                    context.read<AuthBloc>().add(RetryAuthState());
+                    context.read<AuthBloc>().add(AuthIsIdle());
                     context.goNamed('signInPage');
                     context.pop();
                   });
@@ -174,29 +185,27 @@ class HomePage extends StatelessWidget {
     });
   }
 
-  BlocBuilder<HomeCubit, HomeState> _appBarBlocBuilder(
+  BlocConsumer<HomeCubit, HomeState> _appBarBlocConsumer(
     String username,
     TextTheme textTheme,
     ColorScheme colorScheme,
   ) {
-    return BlocBuilder<HomeCubit, HomeState>(
+    return BlocConsumer<HomeCubit, HomeState>(
+      listener: (context, state) {
+        if (state is ProfileLoaded) {
+          context.read<HomeCubit>().username =
+              state.data.user.username.toString();
+          context.read<HomeCubit>().fetchCategories();
+          // context.read<HomeCubit>().fetchHistory('');
+        } else if (state is ProfileError) {
+          _onProfileError(context, state);
+        }
+      },
       builder: (context, state) {
         if (state is HomeInitial) {
           context.read<HomeCubit>().fetchProfile();
           // context.read<HomeCubit>().add(FetchCategories());
           // context.read<HomeCubit>().add(const FetchHistory(''));
-        } else if (state is ProfileLoaded) {
-          username = state.user.user.username.toString();
-          // context.read<HomeCubit>().add(FetchCategories());
-          context.read<HomeCubit>().fetchHistory('');
-          return _homeAppBar(
-            context,
-            textTheme,
-            colorScheme,
-            username,
-          );
-        } else if (state is ProfileError) {
-          _onProfileError(context, state);
         }
         return _homeAppBar(
           context,
@@ -209,41 +218,49 @@ class HomePage extends StatelessWidget {
   }
 
   void _onProfileError(BuildContext context, ProfileError state) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ShowDialog.showAlertDialog(
-        context,
-        'Error fetching profile',
-        state.errorMessage,
-        state.errorMessage.toString().toLowerCase().contains('unauthorized')
-            ? OutlinedButton.icon(
-                onPressed: () {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    ManageAuthToken.deleteToken();
-                    context.read<AuthBloc>().add(RetryAuthState());
-                    context.goNamed('signInPage');
-                  });
-                },
-                label: const Text('Sign In ulang'),
-                icon: const Icon(Icons.arrow_forward_ios),
-                iconAlignment: IconAlignment.end,
-              )
-            : IconButton.outlined(
-                onPressed: () {
-                  context.pop();
-                  context.read<HomeCubit>().fetchProfile();
-                },
-                icon: const Icon(Icons.refresh_outlined),
-              ),
-      );
-      context.read<HomeCubit>().homeIdle();
-    });
+    ShowDialog.showAlertDialog(
+      context,
+      'Error fetching profile',
+      state.errorMessage,
+      state.errorMessage.toString().toLowerCase().contains('unauthorized')
+          ? OutlinedButton.icon(
+              onPressed: () {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  ManageAuthToken.deleteToken();
+                  context.read<AuthBloc>().add(AuthIsIdle());
+                  context.goNamed('signInPage');
+                });
+              },
+              label: const Text('Sign In ulang'),
+              icon: const Icon(Icons.arrow_forward_ios),
+              iconAlignment: IconAlignment.end,
+            )
+          : IconButton.outlined(
+              onPressed: () {
+                context.pop();
+                context.read<HomeCubit>().fetchProfile();
+              },
+              icon: const Icon(Icons.refresh_outlined),
+            ),
+    );
+    context.read<HomeCubit>().homeIdle();
   }
 
-  BlocBuilder<HomeCubit, HomeState> _categoryBlocBuilder(
+  BlocConsumer<HomeCubit, HomeState> _categoryBlocConsumer(
     TextTheme textTheme,
     List<CategoryModel> categories,
   ) {
-    return BlocBuilder<HomeCubit, HomeState>(
+    return BlocConsumer<HomeCubit, HomeState>(
+      listener: (context, state) {
+        if (state is CategoryLoaded) {
+          context.read<HomeCubit>().allCategories = state.categories;
+          context.read<HomeCubit>().fourCategories =
+              state.categories.take(4).toList();
+          context.read<HomeCubit>().fetchHistory('');
+        } else if (state is CategoryError) {
+          _onCategoryError(context, state);
+        }
+      },
       builder: (context, state) {
         if (state is HomeLoading) {
           return const SliverFillRemaining(
@@ -251,46 +268,39 @@ class HomePage extends StatelessWidget {
               child: CircularProgressIndicator(),
             ),
           );
-        } else if (state is CategoryLoaded) {
-          categories = state.categories.take(4).toList();
-          // context.read<HomeCubit>().add(const FetchHistory(''));
+        } else {
           return _categoriesGrid(categories, textTheme);
-        } else if (state is CategoryError) {
-          _onCategoryError(context, state);
         }
-        return _categoriesGrid(categories, textTheme);
       },
     );
   }
 
   void _onCategoryError(BuildContext context, CategoryError state) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ShowDialog.showAlertDialog(
-        context,
-        'Error fetching categories',
-        state.errorMessage,
-        state.errorMessage.toString().toLowerCase().contains('unauthorized')
-            ? OutlinedButton.icon(
-                onPressed: () {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    ManageAuthToken.deleteToken();
-                    context.goNamed('signInPage');
-                  });
-                },
-                label: const Text('Sign In ulang'),
-                icon: const Icon(Icons.arrow_forward_ios),
-                iconAlignment: IconAlignment.end,
-              )
-            : IconButton.outlined(
-                onPressed: () {
-                  context.pop();
-                  context.read<HomeCubit>().fetchProfile();
-                },
-                icon: const Icon(Icons.refresh_outlined),
-              ),
-      );
-      context.read<HomeCubit>().homeIdle();
-    });
+    ShowDialog.showAlertDialog(
+      context,
+      'Error fetching categories',
+      state.errorMessage,
+      state.errorMessage.toString().toLowerCase().contains('unauthorized')
+          ? OutlinedButton.icon(
+              onPressed: () {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  ManageAuthToken.deleteToken();
+                  context.goNamed('signInPage');
+                });
+              },
+              label: const Text('Sign In ulang'),
+              icon: const Icon(Icons.arrow_forward_ios),
+              iconAlignment: IconAlignment.end,
+            )
+          : IconButton.outlined(
+              onPressed: () {
+                context.pop();
+                context.read<HomeCubit>().fetchProfile();
+              },
+              icon: const Icon(Icons.refresh_outlined),
+            ),
+    );
+    context.read<HomeCubit>().homeIdle();
   }
 
   SliverGrid _categoriesGrid(
@@ -402,7 +412,7 @@ class HomePage extends StatelessWidget {
                       history.category.toString()[0],
                       history.category.toString()[0].toUpperCase(),
                     )
-                : 'Kamu belum minta bantuan sama sekali', // TODO: Get problem Category from API
+                : 'Kamu belum minta bantuan sama sekali',
             style: textTheme.titleLarge?.copyWith(
               color: AppColors.primary,
               fontWeight: FontWeight.bold,

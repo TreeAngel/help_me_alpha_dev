@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../blocs/auth_bloc/auth_bloc.dart';
-import '../../blocs/profile_bloc/profile_bloc.dart';
-import '../../configs/app_colors.dart';
-import '../../models/user_model.dart';
-import '../../services/api/api_controller.dart';
-import '../../utils/manage_auth_token.dart';
-import '../../utils/show_dialog.dart';
+import '../../../blocs/auth_bloc/auth_bloc.dart';
+import '../../../blocs/profile_bloc/profile_bloc.dart';
+import '../../../configs/app_colors.dart';
+import '../../../models/auth/user_model.dart';
+import '../../../services/api/api_controller.dart';
+import '../../../utils/manage_auth_token.dart';
+import '../../../utils/show_dialog.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -51,7 +51,14 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             Positioned.fill(
               child: BlocConsumer<ProfileBloc, ProfileState>(
-                listener: _profileBlocListener,
+                listener: (context, state) {
+                  if (state is ProfileError) {
+                    _onStateError(context, state);
+                  } else if (state is ProfileLoaded) {
+                    profile = state.data.user;
+                    context.read<ProfileBloc>().profile = profile;
+                  } 
+                },
                 builder: (context, state) {
                   if (state is ProfileInitial || profile == null) {
                     context.read<ProfileBloc>().add(FetchProfile());
@@ -85,14 +92,16 @@ class _ProfilePageState extends State<ProfilePage> {
                           SliverToBoxAdapter(child: _usernameText(textTheme)),
                           const SliverToBoxAdapter(child: SizedBox(height: 10)),
                           SliverToBoxAdapter(
-                              child: _phoneNumberSection(context, textTheme)),
+                            child: _phoneNumberSection(context, textTheme),
+                          ),
                           const SliverToBoxAdapter(child: SizedBox(height: 20)),
                           SliverToBoxAdapter(child: _editProfileBtn(textTheme)),
                           const SliverToBoxAdapter(child: SizedBox(height: 20)),
                           SliverToBoxAdapter(child: _keamananText(textTheme)),
                           const SliverToBoxAdapter(child: SizedBox(height: 10)),
                           SliverToBoxAdapter(
-                              child: _passwordSection(textTheme)),
+                            child: _passwordSection(textTheme),
+                          ),
                         ],
                       ),
                     ),
@@ -195,7 +204,7 @@ class _ProfilePageState extends State<ProfilePage> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        onPressed: () {}, // TODO: Implement edit profile
+        onPressed: () => context.pushNamed('editProfilePage'),
       ),
     );
   }
@@ -206,7 +215,7 @@ class _ProfilePageState extends State<ProfilePage> {
       children: [
         _phoneNumberText(textTheme),
         profile?.phoneNumberVerifiedAt != null
-            ? _numberVerified()
+            ? _numberVerified(textTheme)
             : _numberNotVerified(context, textTheme),
       ],
     );
@@ -226,7 +235,7 @@ class _ProfilePageState extends State<ProfilePage> {
               );
           context.read<ProfileBloc>().add(
                 NewPhoneNumberChanged(
-                    phoneNumber: profile!.fullName.toString()),
+                    phoneNumber: profile!.phoneNumber.toString()),
               );
           context.pushNamed('verifyPhoneNumberPage');
         },
@@ -250,10 +259,22 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Icon _numberVerified() {
-    return const Icon(
-      Icons.verified_user,
-      color: Colors.greenAccent,
+  Row _numberVerified(TextTheme textTheme) {
+    return Row(
+      children: [
+        Text(
+          'Terverifikasi',
+          style: textTheme.labelLarge?.copyWith(
+            color: AppColors.darkTextColor,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(width: 10),
+        const Icon(
+          Icons.verified_user,
+          color: Colors.greenAccent,
+        ),
+      ],
     );
   }
 
@@ -320,60 +341,33 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  void _profileBlocListener(context, state) {
-    if (state is ProfileError) {
-      _onStateError(context, state);
-    }
-    if (state is ProfileLoaded) {
-      profile = state.data.user;
-    }
-    if (state is ProfileEdited) _onProfileEdited(context, state);
-  }
-
-  void _onProfileEdited(BuildContext context, ProfileEdited state) {
-    {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ShowDialog.showAlertDialog(
-          context,
-          'Berhasil!',
-          state.message,
-          null,
-        );
-        profile = state.data.user;
-        context.read<ProfileBloc>().add(ProfileIsIdle());
-      });
-    }
-  }
-
   void _onStateError(BuildContext context, ProfileError state) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ShowDialog.showAlertDialog(
-        context,
-        'Error saat memproses profile',
-        state.errorMessage,
-        state.errorMessage.toString().toLowerCase().contains('unauthorized')
-            ? OutlinedButton.icon(
-                onPressed: () {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    ManageAuthToken.deleteToken();
-                    context.read<AuthBloc>().add(RetryAuthState());
-                    context.goNamed('signInPage');
-                  });
-                },
-                label: const Text('Sign In ulang'),
-                icon: const Icon(Icons.arrow_forward_ios),
-                iconAlignment: IconAlignment.end,
-              )
-            : IconButton.outlined(
-                onPressed: () {
-                  context.pop();
-                  context.read<ProfileBloc>().add(FetchProfile());
-                },
-                icon: const Icon(Icons.refresh_outlined),
-              ),
-      );
-      context.read<ProfileBloc>().add(ProfileIsIdle());
-    });
+    ShowDialog.showAlertDialog(
+      context,
+      'Error saat memproses profile',
+      state.errorMessage,
+      state.errorMessage.toString().toLowerCase().contains('unauthorized')
+          ? OutlinedButton.icon(
+              onPressed: () {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  ManageAuthToken.deleteToken();
+                  context.read<AuthBloc>().add(AuthIsIdle());
+                  context.goNamed('signInPage');
+                });
+              },
+              label: const Text('Sign In ulang'),
+              icon: const Icon(Icons.arrow_forward_ios),
+              iconAlignment: IconAlignment.end,
+            )
+          : IconButton.outlined(
+              onPressed: () {
+                context.pop();
+                context.read<ProfileBloc>().add(FetchProfile());
+              },
+              icon: const Icon(Icons.refresh_outlined),
+            ),
+    );
+    context.read<ProfileBloc>().add(ProfileIsIdle());
   }
 
   Column _profileSummarySection(TextTheme textTheme) {

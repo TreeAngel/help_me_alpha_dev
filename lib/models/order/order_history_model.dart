@@ -14,7 +14,6 @@ class OrderHistoryModel extends Equatable {
   final String? category;
   final List<dynamic>? attachment;
 
-
   const OrderHistoryModel({
     this.orderId,
     this.latitude,
@@ -68,18 +67,17 @@ class OrderHistoryModel extends Equatable {
   /// Converts [OrderHistoryModel] to a JSON string.
   String toJson() => json.encode(toMap());
 
-  OrderHistoryModel copyWith({
-    int? orderId,
-    String? latitude,
-    String? longitude,
-    String? description,
-    String? orderTime,
-    String? user,
-    String? userProfile,
-    String? price,
-    String? category,
-    List<dynamic>? attachment
-  }) {
+  OrderHistoryModel copyWith(
+      {int? orderId,
+      String? latitude,
+      String? longitude,
+      String? description,
+      String? orderTime,
+      String? user,
+      String? userProfile,
+      String? price,
+      String? category,
+      List<dynamic>? attachment}) {
     return OrderHistoryModel(
       orderId: orderId ?? this.orderId,
       latitude: latitude ?? this.latitude,

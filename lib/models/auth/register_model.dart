@@ -10,7 +10,7 @@ class RegisterModel {
   final String role;
 
   RegisterModel({
-  required this.fullName,
+    required this.fullName,
     required this.username,
     required this.phoneNumber,
     required this.password,

@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../blocs/order_bloc/order_bloc.dart';
-import '../../configs/app_colors.dart';
-import '../../models/problem_model.dart';
-import '../../utils/show_dialog.dart';
+import '../../../blocs/order_bloc/order_bloc.dart';
+import '../../../configs/app_colors.dart';
+import '../../../models/category_problem/problem_model.dart';
+import '../../../utils/show_dialog.dart';
 
 // enum ProblemCategory { serabutan, kendaraan, rumah, elektronik }
 

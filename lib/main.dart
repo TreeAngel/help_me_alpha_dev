@@ -31,7 +31,10 @@ class MainApp extends StatelessWidget {
           create: (context) => HomeCubit(apiController: apiHelper),
         ),
         BlocProvider(
-          create: (context) => ProfileBloc(apiController: apiHelper, imagePickerUtil: imagePicker),
+          create: (context) => ProfileBloc(
+            apiController: apiHelper,
+            imagePickerUtil: imagePicker,
+          ),
         ),
         BlocProvider(
           create: (context) => AuthBloc(apiController: apiHelper),
