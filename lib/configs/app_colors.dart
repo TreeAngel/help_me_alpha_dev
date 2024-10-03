@@ -12,7 +12,7 @@ class AppColors {
   static const black = Color(0xFF000000);
   static const grey = Color(0xFFB7B6C4);
   static const greyinput = Color(0xFFB7B6C4);
-  static const white = Color(0xFFFFFFFF);
+  static const white = Color.fromARGB(255, 255, 255, 255);
 
   static const vividRed = Color(0xFFEE3F3F);
   static const salmonPink = Color(0xFFFF7F7F);

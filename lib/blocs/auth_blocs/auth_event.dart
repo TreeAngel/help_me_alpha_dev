@@ -61,15 +61,6 @@ class ProfileImageChanged extends AuthEvent {
   List<XFile> get props => [image];
 }
 
-class EmailChanged extends AuthEvent {
-  final String email;
-
-  const EmailChanged(this.email);
-
-  @override
-  List<Object> get props => [email];
-}
-
 // class ForgotPasswordSubmitted extends AuthEvent {
 //   final String email;
 

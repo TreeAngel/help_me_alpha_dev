@@ -24,7 +24,7 @@ class ForgotPasswordPage extends StatelessWidget {
         leading: IconButton(
           icon: Icon(Icons.keyboard_backspace, color: Colors.white), // Ikon close (X)
           onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => SignInPage()));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const SignInPage()));
           },
         ),
         title: const Text(

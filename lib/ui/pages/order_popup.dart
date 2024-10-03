@@ -21,7 +21,7 @@ class OrderPop extends StatelessWidget {
                   decoration: const BoxDecoration(
                     color: AppColors.mitraGreen,
                   ),
-                  padding: const EdgeInsets.only(top: 50, left: 30, right: 30, bottom: 770),
+                  padding: const EdgeInsets.only(top: 50, left: 30, right: 20, bottom: 770),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -31,13 +31,20 @@ class OrderPop extends StatelessWidget {
                         iconSize: 30,
                         color: Colors.black,
                         onPressed: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+                          Navigator.of(context).pop();
                         },
+                      ),
+                      const Text(
+                        'Orderan',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       IconButton(
                         icon: const CircleAvatar(
                           backgroundImage: AssetImage('assets/images/girl1.png'), // TODO: Ganti ke NetwordkImage buat ambil profile image dari api
-                          radius: 22,
+                          radius: 20,
                         ),
                         onPressed: () {
                           Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
@@ -140,17 +147,11 @@ class _OrderanState extends State<Orderan> {
     child: Positioned(
       child: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.only(top: 40),
+          padding: const EdgeInsets.only(top: 70),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Text(
-                'Orderan',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              
               const SizedBox(height: 20),
               const CircleAvatar(
                 backgroundImage: AssetImage('assets/images/ban-kempes.jpg'),

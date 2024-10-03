@@ -18,7 +18,7 @@ class _LaunchPageState extends State<LaunchPage> {
     super.initState();
     Timer(
       const Duration(seconds: 3),
-      () => context.goNamed('homePage'),
+      () => context.goNamed('signInPage'),
     );
   }
 

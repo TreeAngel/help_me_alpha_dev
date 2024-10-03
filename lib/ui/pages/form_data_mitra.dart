@@ -2,7 +2,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../services/api/api_exception.dart';
 import '../../configs/app_colors.dart';
@@ -15,15 +14,13 @@ enum TextInputEvent {
   username,
 }
 
-class SignUpPage extends StatelessWidget {
-  const SignUpPage({super.key});
+class FormDataMitraPage extends StatelessWidget {
+  const FormDataMitraPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     final appTheme = Theme.of(context);
     final textTheme = appTheme.textTheme;
-
-    bool isPassword = true;
 
     return SafeArea(
       child: Scaffold(
@@ -41,12 +38,10 @@ class SignUpPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Daftar akun',
-                      style: GoogleFonts.poppins(
-                        color: Colors.white,
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      'Daftar Mitra',
+                      style: textTheme.headlineLarge?.copyWith(
+                          color: AppColors.darkTextColor,
+                          fontWeight: FontWeight.w800),
                     ),
                     const SizedBox(height: 20),
                     BlocBuilder<AuthBloc, AuthState>(
@@ -55,9 +50,9 @@ class SignUpPage extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Nama lengkap',
+                              'Nama Usaha',
                               style: textTheme.titleMedium?.copyWith(
-                                color: AppColors.white,
+                                color: AppColors.primary,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -65,51 +60,17 @@ class SignUpPage extends StatelessWidget {
                             _textInputField(
                                 context,
                                 textTheme,
-                                'Masukkan nama lengkap',
+                                'Masukkan nama usaha',
                                 TextInputEvent.fullname),
-                            const SizedBox(height: 10),
-                            Text(
-                              'Nomor handphone',
-                              style: textTheme.titleMedium?.copyWith(
-                                color: AppColors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            _phoneNumInputField(context, textTheme),
-                            const SizedBox(height: 10),
-                            Text(
-                              'Username',
-                              style: textTheme.titleMedium?.copyWith(
-                                color: AppColors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
                             const SizedBox(height: 10),
                             _textInputField(context, textTheme,
                                 'Masukan username', TextInputEvent.username),
                             const SizedBox(height: 10),
-                            Text(
-                              'Kata sandi',
-                              style: textTheme.titleMedium?.copyWith(
-                                color: AppColors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            _passwordInputField(state, context, textTheme,
-                                'Masukan kata sandi', isPassword),
-                            const SizedBox(height: 10),
-                            Text(
-                              'Konfirmasi kata sandi',
-                              style: textTheme.titleMedium?.copyWith(
-                                color: AppColors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            _passwordInputField(state, context, textTheme,
-                                'Konfirmasi kata sandi', !isPassword),
+
+                            //TODO MITRA TYPE
+                            
+                            //TODO PICK LOCATION
+
                             const SizedBox(height: 40),
                             if (state is SignUpLoaded) ...[
                               _stateLoaded(context),
@@ -120,14 +81,12 @@ class SignUpPage extends StatelessWidget {
                             if (state is AuthLoading) ...[
                               const Center(
                                 child: CircularProgressIndicator(
-                                  color: AppColors.mitraGreen,
+                                  color: AppColors.primary,
                                 ),
                               ),
                             ] else ...[
                               _signUpButton(textTheme, context, state),
                             ],
-                            const SizedBox(height: 10),
-                            _haveAccountSection(textTheme, context),
                             const SizedBox(height: 50),
                           ],
                         );
@@ -137,29 +96,6 @@ class SignUpPage extends StatelessWidget {
                 ),
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Center _haveAccountSection(TextTheme textTheme, BuildContext context) {
-    return Center(
-      child: Text.rich(
-        style: textTheme.bodyLarge?.copyWith(
-            color: AppColors.darkTextColor, fontWeight: FontWeight.normal),
-        TextSpan(
-          text: 'Sudah memiliki akun? ',
-          children: [
-            TextSpan(
-              text: 'Masuk',
-              style: textTheme.bodyLarge?.copyWith(
-                color: AppColors.mitraGreen,
-                decoration: TextDecoration.underline,
-              ),
-              recognizer: TapGestureRecognizer()
-                ..onTap = () => context.goNamed('signInPage'),
-            )
           ],
         ),
       ),
@@ -183,11 +119,11 @@ class SignUpPage extends StatelessWidget {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ShowDialog.showAlertDialog(
         context,
-        'Berhasil Sign Up!',
+        'Berhasil Daftar!',
         null,
         TextButton.icon(
           onPressed: () {
-            context.goNamed('formDataMitraPage');
+            context.goNamed('homePage');
           },
           style: ButtonStyle(
             backgroundColor: WidgetStateProperty.all(Colors.transparent),
@@ -195,7 +131,7 @@ class SignUpPage extends StatelessWidget {
             iconColor: WidgetStateProperty.all(AppColors.lightTextColor),
           ),
           label: const Text(
-            'Lanjut daftar usaha kamu!',
+            'Halaman utama',
             style: TextStyle(color: AppColors.lightTextColor),
           ),
           icon: const Icon(Icons.arrow_forward_ios_rounded),
@@ -214,7 +150,7 @@ class SignUpPage extends StatelessWidget {
       child: ElevatedButton(
         style: ButtonStyle(
           backgroundColor: WidgetStateProperty.all(
-            AppColors.mitraGreen,
+            AppColors.primary,
           ),
           shape: WidgetStateProperty.all(
             RoundedRectangleBorder(
@@ -223,9 +159,9 @@ class SignUpPage extends StatelessWidget {
           ),
         ),
         child: Text(
-          'Daftar',
+          'Daftar Mitra',
           style: textTheme.titleMedium?.copyWith(
-            color: AppColors.white,
+            color: AppColors.lightTextColor,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -236,68 +172,38 @@ class SignUpPage extends StatelessWidget {
     );
   }
 
-  TextFormField _passwordInputField(AuthState state, BuildContext context,
-      TextTheme textTheme, String hintText, bool passwordC) {
-    return TextFormField(
-      obscureText: !state.isPasswordVisible,
-      onChanged: (password) => context.read<AuthBloc>().add(passwordC
-          ? PasswordChanged(password)
-          : ConfirmPasswordChanged(password)),
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: Colors.white,
-        hintText: hintText,
-        hintStyle:
-            textTheme.bodyLarge?.copyWith(color: AppColors.greyinput),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        suffixIconColor: Colors.black,
-        suffixIcon: IconButton(
-          icon: Icon(
-            state.isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-          ),
-          onPressed: () {
-            context.read<AuthBloc>().add(TogglePasswordVisibility());
-          },
-        ),
+  DropdownButtonFormField<String> _dropdownInputField(
+    BuildContext context, TextTheme textTheme, String hintText, List<String> items, String? selectedItem, Function(String?) onChanged) {
+  return DropdownButtonFormField<String>(
+    value: selectedItem,
+    hint: Text(
+      hintText,
+      style: textTheme.bodyLarge?.copyWith(color: AppColors.hintTextColor),
+    ),
+    onChanged: onChanged,
+    items: items.map<DropdownMenuItem<String>>((String value) {
+      return DropdownMenuItem<String>(
+        value: value,
+        child: Text(value),
+      );
+    }).toList(),
+    decoration: InputDecoration(
+      filled: true,
+      fillColor: Colors.white,
+      hintText: hintText,
+      hintStyle: textTheme.bodyLarge?.copyWith(color: AppColors.greyinput),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
       ),
-      style: textTheme.bodyLarge?.copyWith(
-        color: AppColors.lightTextColor,
-        fontWeight: FontWeight.normal,
-      ),
-    );
-  }
+    ),
+    style: textTheme.bodyLarge?.copyWith(
+      color: AppColors.lightTextColor,
+      fontWeight: FontWeight.normal,
+    ),
+  );
+}
 
-  TextFormField _phoneNumInputField(BuildContext context, TextTheme textTheme) {
-    return TextFormField(
-      keyboardType: TextInputType.phone,
-      cursorColor: Colors.black,
-      onChanged: (phoneNumber) =>
-          context.read<AuthBloc>().add(PhoneNumberChanged(phoneNumber)),
-      decoration: InputDecoration(
-        prefixText: '+62 | ',
-        prefixStyle: textTheme.bodyLarge?.copyWith(
-          color: AppColors.lightTextColor,
-          fontWeight: FontWeight.normal,
-        ),
-        floatingLabelBehavior: FloatingLabelBehavior.always,
-        filled: true,
-        fillColor: Colors.white,
-        hintText: 'Masukan nomor handphone',
-        hintStyle:
-            textTheme.bodyLarge?.copyWith(color: AppColors.greyinput),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-      ),
-      style: textTheme.bodyLarge?.copyWith(
-        color: AppColors.lightTextColor,
-        fontWeight: FontWeight.normal,
-      ),
-    );
-  }
-
+  
   TextFormField _textInputField(BuildContext context, TextTheme textTheme,
       String hintText, TextInputEvent event) {
     return TextFormField(
@@ -311,7 +217,7 @@ class SignUpPage extends StatelessWidget {
         fillColor: Colors.white,
         hintText: hintText,
         hintStyle:
-            textTheme.bodyLarge?.copyWith(color: AppColors.greyinput),
+            textTheme.bodyLarge?.copyWith(color: AppColors.hintTextColor),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
         ),

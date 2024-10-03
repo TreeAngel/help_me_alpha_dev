@@ -1,8 +1,11 @@
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:help_me_mitra_alpha_ver/ui/pages/forgot_password_page.dart';
+import 'package:help_me_mitra_alpha_ver/ui/pages/form_data_mitra.dart';
 import 'package:help_me_mitra_alpha_ver/ui/pages/launch_page.dart';
 import 'package:help_me_mitra_alpha_ver/ui/pages/order_popup.dart';
 import 'package:help_me_mitra_alpha_ver/ui/pages/selected_popup.dart';
+import 'package:help_me_mitra_alpha_ver/ui/pages/track_maps_page.dart';
 
 import '../services/api/api_controller.dart';
 import '../ui/pages/home_page.dart';
@@ -11,8 +14,25 @@ import '../ui/pages/sign_up_page.dart';
 
 class AppRoute {
   static final GoRouter appRoute = GoRouter(
-    initialLocation: '/home',
-    routes: [
+    initialLocation: '/',
+    routes: _routes,
+    redirect: (context, state) {
+      final isAuthenticated = ApiController.token != null ? true : false;
+      // TODO: Add other guarded route later
+      if (isAuthenticated == false && state.matchedLocation == '/signIn') {
+        return '/signIn';
+      } else if (isAuthenticated == true &&
+          state.matchedLocation == '/signIn' &&
+          state.matchedLocation == '/signUp') {
+        return '/home';
+      } else {
+        return state.fullPath;
+      }
+    },
+  );
+
+  static List<RouteBase> get _routes{
+    return [
       GoRoute(
         path: '/',
         name: 'init',
@@ -34,6 +54,11 @@ class AppRoute {
         builder: (context, state) => const SignUpPage(),
       ),
       GoRoute(
+        path: '/formdatamitra',
+        name: 'formDataMitraPage',
+        builder: (context, state) => const FormDataMitraPage(),
+      ),
+      GoRoute(
         path: '/forgotPassword',
         name: 'forgotPasswordPage',
         builder: (context, state) => ForgotPasswordPage(),
@@ -48,21 +73,13 @@ class AppRoute {
         name: 'selectedPop',
         builder: (context, state) => const SelectedPop(),
       ),
-    ],
-    redirect: (context, state) {
-      final isAuthenticated = ApiController.token != null ? true : false;
-      // TODO: Add other guarded route later
-      if (isAuthenticated == false && state.matchedLocation == '/home') {
-        return '/signIn';
-      } else if (isAuthenticated == true &&
-          state.matchedLocation == '/signIn' &&
-          state.matchedLocation == '/signUp') {
-        return '/home';
-      } else {
-        return state.fullPath;
-      }
-    },
-  );
+      GoRoute(
+        path: '/trackmaps',
+        name: 'trackmapsPage',
+        builder: (context, state) => const TrackMaps(),
+      ),
+    ];
+  }
 }
 
 // routes: {

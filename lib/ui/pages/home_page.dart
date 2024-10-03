@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:help_me_mitra_alpha_ver/blocs/home_blocs/home_bloc.dart';
 import 'package:help_me_mitra_alpha_ver/data/menu_items_data.dart';
 import 'package:help_me_mitra_alpha_ver/ui/pages/order_popup.dart';
@@ -17,12 +18,12 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // final appTheme = Theme.of(context);
-    // final textTheme = appTheme.textTheme;
+    final appTheme = Theme.of(context);
+    final textTheme = appTheme.textTheme;
     // final colorScheme = appTheme.colorScheme;
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-    String username = 'Unknown mitra';
+    String username = 'mitra';
 
     return Scaffold(
       body: Stack(
@@ -42,7 +43,7 @@ class HomePage extends StatelessWidget {
   Container _saldoCard(double screenWidth, double screenHeight, String username,) {
     return Container(
       margin: const EdgeInsets.only(
-          top: 120, left: 20.0, right: 20.0),
+          top: 100, left: 20.0, right: 20.0),
       child: Column(
         children: [
           Container(
@@ -52,7 +53,7 @@ class HomePage extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  const Color(0xFFDAFF79).withOpacity(0.87),
+                  const Color(0xFFDAFF79).withOpacity(0.8),
                   const Color(0xFF758D38).withOpacity(0.8),
                 ],
                 begin: Alignment.topCenter,
@@ -62,7 +63,7 @@ class HomePage extends StatelessWidget {
             ),
             child: Stack(
               children: [
-                const Positioned(
+                Positioned(
                   left: 20,
                   top: 15,
                   child: Column(
@@ -70,32 +71,36 @@ class HomePage extends StatelessWidget {
                     children: [
                       Text(
                         "Saldo",
-                        style: TextStyle(
-                            fontSize: 22.15,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold),
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: 22.15,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                      SizedBox(height: 30),
+                      SizedBox(height: 40),
                       Text(
                         "Abang",
-                        style: TextStyle(
-                          fontSize: 22.15,
+                        style: GoogleFonts.poppins(
                           color: Colors.white,
+                          fontSize: 22.15,
+                          fontWeight: FontWeight.normal,
                         ),
                       ),
                       Text(
                         "Rp0",
-                        style: TextStyle(
-                            fontSize: 22.15,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold),
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: 22.15,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       SizedBox(height: 28),
                       Text(
                         "08x-xxx-xxx-xxx",
-                        style: TextStyle(
-                          fontSize: 22.15,
+                        style: GoogleFonts.poppins(
                           color: Colors.white,
+                          fontSize: 22.15,
+                          fontWeight: FontWeight.normal,
                         ),
                       ),
                     ],
@@ -122,25 +127,26 @@ class HomePage extends StatelessWidget {
                       ),
                     )),
                 Positioned(
-                    right: 30,
-                    bottom: 165,
-                    child: Container(
-                      width: 65,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.white.withOpacity(0.3),
-                            Colors.white.withOpacity(0.0),
-                          ],
-                          begin: Alignment.bottomCenter,
-                          end: Alignment.topCenter,
-                        ),
-                        borderRadius: const BorderRadius.only(
-                          topRight: Radius.circular(19),
-                        ),
+                  right: 30,
+                  bottom: 165,
+                  child: Container(
+                    width: 65,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.white.withOpacity(0.3),
+                          Colors.white.withOpacity(0.0),
+                        ],
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
                       ),
-                    )),
+                      borderRadius: const BorderRadius.only(
+                        topRight: Radius.circular(19),
+                      ),
+                    ),
+                  ),
+                ),
                 Positioned(
                   right: 15,
                   bottom: 15,
@@ -171,7 +177,7 @@ class HomePage extends StatelessWidget {
   Container _riwayatContainer(double screenWidth, double screenHeight) {
     return Container(
       margin: const EdgeInsets.only(
-          top: 325, left: 25, right: 25),
+          top: 350, left: 25, right: 25),
       child: Column(
         children: [
           Container(
@@ -180,7 +186,7 @@ class HomePage extends StatelessWidget {
             height: screenHeight / 5.4,
             decoration: BoxDecoration(
               border: Border.all(
-                color: AppColors.boxGreen,
+                color: AppColors.mitraGreen,
                 width: 1,
               ),
               borderRadius: BorderRadius.circular(25),
@@ -196,7 +202,7 @@ class HomePage extends StatelessWidget {
 
   Container _riwayatTextHeader(double screenHeight) {
     return Container(
-        margin: EdgeInsets.only(top: screenHeight / 1.37, left: 25),
+        margin: EdgeInsets.only(top: screenHeight / 1.41, left: 25),
         child: const Text(
           "Riwayat",
           style: TextStyle(
@@ -204,13 +210,14 @@ class HomePage extends StatelessWidget {
             fontWeight: FontWeight.bold,
             color: Colors.black,
           ),
-        ));
+        )
+    );
   }
 
   Container _orderanContainer(double screenWidth, double screenHeight, context) {
     return Container(
       margin: const EdgeInsets.only(
-          top: 120, left: 25, right: 25),
+          top: 125, left: 25, right: 25),
       child: Column(
         children: [
           Container(
@@ -219,7 +226,7 @@ class HomePage extends StatelessWidget {
             height: screenHeight / 5.4,
             decoration: BoxDecoration(
               border: Border.all(
-                color: AppColors.boxGreen,
+                color: AppColors.mitraGreen,
                 width: 1,
               ),
               borderRadius: BorderRadius.circular(25),
@@ -232,21 +239,26 @@ class HomePage extends StatelessWidget {
             ),
           ),
           // ICON BUTTON UNTUK JALAN PINTAS KE ORDERAN (dev mode selama belum menyambung ke client)
-          IconButton(
-            icon: const Icon(Icons.arrow_forward),
-            iconSize: 30,
-            color: const Color.fromARGB(255, 200, 119, 53),
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => OrderPop()));
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.arrow_forward),
-            iconSize: 30, 
-            color: Colors.black,
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => SelectedPop()));
-            },
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              IconButton(
+                icon: const Icon(Icons.arrow_forward),
+                iconSize: 30,
+                color: const Color.fromARGB(255, 200, 119, 53),
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => OrderPop()));
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.arrow_forward),
+                iconSize: 30, 
+                color: Colors.black,
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => SelectedPop()));
+                },
+              ),
+            ],
           ),
         ],
       ),
@@ -255,7 +267,7 @@ class HomePage extends StatelessWidget {
 
   Container _orderanTextHeader(double screenHeight) {
     return Container(
-        margin: EdgeInsets.only(top: screenHeight / 2.10, left: 25),
+        margin: EdgeInsets.only(top: screenHeight / 2.23, left: 25),
         child: const Text(
           "Orderan",
           style: TextStyle(
@@ -329,13 +341,12 @@ class HomePage extends StatelessWidget {
       double screenWidth, double screenHeight, String username,) {
     return Container(
       width: screenWidth,
-      height: screenHeight / 2.5, // Sedikit lebih pendek
+      height: screenHeight / 2.5, 
       decoration: const BoxDecoration(
         color: Colors.black,
       ),
       padding: const EdgeInsets.only(
-           left: 30, right: 25, bottom: 170), // Memberikan padding untuk teks
-      // alignment: Alignment.bottomLeft, // Posisi teks di bawah
+           left: 30, right: 25, bottom: 170),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -343,18 +354,18 @@ class HomePage extends StatelessWidget {
           RichText(
             text: TextSpan(
               text: "Hi, \n",
-              style: const TextStyle(
+              style: GoogleFonts.poppins(
+                color: Colors.white,
                 fontSize: 22.15,
                 fontWeight: FontWeight.normal,
-                color: Colors.white,
               ),
               children: <TextSpan>[
                 TextSpan(
                   text: "$username!",
-                  style: const TextStyle(
-                    fontSize: 35.62,
-                    fontWeight: FontWeight.w800,
+                  style: GoogleFonts.poppins(
                     color: Colors.white,
+                    fontSize: 35.62,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
@@ -393,15 +404,12 @@ class HomePage extends StatelessWidget {
 
   void _menuFunction(BuildContext context, MenuItemModel item) {
     switch (item) {
-      case MenuItems.itemHome:
-        printInfo('You tap on home');
-        break;
       case MenuItems.itemProfile:
         printInfo('You tap on profile');
-        break;
-      case MenuItems.itemOrderHistory:
-        printInfo('You tap on order history');
-        break;
+        break;  
+      // case MenuItems.itemOrderHistory:
+      //   printInfo('You tap on order history');
+      //   break;
       case MenuItems.itemSignIn:
         context.goNamed('signInPage');
         break;

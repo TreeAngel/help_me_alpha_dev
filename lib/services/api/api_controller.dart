@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+
 import '../../models/api_error_response/api_error_response_model.dart';
 import '../../models/api_error_response/message_error_model.dart';
 import 'api_exception.dart';
@@ -8,12 +9,12 @@ import '../../utils/logging.dart';
 class ApiController {
   static const baseUrl = null;
   static const temporaryUrl =
-      'https://945cfe3b44d67f07b49b4ec89d28ebb4.serveo.nets/api/v1/';
+      'https://c2a979c74ee620fbe446d9863ec6e85b.serveo.net';
   static String? token;
 
   static var dio = Dio(
     BaseOptions(
-      baseUrl: temporaryUrl,
+      baseUrl: '$temporaryUrl/api/v1/',
       contentType: Headers.jsonContentType,
       responseType: ResponseType.json,
       connectTimeout: const Duration(seconds: 120),

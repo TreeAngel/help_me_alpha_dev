@@ -5,8 +5,7 @@ import '../services/api/api_controller.dart';
 
 class MenuItems {
   static const List<MenuItemModel> firstItems = [
-    itemHome,
-    itemOrderHistory,
+    // itemOrderHistory,
     itemProfile,
   ];
 
@@ -14,29 +13,25 @@ class MenuItems {
     ApiController.token != null ? itemSignOut : itemSignIn,
   ];
 
-  static const itemHome = MenuItemModel(
-    id: 1,
-    title: 'Home',
-    icon: Icons.home_sharp,
-  );
+ 
   static const itemProfile = MenuItemModel(
-    id: 2,
+    id: 1,
     title: 'Profile',
     icon: Icons.person,
   );
   static const itemSignIn = MenuItemModel(
-    id: 3,
+    id: 2,
     title: 'Sign In',
     icon: Icons.login_sharp,
   );
   static const itemSignOut = MenuItemModel(
-    id: 4,
+    id: 3,
     title: 'Sign Out',
     icon: Icons.logout_sharp,
   );
-  static const itemOrderHistory = MenuItemModel(
-    id: 5,
-    title: 'Order History',
-    icon: Icons.history,
-  );
+  // static const itemOrderHistory = MenuItemModel(
+  //   id: 5,
+  //   title: 'Order History',
+  //   icon: Icons.history,
+  // );
 }
