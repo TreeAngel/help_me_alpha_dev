@@ -61,6 +61,17 @@ class ProfileImageChanged extends AuthEvent {
   List<XFile> get props => [image];
 }
 
+class MitraTypeChanged extends AuthEvent {
+  final String mitraType;
+
+  const MitraTypeChanged({required this.mitraType});
+
+  @override
+  List<Object> get props => [mitraType];
+}
+
+
+
 // class ForgotPasswordSubmitted extends AuthEvent {
 //   final String email;
 

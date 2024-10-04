@@ -15,7 +15,34 @@ enum TextInputEvent {
 }
 
 class FormDataMitraPage extends StatelessWidget {
-  const FormDataMitraPage({super.key});
+  @override
+  
+ FormDataMitraPage({super.key});
+
+  String? _selectedMitraType;
+
+  final List<DropdownMenuItem<String>> _items = [
+    DropdownMenuItem<String>(
+      value: '1',
+      child: Text('Serabutan'),
+    ),
+    DropdownMenuItem<String>(
+      value: '2',
+      child: Text('Kendaraan'),
+    ),
+    // DropdownMenuItem<String>(
+    //   value: '3',
+    //   child: Text('Rumah'),
+    // ),
+    // DropdownMenuItem<String>(
+    //   value: '4',
+    //   child: Text('Elektronik'),
+    // ),
+    // DropdownMenuItem<String>(
+    //   value: '4',
+    //   child: Text('Personal'),
+    // ),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -46,6 +73,10 @@ class FormDataMitraPage extends StatelessWidget {
                     const SizedBox(height: 20),
                     BlocBuilder<AuthBloc, AuthState>(
                       builder: (context, state) {
+                        // String? _selectedValue = state.selectedValue;
+                        // if(state is MitraTypeSeectedState){
+                        //   _selectedValue = state.selectedType;
+                        // }
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -66,9 +97,26 @@ class FormDataMitraPage extends StatelessWidget {
                             _textInputField(context, textTheme,
                                 'Masukan username', TextInputEvent.username),
                             const SizedBox(height: 10),
+                            
 
                             //TODO MITRA TYPE
-                            
+                            DropdownButtonFormField(
+                              decoration: InputDecoration(
+                                labelText: 'Pilih Kategori Bantuan yang akan dikerjakan',
+                                border: OutlineInputBorder()
+                              ),
+                              value: _selectedMitraType,
+                              hint: Text('Pilih Kategori'),
+                              items: _items,
+                              onChanged: (value){
+                                if (value != null) {
+                                  print("Mitra Type terpilih: $value");
+                                  BlocProvider.of<AuthBloc>(context).add(
+                                    MitraTypeChanged(mitraType: value),
+                                  );
+                                }
+                              }
+                            ),
                             //TODO PICK LOCATION
 
                             const SizedBox(height: 40),

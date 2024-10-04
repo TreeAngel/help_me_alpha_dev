@@ -71,6 +71,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(state.copyWith(rememberMe: !state.rememberMe));
     });
 
+    on<MitraTypeChanged>((event, emit) {
+      mitraType = event.mitraType;
+      emit(state.copyWith(mitraType: event.mitraType));
+    });
+
+
     on<SignInSubmitted>(_onSignInSubmitted);
 
     on<SignOutSubmitted>(_onSignOutSubmitted);
@@ -269,6 +275,4 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
     }
   }
-
-  
 }

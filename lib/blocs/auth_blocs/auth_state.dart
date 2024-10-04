@@ -13,6 +13,7 @@ class AuthState extends Equatable {
   final XFile? profilePicture;
   final bool isPasswordVisible;
   final bool rememberMe;
+  final String mitraType;
 
   const AuthState({
     this.fullName = '',
@@ -24,6 +25,7 @@ class AuthState extends Equatable {
     this.profilePicture,
     this.isPasswordVisible = false,
     this.rememberMe = false,
+    this.mitraType = '',
   });
 
   AuthState copyWith({
@@ -35,6 +37,8 @@ class AuthState extends Equatable {
     XFile? profilePicture,
     bool? isPasswordVisible,
     bool? rememberMe,
+    String? mitraType,
+
   }) {
     return AuthState(
       fullName: fullName ?? this.fullName,
@@ -45,6 +49,7 @@ class AuthState extends Equatable {
       profilePicture: profilePicture ?? this.profilePicture,
       isPasswordVisible: isPasswordVisible ?? this.isPasswordVisible,
       rememberMe: rememberMe ?? this.rememberMe,
+      mitraType: mitraType ?? this.mitraType,
     );
   }
 
@@ -58,6 +63,7 @@ class AuthState extends Equatable {
         profilePicture,
         isPasswordVisible,
         rememberMe,
+        mitraType,
       ];
 }
 
