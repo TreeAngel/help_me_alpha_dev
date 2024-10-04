@@ -1,13 +1,13 @@
-part of 'order_bloc.dart';
+part of 'send_order_bloc.dart';
 
-sealed class OrderEvent extends Equatable {
-  const OrderEvent();
+sealed class SendOrderEvent extends Equatable {
+  const SendOrderEvent();
 
   @override
   List<Object> get props => [];
 }
 
-class FetchProblems extends OrderEvent {
+class FetchProblems extends SendOrderEvent {
   final String problemName;
 
   const FetchProblems({required this.problemName});
@@ -16,7 +16,7 @@ class FetchProblems extends OrderEvent {
   List<Object> get props => [problemName];
 }
 
-class ProblemSelected extends OrderEvent {
+class ProblemSelected extends SendOrderEvent {
   final ProblemModel selectedProblem;
 
   const ProblemSelected(this.selectedProblem);
@@ -25,7 +25,7 @@ class ProblemSelected extends OrderEvent {
   List<Object> get props => [selectedProblem];
 }
 
-class SolutionSelected extends OrderEvent {
+class SolutionSelected extends SendOrderEvent {
   final String selectedSolution;
 
   const SolutionSelected(this.selectedSolution);
@@ -34,7 +34,7 @@ class SolutionSelected extends OrderEvent {
   List<Object> get props => [selectedSolution];
 }
 
-class DeleteImage extends OrderEvent {
+class DeleteImage extends SendOrderEvent {
   final int imageIndex;
 
   const DeleteImage({required this.imageIndex});
@@ -43,13 +43,13 @@ class DeleteImage extends OrderEvent {
   List<Object> get props => [imageIndex];
 }
 
-class ProblemsPop extends OrderEvent {}
+class ProblemsPop extends SendOrderEvent {}
 
-class CameraCapture extends OrderEvent {}
+class CameraCapture extends SendOrderEvent {}
 
-class GalleryImagePicker extends OrderEvent {}
+class GalleryImagePicker extends SendOrderEvent {}
 
-class ShareLocation extends OrderEvent {
+class ShareLocation extends SendOrderEvent {
   final double lat;
   final double long;
 
@@ -59,9 +59,9 @@ class ShareLocation extends OrderEvent {
   List<Object> get props => [lat, long];
 }
 
-class OrderIsIdle extends OrderEvent {}
+class OrderIsIdle extends SendOrderEvent {}
 
-class OrderSubmitted extends OrderEvent {
+class OrderSubmitted extends SendOrderEvent {
   final String problem;
 
   const OrderSubmitted(this.problem);

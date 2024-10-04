@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../services/api/api_exception.dart';
 import '../../../configs/app_colors.dart';
-import '../../../blocs/auth_bloc/auth_bloc.dart';
+import '../../../blocs/auth/auth_bloc.dart';
 import '../../../utils/show_dialog.dart';
 
 class SignInPage extends StatelessWidget {

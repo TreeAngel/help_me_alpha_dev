@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'blocs/home_bloc/home_cubit.dart';
-import 'blocs/auth_bloc/auth_bloc.dart';
-import 'blocs/order_bloc/order_bloc.dart';
-import 'blocs/profile_bloc/profile_bloc.dart';
+import 'blocs/manage_order/manage_order_bloc.dart';
+import 'cubits/home_cubit/home_cubit.dart';
+import 'blocs/auth/auth_bloc.dart';
+import 'blocs/send_order/send_order_bloc.dart';
+import 'blocs/profile/profile_bloc.dart';
 import 'configs/app_theme.dart';
 import 'services/api/api_controller.dart';
 import 'utils/image_picker_util.dart';
@@ -40,10 +41,13 @@ class MainApp extends StatelessWidget {
           create: (context) => AuthBloc(apiController: apiHelper),
         ),
         BlocProvider(
-          create: (context) => OrderBloc(
+          create: (context) => SendOrderBloc(
             apiController: apiHelper,
             imagePickerUtil: imagePicker,
           ),
+        ),
+        BlocProvider(
+          create: (context) => ManageOrderBloc(apiController: apiHelper),
         ),
         // TODO: Add other blocs here
       ],

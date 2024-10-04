@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../../blocs/order_bloc/order_bloc.dart';
+import '../../../blocs/send_order/send_order_bloc.dart';
 import '../../../configs/app_colors.dart';
 import '../../../data/menu_items_data.dart';
 import '../../../models/misc/menu_item_model.dart';
@@ -155,7 +155,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                           textTheme,
                         ),
                         const SizedBox(height: 20),
-                        BlocBuilder<OrderBloc, OrderState>(
+                        BlocBuilder<SendOrderBloc, SendOrderState>(
                           builder: (context, state) {
                             if (state is OrderError) {
                               WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -166,7 +166,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                                   null,
                                 );
                               });
-                              context.read<OrderBloc>().add(OrderIsIdle());
+                              context.read<SendOrderBloc>().add(OrderIsIdle());
                               return const SizedBox.shrink();
                             }
                             if (state is OrderUploaded) {
@@ -222,7 +222,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
       child: TextButton(
         onPressed: () {
           context
-              .read<OrderBloc>()
+              .read<SendOrderBloc>()
               .add(OrderSubmitted(widget.problem.toString()));
         },
         style: const ButtonStyle(
@@ -248,7 +248,9 @@ class _AddTaskPageState extends State<AddTaskPage> {
         getLocation();
         if (lat != null && long != null) {
           ScaffoldMessenger.of(context).showSnackBar(successLocationSnackBar);
-          context.read<OrderBloc>().add(ShareLocation(lat: lat!, long: long!));
+          context
+              .read<SendOrderBloc>()
+              .add(ShareLocation(lat: lat!, long: long!));
         }
       },
       child: Row(
@@ -283,7 +285,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
         ),
       ),
       const SizedBox(height: 10),
-      BlocBuilder<OrderBloc, OrderState>(
+      BlocBuilder<SendOrderBloc, SendOrderState>(
         builder: (context, state) {
           if (state is ImagePicked) {
             state.pickedImage != null && problemPictures.length < 2
@@ -300,7 +302,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                 ),
               );
             }
-            context.read<OrderBloc>().add(OrderIsIdle());
+            context.read<SendOrderBloc>().add(OrderIsIdle());
           }
           if (state is ImageDeleted) {
             problemPictures.removeAt(state.imageIndex);
@@ -315,7 +317,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                 ),
               );
             }
-            context.read<OrderBloc>().add(OrderIsIdle());
+            context.read<SendOrderBloc>().add(OrderIsIdle());
           }
           return Row(
             mainAxisAlignment: MainAxisAlignment.start,
@@ -339,8 +341,9 @@ class _AddTaskPageState extends State<AddTaskPage> {
           'imageName': imageName,
         },
       ),
-      onLongPress: () =>
-          context.read<OrderBloc>().add(DeleteImage(imageIndex: imageIndex)),
+      onLongPress: () => context
+          .read<SendOrderBloc>()
+          .add(DeleteImage(imageIndex: imageIndex)),
       child: Padding(
         padding: const EdgeInsets.only(right: 10),
         child: SizedBox(
@@ -372,7 +375,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
     );
   }
 
-  SizedBox _addImage(BuildContext context, OrderState state) {
+  SizedBox _addImage(BuildContext context, SendOrderState state) {
     return SizedBox(
       width: 68,
       height: 68,
@@ -395,7 +398,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
 
   PopupMenuButton<MenuItemModel> _pickImageBtn(
     BuildContext context,
-    OrderState state,
+    SendOrderState state,
   ) {
     return PopupMenuButton<MenuItemModel>(
       color: AppColors.surface,
@@ -430,13 +433,13 @@ class _AddTaskPageState extends State<AddTaskPage> {
       );
 
   void _pickImageMenuFunction(
-      BuildContext context, OrderState state, MenuItemModel item) {
+      BuildContext context, SendOrderState state, MenuItemModel item) {
     switch (item) {
       case MenuItems.itemFromCamera:
-        context.read<OrderBloc>().add(CameraCapture());
+        context.read<SendOrderBloc>().add(CameraCapture());
         break;
       case MenuItems.itemFromGallery:
-        context.read<OrderBloc>().add(GalleryImagePicker());
+        context.read<SendOrderBloc>().add(GalleryImagePicker());
         break;
       default:
         printError('What are you tapping? $item');
@@ -449,7 +452,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
       controller: _serabutanInputController,
       onChanged: (value) {
         context
-            .read<OrderBloc>()
+            .read<SendOrderBloc>()
             .add(SolutionSelected(_serabutanInputController.text.toString()));
       },
       decoration: InputDecoration(
@@ -490,7 +493,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
           selectedChoice = value;
         });
         context
-            .read<OrderBloc>()
+            .read<SendOrderBloc>()
             .add(SolutionSelected(selectedChoice.toString()));
       },
       dropdownMenuEntries:

@@ -1,5 +1,7 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../blocs/manage_order/manage_order_bloc.dart';
 import '../services/api/api_controller.dart';
 import '../ui/pages/auth/change_password_page.dart';
 import '../ui/pages/auth/forget_password_page.dart';
@@ -11,7 +13,8 @@ import '../ui/pages/home/home_page.dart';
 import '../ui/pages/home/profile_page.dart';
 import '../ui/pages/auth/sign_in_page.dart';
 import '../ui/pages/auth/sign_up_page.dart';
-import '../ui/pages/order/detail_page.dart';
+import '../ui/pages/order/select_mitra_page.dart';
+import '../ui/pages/order/select_probelm_page.dart';
 import '../ui/pages/auth/verify_phone_number_page.dart';
 
 class AppRoute {
@@ -20,6 +23,7 @@ class AppRoute {
     routes: _routes,
     redirect: (context, state) {
       final isAuthenticated = ApiController.token != null ? true : false;
+      final haveOrder = context.read<ManageOrderBloc>().haveActiveOrder;
       // TODO: Add other guarded route later
       if (isAuthenticated == false && state.matchedLocation == '/home') {
         return '/signIn';
@@ -41,6 +45,11 @@ class AppRoute {
       } else if (isAuthenticated == true &&
           state.matchedLocation == '/signUp') {
         return '/home';
+      } else if (haveOrder == true &&
+          state.matchedLocation == '/selectProblem') {
+        return '/selectMitra';
+      } else if (haveOrder == true && state.matchedLocation == '/addTask') {
+        return '/selectMitra';
       } else {
         return null;
       }
@@ -96,12 +105,12 @@ class AppRoute {
         builder: (context, state) => const VerifyPhoneNumberPage(),
       ),
       GoRoute(
-        path: '/detail',
-        name: 'detailPage',
+        path: '/selectProblem',
+        name: 'selectProblemPage',
         builder: (context, state) {
           final id = state.uri.queryParameters['categoryId'].toString();
           final category = state.uri.queryParameters['category'];
-          return DetailPage(
+          return SelectProblemPage(
             categoryId: int.parse(id),
             category: category.toString(),
           );
@@ -117,6 +126,14 @@ class AppRoute {
             problemId: id.isNotEmpty ? int.parse(id) : null,
             problem: problem.toString(),
           );
+        },
+      ),
+      GoRoute(
+        path: '/selectMitra',
+        name: 'selectMitraPage',
+        builder: (context, state) {
+          String id = state.uri.queryParameters['orderId'].toString();
+          return SelectMitraPage(orderId: id.isNotEmpty ? int.parse(id) : null);
         },
       ),
       GoRoute(

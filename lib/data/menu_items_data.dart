@@ -4,8 +4,6 @@ import '../services/api/api_controller.dart';
 
 class MenuItems {
   static const List<MenuItemModel> firstItems = [
-    itemHome,
-    itemOrderHistory,
     itemProfile,
   ];
 

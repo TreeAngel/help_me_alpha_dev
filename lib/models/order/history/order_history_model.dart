@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:equatable/equatable.dart';
 
+import '../attachment.dart';
+
 class OrderHistoryModel extends Equatable {
   final int? orderId;
   final String? latitude;
@@ -12,7 +14,7 @@ class OrderHistoryModel extends Equatable {
   final String? userProfile;
   final String? price;
   final String? category;
-  final List<dynamic>? attachment;
+  final List<Attachment>? attachment;
 
   const OrderHistoryModel({
     this.orderId,
@@ -27,20 +29,21 @@ class OrderHistoryModel extends Equatable {
     this.attachment,
   });
 
-  factory OrderHistoryModel.fromMap(Map<String, dynamic> data) {
-    return OrderHistoryModel(
-      orderId: data['order_id'] as int?,
-      latitude: data['latitude'] as String?,
-      longitude: data['longitude'] as String?,
-      description: data['description'] as String?,
-      orderTime: data['order_time'] as String?,
-      user: data['user'] as String?,
-      userProfile: data['user_profile'] as String?,
-      price: data['price'] as String?,
-      category: data['category'] as String?,
-      attachment: data['attachment'] as List<dynamic>?,
-    );
-  }
+  factory OrderHistoryModel.fromMap(Map<String, dynamic> data) =>
+      OrderHistoryModel(
+        orderId: data['order_id'] as int?,
+        latitude: data['latitude'] as String?,
+        longitude: data['longitude'] as String?,
+        description: data['description'] as String?,
+        orderTime: data['order_time'] as String?,
+        user: data['user'] as String?,
+        userProfile: data['user_profile'] as String?,
+        price: data['price'] as String?,
+        category: data['category'] as String?,
+        attachment: (data['attachment'] as List<dynamic>?)
+            ?.map((e) => Attachment.fromMap(e as Map<String, dynamic>))
+            .toList(),
+      );
 
   Map<String, dynamic> toMap() => {
         'order_id': orderId,
@@ -52,7 +55,7 @@ class OrderHistoryModel extends Equatable {
         'user_profile': userProfile,
         'price': price,
         'category': category,
-        'attachment': attachment,
+        'attachment': attachment?.map((e) => e.toMap()).toList(),
       };
 
   /// `dart:convert`
@@ -66,31 +69,6 @@ class OrderHistoryModel extends Equatable {
   ///
   /// Converts [OrderHistoryModel] to a JSON string.
   String toJson() => json.encode(toMap());
-
-  OrderHistoryModel copyWith(
-      {int? orderId,
-      String? latitude,
-      String? longitude,
-      String? description,
-      String? orderTime,
-      String? user,
-      String? userProfile,
-      String? price,
-      String? category,
-      List<dynamic>? attachment}) {
-    return OrderHistoryModel(
-      orderId: orderId ?? this.orderId,
-      latitude: latitude ?? this.latitude,
-      longitude: longitude ?? this.longitude,
-      description: description ?? this.description,
-      orderTime: orderTime ?? this.orderTime,
-      user: user ?? this.user,
-      userProfile: userProfile ?? this.userProfile,
-      price: price ?? this.price,
-      category: category ?? this.category,
-      attachment: attachment ?? this.attachment,
-    );
-  }
 
   @override
   List<Object?> get props {

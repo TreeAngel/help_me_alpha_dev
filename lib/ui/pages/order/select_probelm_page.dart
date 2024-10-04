@@ -2,32 +2,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../blocs/order_bloc/order_bloc.dart';
+import '../../../blocs/send_order/send_order_bloc.dart';
 import '../../../configs/app_colors.dart';
 import '../../../models/category_problem/problem_model.dart';
 import '../../../utils/show_dialog.dart';
 
 // enum ProblemCategory { serabutan, kendaraan, rumah, elektronik }
 
-class DetailPage extends StatefulWidget {
-  const DetailPage(
+class SelectProblemPage extends StatefulWidget {
+  const SelectProblemPage(
       {super.key, required this.categoryId, required this.category});
 
   final int? categoryId;
   final String? category;
 
   @override
-  State<DetailPage> createState() => _DetailPageState();
+  State<SelectProblemPage> createState() => _SelectProblemPageState();
 }
 
-class _DetailPageState extends State<DetailPage> {
+class _SelectProblemPageState extends State<SelectProblemPage> {
   List<ProblemModel> problems = [];
   ProblemModel? selectedProblem;
 
   @override
   void initState() {
     super.initState();
-    context.read<OrderBloc>().add(ProblemsPop());
+    context.read<SendOrderBloc>().add(ProblemsPop());
   }
 
   @override
@@ -66,7 +66,7 @@ class _DetailPageState extends State<DetailPage> {
               height: screenHeight / 8,
               child: Container(
                 color: AppColors.surface,
-                child: BlocBuilder<OrderBloc, OrderState>(
+                child: BlocBuilder<SendOrderBloc, SendOrderState>(
                   builder: (context, state) {
                     if (state is OrderLoading || state is OrderError) {
                       return const SizedBox.shrink();
@@ -132,11 +132,11 @@ class _DetailPageState extends State<DetailPage> {
     );
   }
 
-  BlocBuilder<OrderBloc, OrderState> _problemBlocBuilder(
+  BlocBuilder<SendOrderBloc, SendOrderState> _problemBlocBuilder(
     BuildContext context,
     TextTheme textTheme,
   ) {
-    return BlocBuilder<OrderBloc, OrderState>(
+    return BlocBuilder<SendOrderBloc, SendOrderState>(
       builder: (contextBuilder, state) {
         if (state is OrderInitial) {
           _onInitProblem(contextBuilder, context);
@@ -193,7 +193,7 @@ class _DetailPageState extends State<DetailPage> {
         setState(() {
           selectedProblem = value as ProblemModel;
         });
-        context.read<OrderBloc>().add(ProblemSelected(selectedProblem!));
+        context.read<SendOrderBloc>().add(ProblemSelected(selectedProblem!));
       },
     );
   }
@@ -202,7 +202,7 @@ class _DetailPageState extends State<DetailPage> {
     if (widget.categoryId != 0 &&
         widget.category?.toLowerCase() != 'serabutan') {
       contextBuilder
-          .read<OrderBloc>()
+          .read<SendOrderBloc>()
           .add(FetchProblems(problemName: widget.category!));
     } else if (widget.categoryId != 0 &&
         widget.category?.toLowerCase() == 'serabutan') {
@@ -241,7 +241,7 @@ class _DetailPageState extends State<DetailPage> {
           onPressed: () {
             context.pop();
             context
-                .read<OrderBloc>()
+                .read<SendOrderBloc>()
                 .add(FetchProblems(problemName: widget.category!));
           },
           icon: const Icon(Icons.refresh_outlined),

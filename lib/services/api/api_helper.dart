@@ -1,8 +1,10 @@
 import 'package:dio/dio.dart';
 
+import '../../models/offer/offer_model.dart';
+import '../../models/offer/offer_response_model.dart';
+import '../../models/order/history/order_history_model.dart';
 import 'api_controller.dart';
-import '../../models/order/order_history_model.dart';
-import '../../models/order/order_response_model.dart';
+import '../../models/order/order_response_model/order_response_model.dart';
 import '../../models/category_problem/problem_model.dart';
 import '../../models/auth/user_model.dart';
 import '../../models/auth/auth_response_model.dart';
@@ -173,8 +175,10 @@ class ApiHelper {
     if (response is ApiErrorResponseModel) {
       return response;
     } else {
-      if (response is Map<String, dynamic> && response.keys.contains('message')) {
-        return ApiErrorResponseModel(error: MessageErrorModel.fromMap(response));
+      if (response is Map<String, dynamic> &&
+          response.keys.contains('message')) {
+        return ApiErrorResponseModel(
+            error: MessageErrorModel.fromMap(response));
       } else {
         List<OrderHistoryModel> orderHistorys = [];
         for (var item in response as List<dynamic>) {
@@ -183,5 +187,20 @@ class ApiHelper {
         return orderHistorys;
       }
     }
+  }
+
+  static Stream getOfferFromMitra(int orderId) async* {
+    yield* Stream.periodic(const Duration(seconds: 3)).asyncMap((_) async {
+      final response = await ApiController.getData('users/offers/$orderId');
+      if (response is ApiErrorResponseModel) {
+        return response;
+      } else {
+        if (response['message'] != null) {
+          return OfferResponseModel(data: <OfferModel>[]);
+        } else {
+          return OfferResponseModel.fromMap(response);
+        }
+      }
+    });
   }
 }

@@ -8,16 +8,16 @@ import 'package:mime/mime.dart';
 
 import '../../models/api_error_response/api_error_response_model.dart';
 import '../../models/order/order_request_model.dart';
-import '../../models/order/order_model.dart';
 import '../../models/category_problem/problem_model.dart';
+import '../../models/order/order_response_model/order.dart';
 import '../../services/api/api_controller.dart';
 import '../../services/api/api_helper.dart';
 import '../../utils/image_picker_util.dart';
 
-part 'order_event.dart';
-part 'order_state.dart';
+part 'send_order_event.dart';
+part 'send_order_state.dart';
 
-class OrderBloc extends Bloc<OrderEvent, OrderState> {
+class SendOrderBloc extends Bloc<SendOrderEvent, SendOrderState> {
   final ApiController apiController;
   final ImagePickerUtil imagePickerUtil;
 
@@ -27,7 +27,7 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
   late double? long;
   List<XFile?> problemPictures = [];
 
-  OrderBloc({required this.apiController, required this.imagePickerUtil})
+  SendOrderBloc({required this.apiController, required this.imagePickerUtil})
       : super(OrderInitial()) {
     on<FetchProblems>(_onFetchProblems);
 
@@ -38,6 +38,8 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
     on<SolutionSelected>(
       (event, emit) => selectedSolution = event.selectedSolution,
     );
+
+    on<OrderIsIdle>((event, emit) => emit(OrderIdle()));
 
     on<ProblemsPop>((event, emit) {
       selectedProblem = null;
@@ -52,12 +54,7 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
 
     on<GalleryImagePicker>(_onGalleryImagePicker);
 
-    on<DeleteImage>((event, emit) {
-      problemPictures.removeAt(event.imageIndex);
-      emit(ImageDeleted(imageIndex: event.imageIndex));
-    });
-
-    on<OrderIsIdle>((event, emit) => emit(OrderIdle()));
+    on<DeleteImage>(_onDeleteImage);
 
     on<OrderSubmitted>(_orderSubmitted);
 
@@ -67,7 +64,12 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
     });
   }
 
-  FutureOr<void> _onGalleryImagePicker(event, emit) async {
+  FutureOr<void> _onDeleteImage(event, emit) {
+    problemPictures.removeAt(event.imageIndex);
+    emit(ImageDeleted(imageIndex: event.imageIndex));
+  }
+
+  Future<void> _onGalleryImagePicker(event, emit) async {
     XFile? imagePicked = await imagePickerUtil.imageFromGallery();
     if (imagePicked != null) {
       problemPictures.add(imagePicked);
@@ -77,7 +79,7 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
     }
   }
 
-  FutureOr<void> _onCameraCapture(event, emit) async {
+  Future<void> _onCameraCapture(event, emit) async {
     XFile? imagePicked = await imagePickerUtil.cameraCapture();
     if (imagePicked != null) {
       problemPictures.add(imagePicked);
@@ -129,10 +131,9 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
           if (response is ApiErrorResponseModel) {
             emit(OrderError(errorMessage: response.error!.message.toString()));
           } else {
-            emit(OrderUploaded(
-              message: response.message,
-              order: response.order,
-            ));
+            emit(
+              OrderUploaded(message: response.message, order: response.order),
+            );
           }
         }
       } else {
@@ -150,7 +151,7 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
 
   _onFetchProblems(
     FetchProblems event,
-    Emitter<OrderState> emit,
+    Emitter<SendOrderState> emit,
   ) async {
     emit(OrderLoading());
     try {

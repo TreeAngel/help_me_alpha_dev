@@ -6,8 +6,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../../blocs/auth_bloc/auth_bloc.dart';
-import '../../../blocs/profile_bloc/profile_bloc.dart';
+import '../../../blocs/auth/auth_bloc.dart';
+import '../../../blocs/profile/profile_bloc.dart';
 import '../../../configs/app_colors.dart';
 import '../../../data/menu_items_data.dart';
 import '../../../models/auth/user_model.dart';
@@ -383,7 +383,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         radius: 80,
         backgroundImage: profile?.imageProfile != null
             ? CachedNetworkImageProvider(
-                '${ApiController.temporaryUrl}/${profile!.imageProfile}',
+                '${ApiController.baseUrl}/${profile!.imageProfile}',
                 maxWidth: 150,
                 maxHeight: 150,
               )

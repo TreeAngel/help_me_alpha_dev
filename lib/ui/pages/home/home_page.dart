@@ -6,9 +6,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../../services/api/api_controller.dart';
 import '../../../data/cards_color.dart';
-import '../../../models/order/order_history_model.dart';
+import '../../../models/order/history/order_history_model.dart';
 import '../../../utils/manage_auth_token.dart';
-import '../../../blocs/home_bloc/home_cubit.dart';
+import '../../../cubits/home_cubit/home_cubit.dart';
 import '../../../configs/app_colors.dart';
 import '../../../data/menu_items_data.dart';
 import '../../../models/category_problem/category_model.dart';
@@ -16,7 +16,7 @@ import '../../../models/misc/menu_item_model.dart';
 import '../../widgets/gradient_card.dart';
 import '../../../utils/logging.dart';
 import '../../../utils/show_dialog.dart';
-import '../../../blocs/auth_bloc/auth_bloc.dart';
+import '../../../blocs/auth/auth_bloc.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -27,13 +27,6 @@ class HomePage extends StatelessWidget {
     final textTheme = appTheme.textTheme;
     final colorScheme = appTheme.colorScheme;
     final screenWidth = MediaQuery.of(context).size.width;
-
-    String username = context.watch<HomeCubit>().username;
-    List<CategoryModel> fourCategories =
-        context.watch<HomeCubit>().fourCategories;
-    List<OrderHistoryModel> orderHistory =
-        context.watch<HomeCubit>().orderHistory;
-    OrderHistoryModel? lastHistory = context.watch<HomeCubit>().lastHistory;
 
     return SafeArea(
       child: Scaffold(
@@ -55,9 +48,7 @@ class HomePage extends StatelessWidget {
                   }
                   if (state is SignOutLoaded) {
                     ManageAuthToken.deleteToken();
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      context.goNamed('signInPage');
-                    });
+                    context.goNamed('signInPage');
                   }
                 },
                 builder: (context, state) {
@@ -74,18 +65,25 @@ class HomePage extends StatelessWidget {
                     child: CustomScrollView(
                       slivers: <Widget>[
                         const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                        _appBarBlocConsumer(username, textTheme, colorScheme),
+                        _appBarBlocConsumer(
+                          context.watch<HomeCubit>().username,
+                          textTheme,
+                          colorScheme,
+                        ),
                         const SliverToBoxAdapter(child: SizedBox(height: 20)),
                         _searchTextField(),
                         const SliverToBoxAdapter(child: SizedBox(height: 20)),
                         _categoryTextHeader(textTheme),
                         const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                        _categoryBlocConsumer(textTheme, fourCategories),
+                        _categoryBlocConsumer(textTheme,
+                            context.watch<HomeCubit>().fourCategories),
                         const SliverToBoxAdapter(child: SizedBox(height: 20)),
                         _orderHistoryTextHeader(textTheme),
                         const SliverToBoxAdapter(child: SizedBox(height: 20)),
                         _lastHistoryBlocConsumer(
-                            textTheme, orderHistory, lastHistory),
+                          textTheme,
+                          context.watch<HomeCubit>().orderHistory,
+                        ),
                         const SliverToBoxAdapter(child: SizedBox(height: 20)),
                       ],
                     ),
@@ -100,9 +98,9 @@ class HomePage extends StatelessWidget {
   }
 
   BlocConsumer<HomeCubit, HomeState> _lastHistoryBlocConsumer(
-      TextTheme textTheme,
-      List<OrderHistoryModel> orderHistory,
-      OrderHistoryModel? lastHistory) {
+    TextTheme textTheme,
+    List<OrderHistoryModel> orderHistory,
+  ) {
     return BlocConsumer<HomeCubit, HomeState>(
       listener: (context, state) {
         if (state is OrderHistoryLoaded) {
@@ -124,7 +122,10 @@ class HomePage extends StatelessWidget {
             child: SizedBox.shrink(),
           );
         } else {
-          return _orderHistoryCard(lastHistory, textTheme);
+          return _orderHistoryCard(
+            context.watch<HomeCubit>().lastHistory,
+            textTheme,
+          );
         }
       },
     );
@@ -151,7 +152,7 @@ class HomePage extends StatelessWidget {
           : IconButton.outlined(
               onPressed: () {
                 context.pop();
-                context.read<HomeCubit>().fetchHistory('');
+                context.read<HomeCubit>().fetchHome();
               },
               icon: const Icon(Icons.refresh_outlined),
             ),
@@ -160,29 +161,27 @@ class HomePage extends StatelessWidget {
   }
 
   void _onSignOutError(BuildContext context, AuthError state) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ShowDialog.showAlertDialog(
-        context,
-        'Error Sing Out',
-        state.errorMessage.toString(),
-        state.errorMessage.toString().toLowerCase().contains('unauthorized')
-            ? OutlinedButton.icon(
-                onPressed: () {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    ManageAuthToken.deleteToken();
-                    context.read<AuthBloc>().add(AuthIsIdle());
-                    context.goNamed('signInPage');
-                    context.pop();
-                  });
-                },
-                label: const Text('Sign In ulang'),
-                icon: const Icon(Icons.arrow_forward_ios),
-                iconAlignment: IconAlignment.end,
-              )
-            : null,
-      );
-      context.read<AuthBloc>().add(ResetAuthState());
-    });
+    ShowDialog.showAlertDialog(
+      context,
+      'Error Sing Out',
+      state.errorMessage.toString(),
+      state.errorMessage.toString().toLowerCase().contains('unauthorized')
+          ? OutlinedButton.icon(
+              onPressed: () {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  ManageAuthToken.deleteToken();
+                  context.read<AuthBloc>().add(AuthIsIdle());
+                  context.goNamed('signInPage');
+                  context.pop();
+                });
+              },
+              label: const Text('Sign In ulang'),
+              icon: const Icon(Icons.arrow_forward_ios),
+              iconAlignment: IconAlignment.end,
+            )
+          : null,
+    );
+    context.read<AuthBloc>().add(ResetAuthState());
   }
 
   BlocConsumer<HomeCubit, HomeState> _appBarBlocConsumer(
@@ -195,7 +194,7 @@ class HomePage extends StatelessWidget {
         if (state is ProfileLoaded) {
           context.read<HomeCubit>().username =
               state.data.user.username.toString();
-          context.read<HomeCubit>().fetchCategories();
+          // context.read<HomeCubit>().fetchCategories();
           // context.read<HomeCubit>().fetchHistory('');
         } else if (state is ProfileError) {
           _onProfileError(context, state);
@@ -203,7 +202,8 @@ class HomePage extends StatelessWidget {
       },
       builder: (context, state) {
         if (state is HomeInitial) {
-          context.read<HomeCubit>().fetchProfile();
+          context.read<HomeCubit>().fetchHome(historyStatus: null);
+          // context.read<HomeCubit>().fetchProfile();
           // context.read<HomeCubit>().add(FetchCategories());
           // context.read<HomeCubit>().add(const FetchHistory(''));
         }
@@ -238,7 +238,7 @@ class HomePage extends StatelessWidget {
           : IconButton.outlined(
               onPressed: () {
                 context.pop();
-                context.read<HomeCubit>().fetchProfile();
+                context.read<HomeCubit>().fetchHome();
               },
               icon: const Icon(Icons.refresh_outlined),
             ),
@@ -252,11 +252,20 @@ class HomePage extends StatelessWidget {
   ) {
     return BlocConsumer<HomeCubit, HomeState>(
       listener: (context, state) {
+        if (state is HomeLoaded) {
+          context.read<HomeCubit>().username =
+              state.profile.user.username.toString();
+          context.read<HomeCubit>().allCategories = state.categories;
+          context.read<HomeCubit>().fourCategories =
+              state.categories.take(4).toList();
+          context.read<HomeCubit>().orderHistory = state.histories;
+          context.read<HomeCubit>().homeIdle();
+        }
         if (state is CategoryLoaded) {
           context.read<HomeCubit>().allCategories = state.categories;
           context.read<HomeCubit>().fourCategories =
               state.categories.take(4).toList();
-          context.read<HomeCubit>().fetchHistory('');
+          // context.read<HomeCubit>().fetchHistory(status: null);
         } else if (state is CategoryError) {
           _onCategoryError(context, state);
         }
@@ -295,7 +304,7 @@ class HomePage extends StatelessWidget {
           : IconButton.outlined(
               onPressed: () {
                 context.pop();
-                context.read<HomeCubit>().fetchProfile();
+                context.read<HomeCubit>().fetchHome();
               },
               icon: const Icon(Icons.refresh_outlined),
             ),
@@ -320,7 +329,7 @@ class HomePage extends StatelessWidget {
           return GestureDetector(
             onTap: () async {
               index == 0 || index == 1
-                  ? context.pushNamed('detailPage', queryParameters: {
+                  ? context.pushNamed('selectProblemPage', queryParameters: {
                       'categoryId': category.id.toString(),
                       'category': category.name,
                     })
@@ -387,7 +396,7 @@ class HomePage extends StatelessWidget {
           child: CircleAvatar(
             backgroundImage: history != null
                 ? CachedNetworkImageProvider(
-                    '${ApiController.temporaryUrl}/${history.userProfile}',
+                    '${ApiController.baseUrl}/${history.userProfile}',
                   )
                 : const AssetImage('assets/images/girl1.png'),
           ),
@@ -613,17 +622,7 @@ class HomePage extends StatelessWidget {
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 10),
-          child: PopupMenuButton<MenuItemModel>(
-            icon: SvgPicture.asset('assets/icons/menu.svg'),
-            tooltip: 'Menu',
-            position: PopupMenuPosition.under,
-            onSelected: (item) => _appBarMenuFunction(context, item),
-            itemBuilder: (context) => [
-              ...MenuItems.firstItems.map(_buildItem),
-              const PopupMenuDivider(),
-              ...MenuItems.secondItems.map(_buildItem),
-            ],
-          ),
+          child: _dropdownNavMenu(context),
         ),
       ],
       title: Padding(
@@ -649,6 +648,24 @@ class HomePage extends StatelessWidget {
     );
   }
 
+  PopupMenuButton<MenuItemModel> _dropdownNavMenu(BuildContext context) {
+    return PopupMenuButton<MenuItemModel>(
+      icon: SvgPicture.asset(
+        'assets/icons/menu.svg',
+        width: 25,
+        height: 26,
+      ),
+      tooltip: 'Menu',
+      position: PopupMenuPosition.under,
+      onSelected: (item) => _appBarMenuFunction(context, item),
+      itemBuilder: (context) => [
+        ...MenuItems.firstItems.map(_buildItem),
+        const PopupMenuDivider(),
+        ...MenuItems.secondItems.map(_buildItem),
+      ],
+    );
+  }
+
   PopupMenuItem<MenuItemModel> _buildItem(MenuItemModel item) =>
       PopupMenuItem<MenuItemModel>(
         value: item,
@@ -663,17 +680,8 @@ class HomePage extends StatelessWidget {
 
   void _appBarMenuFunction(BuildContext context, MenuItemModel item) {
     switch (item) {
-      case MenuItems.itemHome:
-        printInfo('You tap on home');
-        break;
       case MenuItems.itemProfile:
         context.pushNamed('profilePage');
-        break;
-      case MenuItems.itemOrderHistory:
-        printInfo('You tap on order history');
-        break;
-      case MenuItems.itemSignIn:
-        context.goNamed('signInPage');
         break;
       case MenuItems.itemSignOut:
         ShowDialog.showAlertDialog(

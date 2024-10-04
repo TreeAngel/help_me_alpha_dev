@@ -65,4 +65,18 @@ final class OrderHistoryError extends HomeState {
   List<Object> get props => [errorMessage];
 }
 
+final class HomeLoaded extends HomeState {
+  final DataUser profile;
+  final List<CategoryModel> categories;
+  final List<OrderHistoryModel> histories;
+
+  const HomeLoaded(
+      {required this.profile,
+      required this.categories,
+      required this.histories});
+
+  @override
+  List<Object> get props => [profile, categories, histories];
+}
+
 final class HomeIdle extends HomeState {}

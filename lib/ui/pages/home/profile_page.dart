@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../blocs/auth_bloc/auth_bloc.dart';
-import '../../../blocs/profile_bloc/profile_bloc.dart';
+import '../../../blocs/auth/auth_bloc.dart';
+import '../../../blocs/profile/profile_bloc.dart';
 import '../../../configs/app_colors.dart';
 import '../../../models/auth/user_model.dart';
 import '../../../services/api/api_controller.dart';
@@ -57,7 +57,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   } else if (state is ProfileLoaded) {
                     profile = state.data.user;
                     context.read<ProfileBloc>().profile = profile;
-                  } 
+                  }
                 },
                 builder: (context, state) {
                   if (state is ProfileInitial || profile == null) {
@@ -380,7 +380,7 @@ class _ProfilePageState extends State<ProfilePage> {
             radius: 80,
             backgroundImage: profile?.imageProfile != null
                 ? CachedNetworkImageProvider(
-                    '${ApiController.temporaryUrl}/${profile!.imageProfile}',
+                    '${ApiController.baseUrl}/${profile!.imageProfile}',
                     maxWidth: 150,
                     maxHeight: 150,
                   )

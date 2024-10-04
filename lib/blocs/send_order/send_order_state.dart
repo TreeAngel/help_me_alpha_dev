@@ -1,19 +1,19 @@
-part of 'order_bloc.dart';
+part of 'send_order_bloc.dart';
 
-sealed class OrderState extends Equatable {
-  const OrderState();
+sealed class SendOrderState extends Equatable {
+  const SendOrderState();
 
   @override
   List<Object?> get props => [];
 }
 
-final class OrderInitial extends OrderState {}
+final class OrderInitial extends SendOrderState {}
 
-final class OrderLoading extends OrderState {}
+final class OrderLoading extends SendOrderState {}
 
-final class OrderIdle extends OrderState {}
+final class OrderIdle extends SendOrderState {}
 
-final class OrderError extends OrderState {
+final class OrderError extends SendOrderState {
   final String errorMessage;
 
   const OrderError({required this.errorMessage});
@@ -22,7 +22,7 @@ final class OrderError extends OrderState {
   List<Object> get props => [errorMessage];
 }
 
-final class ProblemsLoaded extends OrderState {
+final class ProblemsLoaded extends SendOrderState {
   final List<ProblemModel> problems;
 
   const ProblemsLoaded({required this.problems});
@@ -31,9 +31,9 @@ final class ProblemsLoaded extends OrderState {
   List<Object> get props => [problems];
 }
 
-final class LocationShared extends OrderState {}
+final class LocationShared extends SendOrderState {}
 
-final class ImagePicked extends OrderState {
+final class ImagePicked extends SendOrderState {
   final XFile? pickedImage;
 
   const ImagePicked({required this.pickedImage});
@@ -42,7 +42,7 @@ final class ImagePicked extends OrderState {
   List<Object?> get props => [pickedImage];
 }
 
-final class ImageDeleted extends OrderState {
+final class ImageDeleted extends SendOrderState {
   final int imageIndex;
 
   const ImageDeleted({required this.imageIndex});
@@ -51,9 +51,9 @@ final class ImageDeleted extends OrderState {
   List<Object?> get props => [imageIndex];
 }
 
-final class OrderUploaded extends OrderState {
+final class OrderUploaded extends SendOrderState {
   final String message;
-  final OrderModel order;
+  final Order order;
 
   const OrderUploaded({
     required this.message,
