@@ -10,7 +10,6 @@ import '../../models/api_error_response/api_error_response_model.dart';
 import '../../models/order/order_request_model.dart';
 import '../../models/category_problem/problem_model.dart';
 import '../../models/order/order_response_model/order.dart';
-import '../../services/api/api_controller.dart';
 import '../../services/api/api_helper.dart';
 import '../../utils/image_picker_util.dart';
 
@@ -18,7 +17,6 @@ part 'send_order_event.dart';
 part 'send_order_state.dart';
 
 class SendOrderBloc extends Bloc<SendOrderEvent, SendOrderState> {
-  final ApiController apiController;
   final ImagePickerUtil imagePickerUtil;
 
   late ProblemModel? selectedProblem;
@@ -27,8 +25,7 @@ class SendOrderBloc extends Bloc<SendOrderEvent, SendOrderState> {
   late double? long;
   List<XFile?> problemPictures = [];
 
-  SendOrderBloc({required this.apiController, required this.imagePickerUtil})
-      : super(OrderInitial()) {
+  SendOrderBloc({required this.imagePickerUtil}) : super(OrderInitial()) {
     on<FetchProblems>(_onFetchProblems);
 
     on<ProblemSelected>(
@@ -129,7 +126,8 @@ class SendOrderBloc extends Bloc<SendOrderEvent, SendOrderState> {
           });
           final response = await ApiHelper.postOrder(formData);
           if (response is ApiErrorResponseModel) {
-            emit(OrderError(errorMessage: response.error!.message.toString()));
+            final message = response.error?.error ?? response.error?.message;
+            emit(SendOrderError(message: message.toString()));
           } else {
             emit(
               OrderUploaded(message: response.message, order: response.order),
@@ -137,12 +135,12 @@ class SendOrderBloc extends Bloc<SendOrderEvent, SendOrderState> {
           }
         }
       } else {
-        emit(const OrderError(errorMessage: 'Isi semua data untuk lanjut!'));
+        emit(const SendOrderError(message: 'Isi semua data untuk lanjut!'));
       }
     } else {
       emit(
-        const OrderError(
-          errorMessage:
+        const SendOrderError(
+          message:
               'Terjadi kesalahan pada aplikasi, pilih kembali kategori masalah di halaman home',
         ),
       );
@@ -154,15 +152,12 @@ class SendOrderBloc extends Bloc<SendOrderEvent, SendOrderState> {
     Emitter<SendOrderState> emit,
   ) async {
     emit(OrderLoading());
-    try {
-      final response = await ApiHelper.getProblems(event.problemName);
-      if (response is ApiErrorResponseModel) {
-        emit(OrderError(errorMessage: response.error!.error.toString()));
-      } else {
-        emit(ProblemsLoaded(problems: response));
-      }
-    } catch (e) {
-      emit(OrderError(errorMessage: e.toString()));
+    final response = await ApiHelper.getProblems(event.problemName);
+    if (response is ApiErrorResponseModel) {
+      final message = response.error?.error ?? response.error?.message;
+      emit(OrderError(errorMessage: message.toString()));
+    } else {
+      emit(ProblemsLoaded(problems: response));
     }
   }
 }

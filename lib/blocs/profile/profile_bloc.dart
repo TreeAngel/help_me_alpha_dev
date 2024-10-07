@@ -6,7 +6,6 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../models/api_error_response/api_error_response_model.dart';
 import '../../models/auth/user_model.dart';
-import '../../services/api/api_controller.dart';
 import '../../services/api/api_helper.dart';
 import '../../ui/pages/auth/verify_phone_number_page.dart';
 import '../../utils/image_picker_util.dart';
@@ -15,7 +14,6 @@ part 'profile_event.dart';
 part 'profile_state.dart';
 
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
-  final ApiController apiController;
   final ImagePickerUtil imagePickerUtil;
 
   UserModel? profile;
@@ -32,7 +30,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   String? codeOTP;
   StatusOTP statusOTP = StatusOTP.waiting;
 
-  ProfileBloc({required this.apiController, required this.imagePickerUtil})
+  ProfileBloc({required this.imagePickerUtil})
       : super(ProfileInitial()) {
     on<FetchProfile>(_onFetchProfile);
 

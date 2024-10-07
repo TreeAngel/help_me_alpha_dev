@@ -48,5 +48,3 @@ final class PaymentCodeError extends ManageOrderState {
   @override
   List<Object> get props => [message];
 }
-
-// final 

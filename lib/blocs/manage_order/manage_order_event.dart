@@ -7,6 +7,10 @@ sealed class ManageOrderEvent extends Equatable {
   List<Object> get props => [];
 }
 
+final class StopFetching extends ManageOrderEvent {}
+
+final class PauseFetching extends ManageOrderEvent {}
+
 final class FetchOffer extends ManageOrderEvent {
   final int orderId;
 

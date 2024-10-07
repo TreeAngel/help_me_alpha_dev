@@ -15,7 +15,6 @@ part 'auth_state.dart';
 part 'auth_event.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  final ApiController apiController;
 
   String fullName = '';
   String username = '';
@@ -26,7 +25,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   bool isPasswordVisible = false;
   bool rememberMe = false;
 
-  AuthBloc({required this.apiController}) : super(AuthInitial()) {
+  AuthBloc() : super(AuthInitial()) {
     on<FullNameChanged>(
       (event, emit) => fullName = event.fullName.trim(),
     );

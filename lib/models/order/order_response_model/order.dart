@@ -7,7 +7,7 @@ class Order {
   String? latitude;
   String? longitude;
   String? description;
-  List<String>? attachments;
+  List<dynamic>? attachments;
 
   Order({
     this.id,
@@ -26,7 +26,7 @@ class Order {
         latitude: data['latitude'] as String?,
         longitude: data['longitude'] as String?,
         description: data['description'] as String?,
-        attachments: data['attachments'] as List<String>?,
+        attachments: data['attachments'] as List<dynamic>?,
       );
 
   Map<String, dynamic> toMap() => {

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:help_me_client_alpha_ver/blocs/manage_order/manage_order_bloc.dart';
+import 'package:help_me_client_alpha_ver/cubits/home_cubit/home_cubit.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../blocs/send_order/send_order_bloc.dart';
@@ -155,39 +157,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                           textTheme,
                         ),
                         const SizedBox(height: 20),
-                        BlocBuilder<SendOrderBloc, SendOrderState>(
-                          builder: (context, state) {
-                            if (state is OrderError) {
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                ShowDialog.showAlertDialog(
-                                  context,
-                                  'Error upload order',
-                                  state.errorMessage,
-                                  null,
-                                );
-                              });
-                              context.read<SendOrderBloc>().add(OrderIsIdle());
-                              return const SizedBox.shrink();
-                            }
-                            if (state is OrderUploaded) {
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                ShowDialog.showAlertDialog(
-                                  context,
-                                  'Success',
-                                  '${state.message}\n${state.order}',
-                                  null,
-                                );
-                              });
-                            }
-                            if (state is OrderLoading) {
-                              return const Center(
-                                child: CircularProgressIndicator(),
-                              );
-                            } else {
-                              return _requestHelpBtn(context, textTheme);
-                            }
-                          },
-                        ),
+                        _sendOrderBlocConsumer(textTheme),
                       ] else ...[
                         ShowDialog.showAlertDialog(
                           context,
@@ -212,6 +182,49 @@ class _AddTaskPageState extends State<AddTaskPage> {
           ],
         ),
       ),
+    );
+  }
+
+  BlocConsumer<SendOrderBloc, SendOrderState> _sendOrderBlocConsumer(
+      TextTheme textTheme) {
+    return BlocConsumer<SendOrderBloc, SendOrderState>(
+      listener: (context, state) {
+        if (state is OrderError) {
+          ShowDialog.showAlertDialog(
+            context,
+            'Error upload order',
+            state.errorMessage,
+            null,
+          );
+          context.read<SendOrderBloc>().add(OrderIsIdle());
+        } else if (state is SendOrderError) {
+          ShowDialog.showAlertDialog(
+            context,
+            'Gagal!',
+            state.message,
+            null,
+          );
+        } else if (state is OrderUploaded) {
+          ShowDialog.showAlertDialog(
+            context,
+            'Success',
+            state.message,
+            null,
+          );
+          context.read<ManageOrderBloc>().haveActiveOrder = true;
+          context.read<HomeCubit>().fetchHistory();
+          context.pop();
+        }
+      },
+      builder: (context, state) {
+        if (state is OrderLoading) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        } else {
+          return _requestHelpBtn(context, textTheme);
+        }
+      },
     );
   }
 

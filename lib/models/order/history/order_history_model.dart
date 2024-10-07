@@ -2,10 +2,9 @@ import 'dart:convert';
 
 import 'package:equatable/equatable.dart';
 
-import '../attachment.dart';
-
 class OrderHistoryModel extends Equatable {
   final int? orderId;
+  final String? orderStatus;
   final String? latitude;
   final String? longitude;
   final String? description;
@@ -14,10 +13,11 @@ class OrderHistoryModel extends Equatable {
   final String? userProfile;
   final String? price;
   final String? category;
-  final List<Attachment>? attachment;
+  final List<dynamic>? attachment;
 
   const OrderHistoryModel({
     this.orderId,
+    this.orderStatus,
     this.latitude,
     this.longitude,
     this.description,
@@ -32,6 +32,7 @@ class OrderHistoryModel extends Equatable {
   factory OrderHistoryModel.fromMap(Map<String, dynamic> data) =>
       OrderHistoryModel(
         orderId: data['order_id'] as int?,
+        orderStatus: data['order_status'] as String?,
         latitude: data['latitude'] as String?,
         longitude: data['longitude'] as String?,
         description: data['description'] as String?,
@@ -41,12 +42,11 @@ class OrderHistoryModel extends Equatable {
         price: data['price'] as String?,
         category: data['category'] as String?,
         attachment: (data['attachment'] as List<dynamic>?)
-            ?.map((e) => Attachment.fromMap(e as Map<String, dynamic>))
-            .toList(),
       );
 
   Map<String, dynamic> toMap() => {
         'order_id': orderId,
+        'order_status': orderStatus,
         'latitude': latitude,
         'longitude': longitude,
         'description': description,
@@ -55,7 +55,7 @@ class OrderHistoryModel extends Equatable {
         'user_profile': userProfile,
         'price': price,
         'category': category,
-        'attachment': attachment?.map((e) => e.toMap()).toList(),
+        'attachment': attachment,
       };
 
   /// `dart:convert`
@@ -74,6 +74,7 @@ class OrderHistoryModel extends Equatable {
   List<Object?> get props {
     return [
       orderId,
+      orderStatus,
       latitude,
       longitude,
       description,

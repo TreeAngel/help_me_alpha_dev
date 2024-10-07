@@ -7,7 +7,6 @@ import 'blocs/auth/auth_bloc.dart';
 import 'blocs/send_order/send_order_bloc.dart';
 import 'blocs/profile/profile_bloc.dart';
 import 'configs/app_theme.dart';
-import 'services/api/api_controller.dart';
 import 'utils/image_picker_util.dart';
 import 'utils/manage_auth_token.dart';
 import 'configs/app_route.dart';
@@ -22,32 +21,25 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final apiHelper = ApiController();
     final imagePicker = ImagePickerUtil();
     ManageAuthToken.readToken();
 
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) => HomeCubit(apiController: apiHelper),
+          create: (context) => HomeCubit(),
         ),
         BlocProvider(
-          create: (context) => ProfileBloc(
-            apiController: apiHelper,
-            imagePickerUtil: imagePicker,
-          ),
+          create: (context) => ProfileBloc(imagePickerUtil: imagePicker),
         ),
         BlocProvider(
-          create: (context) => AuthBloc(apiController: apiHelper),
+          create: (context) => AuthBloc(),
         ),
         BlocProvider(
-          create: (context) => SendOrderBloc(
-            apiController: apiHelper,
-            imagePickerUtil: imagePicker,
-          ),
+          create: (context) => SendOrderBloc(imagePickerUtil: imagePicker),
         ),
         BlocProvider(
-          create: (context) => ManageOrderBloc(apiController: apiHelper),
+          create: (context) => ManageOrderBloc(),
         ),
         // TODO: Add other blocs here
       ],

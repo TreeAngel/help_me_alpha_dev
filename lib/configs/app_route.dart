@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../blocs/manage_order/manage_order_bloc.dart';
+import '../cubits/home_cubit/home_cubit.dart';
 import '../services/api/api_controller.dart';
 import '../ui/pages/auth/change_password_page.dart';
 import '../ui/pages/auth/forget_password_page.dart';
@@ -24,6 +25,13 @@ class AppRoute {
     redirect: (context, state) {
       final isAuthenticated = ApiController.token != null ? true : false;
       final haveOrder = context.read<ManageOrderBloc>().haveActiveOrder;
+      final activeOrder = haveOrder == true
+          ? context.read<HomeCubit>().orderHistory.firstWhere((history) =>
+              history.orderStatus?.trim().toLowerCase() == 'pending' ||
+              history.orderStatus?.trim().toLowerCase() == 'paid' ||
+              history.orderStatus?.trim().toLowerCase() == 'otw' ||
+              history.orderStatus?.trim().toLowerCase() == 'arrived')
+          : null;
       // TODO: Add other guarded route later
       if (isAuthenticated == false && state.matchedLocation == '/home') {
         return '/signIn';
@@ -47,9 +55,9 @@ class AppRoute {
         return '/home';
       } else if (haveOrder == true &&
           state.matchedLocation == '/selectProblem') {
-        return '/selectMitra';
+        return '/selectMitra?orderId=${activeOrder?.orderId}';
       } else if (haveOrder == true && state.matchedLocation == '/addTask') {
-        return '/selectMitra';
+        return '/selectMitra?orderId=${activeOrder?.orderId}';
       } else {
         return null;
       }

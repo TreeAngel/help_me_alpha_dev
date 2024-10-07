@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../blocs/manage_order/manage_order_bloc.dart';
 import '../../../services/api/api_controller.dart';
 import '../../../data/cards_color.dart';
 import '../../../models/order/history/order_history_model.dart';
@@ -18,8 +19,15 @@ import '../../../utils/logging.dart';
 import '../../../utils/show_dialog.dart';
 import '../../../blocs/auth/auth_bloc.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  bool showAllCategory = false;
 
   @override
   Widget build(BuildContext context) {
@@ -28,70 +36,76 @@ class HomePage extends StatelessWidget {
     final colorScheme = appTheme.colorScheme;
     final screenWidth = MediaQuery.of(context).size.width;
 
-    return SafeArea(
-      child: Scaffold(
-        body: Stack(
-          children: [
-            Positioned(
-              top: 0,
-              width: screenWidth,
-              child: Container(
-                height: 440,
-                color: Colors.black,
+    return PopScope(
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop == true) {
+          context.read<HomeCubit>().disposeHome();
+        }
+      },
+      child: SafeArea(
+        child: Scaffold(
+          body: Stack(
+            children: [
+              Positioned(
+                top: 0,
+                width: screenWidth,
+                child: Container(
+                  height: 440,
+                  color: Colors.black,
+                ),
               ),
-            ),
-            Positioned.fill(
-              child: BlocConsumer<AuthBloc, AuthState>(
-                listener: (context, state) {
-                  if (state is AuthError) {
-                    _onSignOutError(context, state);
-                  }
-                  if (state is SignOutLoaded) {
-                    ManageAuthToken.deleteToken();
-                    context.goNamed('signInPage');
-                  }
-                },
-                builder: (context, state) {
-                  if (state is AuthLoading) {
-                    return const Center(
-                      child: CircularProgressIndicator(),
+              Positioned.fill(
+                child: BlocConsumer<AuthBloc, AuthState>(
+                  listener: (context, state) {
+                    if (state is AuthError) {
+                      _onSignOutError(context, state);
+                    }
+                    if (state is SignOutLoaded) {
+                      ManageAuthToken.deleteToken();
+                      context.goNamed('signInPage');
+                    }
+                  },
+                  builder: (context, state) {
+                    if (state is AuthLoading) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+                    return RefreshIndicator(
+                      triggerMode: RefreshIndicatorTriggerMode.onEdge,
+                      onRefresh: () async {
+                        // context.read<HomeCubit>().fetchHome();
+                        context.read<HomeCubit>().fetchProfile();
+                      },
+                      child: CustomScrollView(
+                        slivers: <Widget>[
+                          const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                          _appBarBlocConsumer(
+                            context.watch<HomeCubit>().username,
+                            textTheme,
+                            colorScheme,
+                          ),
+                          const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                          _searchTextField(),
+                          const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                          _categoryTextHeader(textTheme),
+                          const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                          _categoryBlocConsumer(textTheme),
+                          const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                          _orderHistoryTextHeader(textTheme),
+                          const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                          _lastHistoryBlocConsumer(
+                            textTheme
+                          ),
+                          const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                        ],
+                      ),
                     );
-                  }
-                  return RefreshIndicator(
-                    triggerMode: RefreshIndicatorTriggerMode.onEdge,
-                    onRefresh: () async {
-                      context.read<HomeCubit>().fetchProfile();
-                    },
-                    child: CustomScrollView(
-                      slivers: <Widget>[
-                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                        _appBarBlocConsumer(
-                          context.watch<HomeCubit>().username,
-                          textTheme,
-                          colorScheme,
-                        ),
-                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                        _searchTextField(),
-                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                        _categoryTextHeader(textTheme),
-                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                        _categoryBlocConsumer(textTheme,
-                            context.watch<HomeCubit>().fourCategories),
-                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                        _orderHistoryTextHeader(textTheme),
-                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                        _lastHistoryBlocConsumer(
-                          textTheme,
-                          context.watch<HomeCubit>().orderHistory,
-                        ),
-                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                      ],
-                    ),
-                  );
-                },
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -99,12 +113,20 @@ class HomePage extends StatelessWidget {
 
   BlocConsumer<HomeCubit, HomeState> _lastHistoryBlocConsumer(
     TextTheme textTheme,
-    List<OrderHistoryModel> orderHistory,
   ) {
     return BlocConsumer<HomeCubit, HomeState>(
       listener: (context, state) {
         if (state is OrderHistoryLoaded) {
           context.read<HomeCubit>().orderHistory = state.history;
+          if (state.history.any((history) =>
+              history.orderStatus?.trim().toLowerCase() == 'pending' ||
+              history.orderStatus?.trim().toLowerCase() == 'paid' ||
+              history.orderStatus?.trim().toLowerCase() == 'otw' ||
+              history.orderStatus?.trim().toLowerCase() == 'arrived')) {
+            context.read<ManageOrderBloc>().haveActiveOrder = true;
+          } else {
+            context.read<ManageOrderBloc>().haveActiveOrder = false;
+          }
           // if (context.read<HomeCubit>().orderHistory.isNotEmpty) {
           //   context.read<HomeCubit>().lastHistory = orderHistory.last;
           // }
@@ -112,8 +134,8 @@ class HomePage extends StatelessWidget {
         } else if (state is OrderHistoryError) {
           _onOrderHistoryError(context, state);
         }
-        if (orderHistory.isNotEmpty) {
-          context.read<HomeCubit>().lastHistory = orderHistory.last;
+        if (context.read<HomeCubit>().orderHistory.isNotEmpty) {
+          context.read<HomeCubit>().lastHistory = context.read<HomeCubit>().orderHistory.last;
         }
       },
       builder: (context, state) {
@@ -123,7 +145,7 @@ class HomePage extends StatelessWidget {
           );
         } else {
           return _orderHistoryCard(
-            context.watch<HomeCubit>().lastHistory,
+            context.read<HomeCubit>().lastHistory,
             textTheme,
           );
         }
@@ -152,7 +174,7 @@ class HomePage extends StatelessWidget {
           : IconButton.outlined(
               onPressed: () {
                 context.pop();
-                context.read<HomeCubit>().fetchHome();
+                context.read<HomeCubit>().fetchHistory();
               },
               icon: const Icon(Icons.refresh_outlined),
             ),
@@ -194,7 +216,7 @@ class HomePage extends StatelessWidget {
         if (state is ProfileLoaded) {
           context.read<HomeCubit>().username =
               state.data.user.username.toString();
-          // context.read<HomeCubit>().fetchCategories();
+          context.read<HomeCubit>().fetchCategories();
           // context.read<HomeCubit>().fetchHistory('');
         } else if (state is ProfileError) {
           _onProfileError(context, state);
@@ -202,8 +224,8 @@ class HomePage extends StatelessWidget {
       },
       builder: (context, state) {
         if (state is HomeInitial) {
-          context.read<HomeCubit>().fetchHome(historyStatus: null);
-          // context.read<HomeCubit>().fetchProfile();
+          // context.read<HomeCubit>().fetchHome(historyStatus: null);
+          context.read<HomeCubit>().fetchProfile();
           // context.read<HomeCubit>().add(FetchCategories());
           // context.read<HomeCubit>().add(const FetchHistory(''));
         }
@@ -238,7 +260,7 @@ class HomePage extends StatelessWidget {
           : IconButton.outlined(
               onPressed: () {
                 context.pop();
-                context.read<HomeCubit>().fetchHome();
+                context.read<HomeCubit>().fetchProfile();
               },
               icon: const Icon(Icons.refresh_outlined),
             ),
@@ -248,7 +270,6 @@ class HomePage extends StatelessWidget {
 
   BlocConsumer<HomeCubit, HomeState> _categoryBlocConsumer(
     TextTheme textTheme,
-    List<CategoryModel> categories,
   ) {
     return BlocConsumer<HomeCubit, HomeState>(
       listener: (context, state) {
@@ -265,7 +286,7 @@ class HomePage extends StatelessWidget {
           context.read<HomeCubit>().allCategories = state.categories;
           context.read<HomeCubit>().fourCategories =
               state.categories.take(4).toList();
-          // context.read<HomeCubit>().fetchHistory(status: null);
+          context.read<HomeCubit>().fetchHistory(status: null);
         } else if (state is CategoryError) {
           _onCategoryError(context, state);
         }
@@ -278,7 +299,17 @@ class HomePage extends StatelessWidget {
             ),
           );
         } else {
-          return _categoriesGrid(categories, textTheme);
+          if (showAllCategory == true) {
+            return _categoriesGrid(
+              context.read<HomeCubit>().allCategories,
+              textTheme,
+            );
+          } else {
+            return _categoriesGrid(
+              context.read<HomeCubit>().fourCategories,
+              textTheme,
+            );
+          }
         }
       },
     );
@@ -304,7 +335,7 @@ class HomePage extends StatelessWidget {
           : IconButton.outlined(
               onPressed: () {
                 context.pop();
-                context.read<HomeCubit>().fetchHome();
+                context.read<HomeCubit>().fetchCategories();
               },
               icon: const Icon(Icons.refresh_outlined),
             ),
@@ -557,10 +588,16 @@ class HomePage extends StatelessWidget {
               ),
             ),
             GestureDetector(
-              onTap: () {
-                printInfo('You tap on all categories');
-              }, // TODO: Implement all categories page
-              child: SvgPicture.asset('assets/icons/option.svg'),
+              onTap: () => setState(() {
+                showAllCategory == true
+                    ? showAllCategory = false
+                    : showAllCategory = true;
+              }),
+              child: SvgPicture.asset(
+                'assets/icons/option.svg',
+                width: 35,
+                height: 8,
+              ),
             ),
           ],
         ),

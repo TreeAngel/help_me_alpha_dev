@@ -57,7 +57,7 @@ class _SelectProblemPageState extends State<SelectProblemPage> {
               height: screenHeight - (screenHeight / 2.45),
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 10),
-                child: _problemBlocBuilder(context, textTheme),
+                child: _problemBlocConsumer(context, textTheme),
               ),
             ),
             Positioned(
@@ -132,24 +132,27 @@ class _SelectProblemPageState extends State<SelectProblemPage> {
     );
   }
 
-  BlocBuilder<SendOrderBloc, SendOrderState> _problemBlocBuilder(
+  BlocConsumer<SendOrderBloc, SendOrderState> _problemBlocConsumer(
     BuildContext context,
     TextTheme textTheme,
   ) {
-    return BlocBuilder<SendOrderBloc, SendOrderState>(
-      builder: (contextBuilder, state) {
+    return BlocConsumer<SendOrderBloc, SendOrderState>(
+      listener: (context, state) {
+        if (state is ProblemsLoaded) {
+          problems = state.problems;
+        } else if (state is OrderError) {
+          _stateError(context, state);
+        }
+      },
+      builder: (context, state) {
         if (state is OrderInitial) {
-          _onInitProblem(contextBuilder, context);
+          _onInitProblem(context, context);
         } else if (state is OrderLoading) {
           return const SizedBox.expand(
             child: Center(
               child: CircularProgressIndicator(),
             ),
           );
-        } else if (state is ProblemsLoaded) {
-          problems = state.problems;
-        } else if (state is OrderError) {
-          _stateError(context, state);
         }
         return ListView.builder(
           itemCount: problems.length,
@@ -232,22 +235,20 @@ class _SelectProblemPageState extends State<SelectProblemPage> {
   }
 
   void _stateError(BuildContext context, OrderError state) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ShowDialog.showAlertDialog(
-        context,
-        'Error fetching problems',
-        state.errorMessage,
-        IconButton.outlined(
-          onPressed: () {
-            context.pop();
-            context
-                .read<SendOrderBloc>()
-                .add(FetchProblems(problemName: widget.category!));
-          },
-          icon: const Icon(Icons.refresh_outlined),
-        ),
-      );
-    });
+    ShowDialog.showAlertDialog(
+      context,
+      'Error fetching problems',
+      state.errorMessage,
+      IconButton.outlined(
+        onPressed: () {
+          context.pop();
+          context
+              .read<SendOrderBloc>()
+              .add(FetchProblems(problemName: widget.category!));
+        },
+        icon: const Icon(Icons.refresh_outlined),
+      ),
+    );
   }
 
   Widget _categoryIdNotFound(BuildContext context) {

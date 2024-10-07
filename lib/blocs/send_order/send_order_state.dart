@@ -63,3 +63,12 @@ final class OrderUploaded extends SendOrderState {
   @override
   List<Object?> get props => [message, order];
 }
+
+final class SendOrderError extends SendOrderState {
+  final String message;
+
+  const SendOrderError({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}

@@ -190,7 +190,7 @@ class ApiHelper {
   }
 
   static Stream getOfferFromMitra(int orderId) async* {
-    yield* Stream.periodic(const Duration(seconds: 3)).asyncMap((_) async {
+    yield* Stream.periodic(const Duration(seconds: 10)).asyncMap((_) async {
       final response = await ApiController.getData('users/offers/$orderId');
       if (response is ApiErrorResponseModel) {
         return response;
