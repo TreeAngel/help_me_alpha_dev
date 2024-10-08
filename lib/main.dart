@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'blocs/fetch_offer/fetch_offer_bloc.dart';
 import 'blocs/manage_order/manage_order_bloc.dart';
 import 'cubits/home_cubit/home_cubit.dart';
 import 'blocs/auth/auth_bloc.dart';
@@ -40,6 +41,9 @@ class MainApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => ManageOrderBloc(),
+        ),
+        BlocProvider(
+          create: (context) => FetchOfferBloc(),
         ),
         // TODO: Add other blocs here
       ],

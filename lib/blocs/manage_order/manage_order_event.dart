@@ -7,19 +7,6 @@ sealed class ManageOrderEvent extends Equatable {
   List<Object> get props => [];
 }
 
-final class StopFetching extends ManageOrderEvent {}
-
-final class PauseFetching extends ManageOrderEvent {}
-
-final class FetchOffer extends ManageOrderEvent {
-  final int orderId;
-
-  const FetchOffer({required this.orderId});
-
-  @override
-  List<Object> get props => [orderId];
-}
-
 final class SelectMitraSubmitted extends ManageOrderEvent {
   final int offerId;
 
@@ -29,10 +16,10 @@ final class SelectMitraSubmitted extends ManageOrderEvent {
   List<Object> get props => [offerId];
 }
 
-final class RequestPaymentCode extends ManageOrderEvent {
+final class RequestSnapToken extends ManageOrderEvent {
   final int orderId;
 
-  const RequestPaymentCode({required this.orderId});
+  const RequestSnapToken({required this.orderId});
 
   @override
   List<Object> get props => [orderId];

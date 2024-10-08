@@ -1,9 +1,11 @@
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
 
 import '../../models/offer/offer_model.dart';
 import '../../models/offer/offer_response_model.dart';
+import '../../models/offer/select_mitra_response_model/select_mitra_response_model.dart';
 import '../../models/order/history/order_history_model.dart';
-import 'api_controller.dart';
 import '../../models/order/order_response_model/order_response_model.dart';
 import '../../models/category_problem/problem_model.dart';
 import '../../models/auth/user_model.dart';
@@ -13,6 +15,7 @@ import '../../models/auth/login_model.dart';
 import '../../models/auth/register_model.dart';
 import '../../models/api_error_response/api_error_response_model.dart';
 import '../../models/api_error_response/message_error_model.dart';
+import 'api_controller.dart';
 
 class ApiHelper {
   // Auth
@@ -178,7 +181,8 @@ class ApiHelper {
       if (response is Map<String, dynamic> &&
           response.keys.contains('message')) {
         return ApiErrorResponseModel(
-            error: MessageErrorModel.fromMap(response));
+          error: MessageErrorModel.fromMap(response),
+        );
       } else {
         List<OrderHistoryModel> orderHistorys = [];
         for (var item in response as List<dynamic>) {
@@ -192,6 +196,7 @@ class ApiHelper {
   static Stream getOfferFromMitra(int orderId) async* {
     yield* Stream.periodic(const Duration(seconds: 10)).asyncMap((_) async {
       final response = await ApiController.getData('users/offers/$orderId');
+      log(response.toString());
       if (response is ApiErrorResponseModel) {
         return response;
       } else {
@@ -202,5 +207,29 @@ class ApiHelper {
         }
       }
     });
+  }
+
+  static Future selectMitra(int offerId) async {
+    final response = await ApiController.postData(
+      'users/orders/mitra',
+      {'offer_id': offerId},
+    );
+    if (response is ApiErrorResponseModel) {
+      return response;
+    } else {
+      return SelectMitraResponseModel.fromMap(response);
+    }
+  }
+
+  static Future orderPayment(int orderId) async {
+    final response = await ApiController.postData(
+      'users/transactions',
+      {'order_id': orderId},
+    );
+    if (response is ApiErrorResponseModel) {
+      return response;
+    } else {
+      return response;
+    }
   }
 }

@@ -1,15 +1,20 @@
+import 'dart:developer';
+
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
-import 'package:help_me_client_alpha_ver/blocs/manage_order/manage_order_bloc.dart';
+import 'package:midtrans_snap/midtrans_snap.dart';
+import 'package:midtrans_snap/models.dart';
 
+import '../../../blocs/manage_order/manage_order_bloc.dart';
+import '../../../blocs/fetch_offer/fetch_offer_bloc.dart';
 import '../../../configs/app_colors.dart';
 import '../../../models/offer/offer_model.dart';
 import '../../../services/api/api_controller.dart';
 import '../../../services/location_service.dart';
-import '../../../utils/logging.dart';
 import '../../../utils/show_dialog.dart';
 import '../../widgets/gradient_card.dart';
 
@@ -24,6 +29,8 @@ class SelectMitraPage extends StatefulWidget {
 
 class _SelectMitraPageState extends State<SelectMitraPage>
     with WidgetsBindingObserver {
+  bool paymentDone = false;
+
   @override
   void initState() {
     super.initState();
@@ -35,15 +42,11 @@ class _SelectMitraPageState extends State<SelectMitraPage>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.detached) {
-      context.read<ManageOrderBloc>().add(PauseFetching());
+      context.read<FetchOfferBloc>().continueStream = false;
+    } else {
+      context.read<FetchOfferBloc>().continueStream = true;
     }
     super.didChangeAppLifecycleState(state);
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
   }
 
   @override
@@ -54,102 +57,153 @@ class _SelectMitraPageState extends State<SelectMitraPage>
     final screenHeight = MediaQuery.of(context).size.height;
 
     return SafeArea(
-      child: Scaffold(
-        appBar: _appBar(context, textTheme),
-        body: Stack(
-          children: [
-            Positioned(
-              top: 0,
-              width: screenWidth,
-              height: screenHeight / 5,
-              child: Container(
-                color: Colors.black,
-                child: _detailHeadline(textTheme),
-              ),
-            ),
-            Positioned(
-              bottom: 0,
-              width: screenWidth,
-              height: screenHeight / 1.43,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: BlocConsumer<ManageOrderBloc, ManageOrderState>(
-                  listener: (context, state) {
-                    if (state is OfferFromMitraError) {
-                      _stateError(context, state.message);
-                    } else if (state is PaymentCodeError) {
-                      _stateError(context, state.message);
-                    } else if (state is OfferFromMitraLoaded) {
-                      context.read<ManageOrderBloc>().offerList =
-                          state.data.data ?? <OfferModel>[];
-                    } else if (state is PaymentCodeRequested) {
-                      context.read<ManageOrderBloc>().paymentCode = state.code;
-                    }
-                  },
-                  builder: (context, state) {
-                    if (state is ManageOrderInitial) {
-                      context
-                          .read<ManageOrderBloc>()
-                          .add(FetchOffer(orderId: widget.orderId ?? 0));
-                    }
-                    if (state is ManageOrderLoading) {
-                      return const SizedBox.expand(
-                        child: Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                      );
-                    }
-                    return RefreshIndicator(
-                      onRefresh: () async {
-                        printInfo('refreshing');
-                      },
-                      child: ListView.builder(
-                        itemCount:
-                            context.read<ManageOrderBloc>().offerList.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          final data =
-                              context.read<ManageOrderBloc>().offerList[index];
-                          final distance = Geolocator.distanceBetween(
-                                  LocationService.lat!,
-                                  LocationService.long!,
-                                  double.parse(data.latitude!),
-                                  double.parse(data.longitude!))
-                              .truncateToDouble();
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 10),
-                            child: GradientCard(
-                              width: 400,
-                              height: 200,
-                              cardColor: Colors.black,
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.only(right: 20, left: 20),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  // crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    _orderCardHistoryInfoSection(
-                                      data,
-                                      distance,
-                                      textTheme,
-                                    ),
-                                    _orderCardHistoryImageSection(data),
-                                  ],
-                                ),
+      child: BlocProvider(
+        create: (context) => FetchOfferBloc(),
+        child: Scaffold(
+          appBar: _appBar(context, textTheme),
+          body: BlocConsumer<ManageOrderBloc, ManageOrderState>(
+            listener: (context, state) {
+              if (state is SnapTokenError) {
+                _stateError(context, state.message);
+              } else if (state is SelectMitraError) {
+                _stateError(context, state.message);
+              } else if (state is SelectMitraSuccess) {
+                context
+                    .read<ManageOrderBloc>()
+                    .add(RequestSnapToken(orderId: widget.orderId!));
+              }
+              if (state is SnapTokenRequested) {
+                showDialog(
+                  barrierDismissible: paymentDone,
+                  context: context,
+                  builder: (context) => MidtransSnap(
+                    mode: kReleaseMode
+                        ? MidtransEnvironment.production
+                        : MidtransEnvironment.sandbox,
+                    token: state.code,
+                    midtransClientKey: 'SB-Mid-client-Dq1J9Sr45BhVF9WQ',
+                    onResponse: (result) {
+                      log(result.toString());
+                      result.transactionStatus.toLowerCase() == 'settlement' &&
+                              result.statusCode == 200 &&
+                              result.fraudStatus.toLowerCase() == 'accept'
+                          ? paymentDone = true
+                          : false;
+                    },
+                    onPageStarted: (url) {
+                      log(url);
+                    },
+                    onPageFinished: (url) {
+                      log(url);
+                    },
+                  ),
+                );
+              }
+            },
+            builder: (context, state) {
+              return Stack(
+                children: [
+                  Positioned(
+                    top: 0,
+                    width: screenWidth,
+                    height: screenHeight / 5,
+                    child: Container(
+                      color: Colors.black,
+                      child: _detailHeadline(textTheme),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    width: screenWidth,
+                    height: screenHeight / 1.43,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      child: BlocConsumer<FetchOfferBloc, FetchOfferState>(
+                        listener: (context, state) {
+                          if (state is FetchOfferError) {
+                            _stateError(context, state.message);
+                          } else if (state is FetchOfferLoaded) {
+                            context.read<FetchOfferBloc>().offerList =
+                                state.data.data ?? <OfferModel>[];
+                          }
+                        },
+                        builder: (context, state) {
+                          if (state is FetchOfferInitial) {
+                            if (widget.orderId != null) {
+                              context.read<FetchOfferBloc>().add(
+                                    FetchOffer(orderId: widget.orderId!),
+                                  );
+                            } else {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                ShowDialog.showAlertDialog(
+                                  context,
+                                  'Peringatan!',
+                                  'Kamu tidak ada order yang aktif saat ini, jika kamu punya order aktif dan tetap mendapat pesan ini coba untuk refresh di home atau close aplikasi dan masuk lagi',
+                                  null,
+                                );
+                                context.pop();
+                                context.canPop()
+                                    ? context.pop()
+                                    : context.goNamed('homePage');
+                              });
+                            }
+                          }
+                          if (state is FetchOfferLoading) {
+                            return const SizedBox.expand(
+                              child: Center(
+                                child: CircularProgressIndicator(),
                               ),
-                            ),
-                          );
+                            );
+                          }
+                          return _offerCardBuilder(context, textTheme);
                         },
                       ),
-                    );
-                  },
-                ),
-              ),
-            ),
-          ],
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
         ),
       ),
+    );
+  }
+
+  ListView _offerCardBuilder(BuildContext context, TextTheme textTheme) {
+    return ListView.builder(
+      itemCount: context.read<FetchOfferBloc>().offerList.length,
+      itemBuilder: (BuildContext context, int index) {
+        final data = context.read<FetchOfferBloc>().offerList[index];
+        final distance = Geolocator.distanceBetween(
+          LocationService.lat!,
+          LocationService.long!,
+          double.parse(data.latitude!),
+          double.parse(data.longitude!),
+        ).truncateToDouble();
+        return Padding(
+          padding: const EdgeInsets.only(top: 10),
+          child: GradientCard(
+            width: 400,
+            height: 200,
+            cardColor: Colors.black,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 20, left: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                // crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  _orderCardHistoryInfoSection(
+                    data,
+                    distance,
+                    textTheme,
+                  ),
+                  _orderCardHistoryImageSection(data),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -210,7 +264,16 @@ class _SelectMitraPageState extends State<SelectMitraPage>
         ),
         ElevatedButton.icon(
           onPressed: () {
-            printInfo('You tap on detail order');
+            if (offer != null) {
+              _selectMitraConfirmation(offer, textTheme);
+            } else {
+              ShowDialog.showAlertDialog(
+                context,
+                'Gagal!',
+                'Terdapat kesalahan, silahkan pilih penawaran lain atau coba lagi',
+                null,
+              );
+            }
           },
           style: ButtonStyle(
             backgroundColor: const WidgetStatePropertyAll(
@@ -229,9 +292,39 @@ class _SelectMitraPageState extends State<SelectMitraPage>
             size: 20,
           ),
           iconAlignment: IconAlignment.end,
-          label: const Text('Panggil Abangnya'), // TODO: Implement select mitra
+          label: const Text('Panggil Abangnya'),
         )
       ],
+    );
+  }
+
+  void _selectMitraConfirmation(OfferModel offer, TextTheme textTheme) {
+    ShowDialog.showAlertDialog(
+      context,
+      'Konfirmasi',
+      'Panggil abang yang in?',
+      OutlinedButton(
+        onPressed: () {
+          context.pop();
+          context.read<FetchOfferBloc>().continueStream = false;
+          context.read<ManageOrderBloc>().add(
+                SelectMitraSubmitted(offerId: offer.offerId!),
+              );
+        },
+        style: const ButtonStyle(
+          side: WidgetStatePropertyAll(
+            BorderSide(
+              color: AppColors.lightTextColor,
+            ),
+          ),
+        ),
+        child: Text(
+          'Yakin',
+          style: textTheme.bodyLarge?.copyWith(
+            color: AppColors.lightTextColor,
+          ),
+        ),
+      ),
     );
   }
 
@@ -252,45 +345,55 @@ class _SelectMitraPageState extends State<SelectMitraPage>
   Padding _detailHeadline(TextTheme textTheme) {
     return Padding(
       padding: const EdgeInsets.only(top: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Text(
-              'Berikut solusi dari\nHelpMe!',
-              style: textTheme.titleLarge?.copyWith(
-                color: AppColors.darkTextColor,
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
+      child: BlocBuilder<FetchOfferBloc, FetchOfferState>(
+        builder: (context, state) {
+          List<OfferModel> offerList =
+              context.watch<FetchOfferBloc>().offerList;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  'Berikut solusi dari\nHelpMe!',
+                  style: textTheme.titleLarge?.copyWith(
+                    color: AppColors.darkTextColor,
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-            ),
-          ),
-          // TODO: Change to show available mitar, REMEMBER
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: LimitedBox(
-              maxHeight: 36,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: 1,
-                itemBuilder: (BuildContext context, int index) {
-                  return const CircleAvatar(
-                    radius: 39,
-                    backgroundColor: AppColors.backgroundColor,
-                    child: CircleAvatar(
-                      backgroundImage: CachedNetworkImageProvider(
-                        '',
-                        maxWidth: 36,
-                        maxHeight: 36,
-                      ),
-                    ),
-                  );
-                },
+              Padding(
+                padding: const EdgeInsets.only(
+                  top: 8,
+                  left: 16,
+                ),
+                child: LimitedBox(
+                  maxHeight: 36,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: offerList.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      final offer = offerList[index];
+                      return CircleAvatar(
+                        radius: 21,
+                        backgroundColor: AppColors.surface,
+                        child: CircleAvatar(
+                          radius: 17,
+                          backgroundImage: CachedNetworkImageProvider(
+                            '${ApiController.baseUrl}/${offer.mitraProfile}',
+                            maxWidth: 36,
+                            maxHeight: 36,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }
