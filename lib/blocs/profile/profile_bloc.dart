@@ -30,8 +30,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   String? codeOTP;
   StatusOTP statusOTP = StatusOTP.waiting;
 
-  ProfileBloc({required this.imagePickerUtil})
-      : super(ProfileInitial()) {
+  ProfileBloc({required this.imagePickerUtil}) : super(ProfileInitial()) {
     on<FetchProfile>(_onFetchProfile);
 
     on<ProfileIsIdle>((event, emit) => emit(ProfileIdle()));

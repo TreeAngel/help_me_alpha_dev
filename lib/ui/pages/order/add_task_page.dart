@@ -213,7 +213,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
           );
           context.read<ManageOrderBloc>().haveActiveOrder = true;
           context.read<HomeCubit>().fetchHistory();
-          context.pop();
+          Navigator.popUntil(context, (route) => route.isFirst);
         }
       },
       builder: (context, state) {

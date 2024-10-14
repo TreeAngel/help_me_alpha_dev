@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 
 import 'message_error_model.dart';
@@ -14,35 +12,31 @@ class ApiErrorResponseModel {
   String toString() => 'AuthErrorResponse(error: $error)';
 
   factory ApiErrorResponseModel.fromMap(Map<String, dynamic> data) {
-    return ApiErrorResponseModel(
-      error: data['error'] == null
-          ? null
-          : MessageErrorModel.fromMap(data['error'] as Map<String, dynamic>),
-    );
-  }
-
-  Map<String, dynamic> toMap() => {
-        'error': error?.toMap(),
-      };
-
-  /// `dart:convert`
-  ///
-  /// Parses the string and returns the resulting Json object as [ApiErrorResponseModel].
-  factory ApiErrorResponseModel.fromJson(String data) {
-    return ApiErrorResponseModel.fromMap(
-        json.decode(data) as Map<String, dynamic>);
-  }
-
-  /// `dart:convert`
-  ///
-  /// Converts [ApiErrorResponseModel] to a JSON string.
-  String toJson() => json.encode(toMap());
-
-  ApiErrorResponseModel copyWith({
-    MessageErrorModel? error,
-  }) {
-    return ApiErrorResponseModel(
-      error: error ?? this.error,
-    );
+    if (data.containsKey('error')) {
+      final value = data['error'];
+      if (value is String) {
+        return ApiErrorResponseModel(
+          error: MessageErrorModel(error: value),
+        );
+      } else {
+        return ApiErrorResponseModel(
+          error: MessageErrorModel.fromMap(data['error']),
+        );
+      }
+    } else if (data.containsKey('message')) {
+      final value = data['message'];
+      return ApiErrorResponseModel(
+        error: MessageErrorModel(message: value),
+      );
+    } else {
+      return const ApiErrorResponseModel(
+        error: MessageErrorModel(error: 'Unknown error'),
+      );
+    }
+    // return ApiErrorResponseModel(
+    //   error: data['error'] == null
+    //       ? null
+    //       : MessageErrorModel.fromMap(data['error'] as Map<String, dynamic>),
+    // );
   }
 }

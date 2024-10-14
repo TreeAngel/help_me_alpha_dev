@@ -64,9 +64,19 @@ class _SelectMitraPageState extends State<SelectMitraPage>
           body: BlocConsumer<ManageOrderBloc, ManageOrderState>(
             listener: (context, state) {
               if (state is SnapTokenError) {
-                _stateError(context, state.message);
+                ShowDialog.showAlertDialog(
+                  context,
+                  'Peringatan!',
+                  state.message,
+                  null,
+                );
               } else if (state is SelectMitraError) {
-                _stateError(context, state.message);
+                ShowDialog.showAlertDialog(
+                  context,
+                  'Peringatan!',
+                  state.message,
+                  null,
+                );
               } else if (state is SelectMitraSuccess) {
                 context
                     .read<ManageOrderBloc>()
@@ -76,27 +86,7 @@ class _SelectMitraPageState extends State<SelectMitraPage>
                 showDialog(
                   barrierDismissible: paymentDone,
                   context: context,
-                  builder: (context) => MidtransSnap(
-                    mode: kReleaseMode
-                        ? MidtransEnvironment.production
-                        : MidtransEnvironment.sandbox,
-                    token: state.code,
-                    midtransClientKey: 'SB-Mid-client-Dq1J9Sr45BhVF9WQ',
-                    onResponse: (result) {
-                      log(result.toString());
-                      result.transactionStatus.toLowerCase() == 'settlement' &&
-                              result.statusCode == 200 &&
-                              result.fraudStatus.toLowerCase() == 'accept'
-                          ? paymentDone = true
-                          : false;
-                    },
-                    onPageStarted: (url) {
-                      log(url);
-                    },
-                    onPageFinished: (url) {
-                      log(url);
-                    },
-                  ),
+                  builder: (context) => _midtransSnap(state),
                 );
               }
             },
@@ -118,46 +108,13 @@ class _SelectMitraPageState extends State<SelectMitraPage>
                     height: screenHeight / 1.43,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10),
-                      child: BlocConsumer<FetchOfferBloc, FetchOfferState>(
-                        listener: (context, state) {
-                          if (state is FetchOfferError) {
-                            _stateError(context, state.message);
-                          } else if (state is FetchOfferLoaded) {
-                            context.read<FetchOfferBloc>().offerList =
-                                state.data.data ?? <OfferModel>[];
-                          }
-                        },
-                        builder: (context, state) {
-                          if (state is FetchOfferInitial) {
-                            if (widget.orderId != null) {
-                              context.read<FetchOfferBloc>().add(
-                                    FetchOffer(orderId: widget.orderId!),
-                                  );
-                            } else {
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                ShowDialog.showAlertDialog(
-                                  context,
-                                  'Peringatan!',
-                                  'Kamu tidak ada order yang aktif saat ini, jika kamu punya order aktif dan tetap mendapat pesan ini coba untuk refresh di home atau close aplikasi dan masuk lagi',
-                                  null,
-                                );
-                                context.pop();
-                                context.canPop()
-                                    ? context.pop()
-                                    : context.goNamed('homePage');
-                              });
-                            }
-                          }
-                          if (state is FetchOfferLoading) {
-                            return const SizedBox.expand(
+                      child: state is ManageOrderLoading == true
+                          ? const SizedBox.expand(
                               child: Center(
                                 child: CircularProgressIndicator(),
                               ),
-                            );
-                          }
-                          return _offerCardBuilder(context, textTheme);
-                        },
-                      ),
+                            )
+                          : _fetchOfferConsumer(textTheme),
                     ),
                   ),
                 ],
@@ -166,6 +123,72 @@ class _SelectMitraPageState extends State<SelectMitraPage>
           ),
         ),
       ),
+    );
+  }
+
+  MidtransSnap _midtransSnap(SnapTokenRequested state) {
+    return MidtransSnap(
+      mode: kReleaseMode
+          ? MidtransEnvironment.production
+          : MidtransEnvironment.sandbox,
+      token: state.code,
+      midtransClientKey: 'SB-Mid-client-Dq1J9Sr45BhVF9WQ',
+      onResponse: (result) {
+        log(result.toJsonSnake().toString());
+        result.transactionStatus.toLowerCase() == 'settlement' &&
+                result.statusCode == 200 &&
+                result.fraudStatus.toLowerCase() == 'accept'
+            ? paymentDone = true
+            : false;
+      },
+      onPageStarted: (url) {
+        log(url);
+      },
+      onPageFinished: (url) {
+        log(url);
+      },
+    );
+  }
+
+  BlocConsumer<FetchOfferBloc, FetchOfferState> _fetchOfferConsumer(
+      TextTheme textTheme) {
+    return BlocConsumer<FetchOfferBloc, FetchOfferState>(
+      listener: (context, state) {
+        if (state is FetchOfferError) {
+          _stateError(context, state.message);
+        } else if (state is FetchOfferLoaded) {
+          context.read<FetchOfferBloc>().offerList =
+              state.data.data ?? <OfferModel>[];
+        }
+      },
+      builder: (context, state) {
+        if (state is FetchOfferInitial) {
+          if (widget.orderId != null) {
+            context.read<FetchOfferBloc>().add(
+                  FetchOffer(orderId: widget.orderId!),
+                );
+          } else {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              ShowDialog.showAlertDialog(
+                context,
+                'Peringatan!',
+                'Kamu tidak ada order yang aktif saat ini, jika kamu punya order aktif dan tetap mendapat pesan ini coba untuk refresh di home atau close aplikasi dan masuk lagi',
+                null,
+              );
+              context.pop();
+              context.canPop() ? context.pop() : context.goNamed('homePage');
+            });
+          }
+        }
+        if (state is FetchOfferLoading) {
+          return const SizedBox.expand(
+            child: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+        return _offerCardBuilder(context, textTheme);
+      },
     );
   }
 
@@ -302,13 +325,15 @@ class _SelectMitraPageState extends State<SelectMitraPage>
     ShowDialog.showAlertDialog(
       context,
       'Konfirmasi',
-      'Panggil abang yang in?',
+      'Panggil abang yang ini?',
       OutlinedButton(
         onPressed: () {
           context.pop();
           context.read<FetchOfferBloc>().continueStream = false;
           context.read<ManageOrderBloc>().add(
-                SelectMitraSubmitted(offerId: offer.offerId!),
+                SelectMitraSubmitted(
+                  offerId: offer.offerId!,
+                ),
               );
         },
         style: const ButtonStyle(
@@ -370,31 +395,35 @@ class _SelectMitraPageState extends State<SelectMitraPage>
                 ),
                 child: LimitedBox(
                   maxHeight: 36,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: offerList.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      final offer = offerList[index];
-                      return CircleAvatar(
-                        radius: 21,
-                        backgroundColor: AppColors.surface,
-                        child: CircleAvatar(
-                          radius: 17,
-                          backgroundImage: CachedNetworkImageProvider(
-                            '${ApiController.baseUrl}/${offer.mitraProfile}',
-                            maxWidth: 36,
-                            maxHeight: 36,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+                  child: _avatarBuilder(offerList),
                 ),
               ),
             ],
           );
         },
       ),
+    );
+  }
+
+  ListView _avatarBuilder(List<OfferModel> offerList) {
+    return ListView.builder(
+      scrollDirection: Axis.horizontal,
+      itemCount: offerList.length,
+      itemBuilder: (BuildContext context, int index) {
+        final offer = offerList[index];
+        return CircleAvatar(
+          radius: 21,
+          backgroundColor: AppColors.surface,
+          child: CircleAvatar(
+            radius: 17,
+            backgroundImage: CachedNetworkImageProvider(
+              '${ApiController.baseUrl}/${offer.mitraProfile}',
+              maxWidth: 36,
+              maxHeight: 36,
+            ),
+          ),
+        );
+      },
     );
   }
 

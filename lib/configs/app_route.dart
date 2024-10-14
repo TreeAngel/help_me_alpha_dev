@@ -27,10 +27,11 @@ class AppRoute {
       final haveOrder = context.read<ManageOrderBloc>().haveActiveOrder;
       final activeOrder = haveOrder == true
           ? context.read<HomeCubit>().orderHistory.firstWhere((history) =>
-              history.orderStatus?.trim().toLowerCase() == 'pending' ||
-              history.orderStatus?.trim().toLowerCase() == 'paid' ||
+              history.orderStatus?.trim().toLowerCase() == 'pending' 
+              || history.orderStatus?.trim().toLowerCase() == 'paid' ||
               history.orderStatus?.trim().toLowerCase() == 'otw' ||
-              history.orderStatus?.trim().toLowerCase() == 'arrived')
+              history.orderStatus?.trim().toLowerCase() == 'arrived'
+              )
           : null;
       // TODO: Add other guarded route later
       if (isAuthenticated == false && state.matchedLocation == '/home') {

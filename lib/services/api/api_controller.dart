@@ -1,13 +1,13 @@
 import 'package:dio/dio.dart';
 
 import '../../models/api_error_response/api_error_response_model.dart';
-import '../../models/api_error_response/message_error_model.dart';
 import '../../services/api/api_exception.dart';
 import '../../utils/logging.dart';
 
 class ApiController {
   // TODO: Add base url untuk akses api saat sudah dihosting
-  static const baseUrl = 'https://f8b59f9ab1523731e3c5208b924bf844.serveo.net';
+  static const baseUrl =
+      'https://3f642948d636ac09dc3828aa0528b4f0.serveo.net';
   static String? token;
 
   static var dio = Dio(
@@ -44,7 +44,8 @@ class ApiController {
     } on DioException catch (e) {
       final error = checkException(e);
       printError(e.toString());
-      return ApiErrorResponseModel(error: MessageErrorModel.fromMap(error));
+      return ApiErrorResponseModel.fromMap(error);
+      // return ApiErrorResponseModel(error: MessageErrorModel.fromMap(error));
     } catch (e) {
       printError(e.toString());
       throw Exception(e);
@@ -76,7 +77,8 @@ class ApiController {
     } on DioException catch (e) {
       final error = checkException(e);
       printError(e.toString());
-      return ApiErrorResponseModel(error: MessageErrorModel.fromMap(error));
+      return ApiErrorResponseModel.fromMap(error);
+      // return ApiErrorResponseModel(error: MessageErrorModel.fromMap(error));
     } catch (e) {
       printError(e.toString());
       throw Exception(e);

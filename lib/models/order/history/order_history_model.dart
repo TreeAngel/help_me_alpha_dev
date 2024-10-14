@@ -31,18 +31,17 @@ class OrderHistoryModel extends Equatable {
 
   factory OrderHistoryModel.fromMap(Map<String, dynamic> data) =>
       OrderHistoryModel(
-        orderId: data['order_id'] as int?,
-        orderStatus: data['order_status'] as String?,
-        latitude: data['latitude'] as String?,
-        longitude: data['longitude'] as String?,
-        description: data['description'] as String?,
-        orderTime: data['order_time'] as String?,
-        user: data['user'] as String?,
-        userProfile: data['user_profile'] as String?,
-        price: data['price'] as String?,
-        category: data['category'] as String?,
-        attachment: (data['attachment'] as List<dynamic>?)
-      );
+          orderId: data['order_id'] as int?,
+          orderStatus: data['order_status'] as String?,
+          latitude: data['latitude'] as String?,
+          longitude: data['longitude'] as String?,
+          description: data['description'] as String?,
+          orderTime: data['order_time'] as String?,
+          user: data['user'] as String?,
+          userProfile: data['user_profile'] as String?,
+          price: data['price'] as String?,
+          category: data['category'] as String?,
+          attachment: (data['attachment'] as List<dynamic>?));
 
   Map<String, dynamic> toMap() => {
         'order_id': orderId,

@@ -28,13 +28,14 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   bool showAllCategory = false;
+  bool showAllHistory = false;
 
   @override
   Widget build(BuildContext context) {
     final appTheme = Theme.of(context);
     final textTheme = appTheme.textTheme;
     final colorScheme = appTheme.colorScheme;
-    final screenWidth = MediaQuery.of(context).size.width;
+    final screenWidth = MediaQuery.sizeOf(context).width;
 
     return PopScope(
       onPopInvokedWithResult: (didPop, result) {
@@ -44,67 +45,152 @@ class _HomePageState extends State<HomePage> {
       },
       child: SafeArea(
         child: Scaffold(
-          body: Stack(
-            children: [
-              Positioned(
-                top: 0,
-                width: screenWidth,
-                child: Container(
-                  height: 440,
-                  color: Colors.black,
+          body: showAllHistory == true
+              ? _allHistoryConsumer(textTheme)
+              : _homeStackBody(screenWidth, textTheme, colorScheme),
+        ),
+      ),
+    );
+  }
+
+  Stack _homeStackBody(
+      double screenWidth, TextTheme textTheme, ColorScheme colorScheme) {
+    return Stack(
+      children: [
+        Positioned(
+          top: 0,
+          width: screenWidth,
+          child: Container(
+            height: 440,
+            color: Colors.black,
+          ),
+        ),
+        Positioned.fill(
+          child: BlocConsumer<AuthBloc, AuthState>(
+            listener: (context, state) {
+              if (state is AuthError) {
+                _onSignOutError(context, state);
+              }
+              if (state is SignOutLoaded) {
+                ManageAuthToken.deleteToken();
+                context.goNamed('signInPage');
+              }
+            },
+            builder: (context, state) {
+              if (state is AuthLoading) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+              return RefreshIndicator(
+                triggerMode: RefreshIndicatorTriggerMode.onEdge,
+                onRefresh: () async {
+                  // context.read<HomeCubit>().fetchHome();
+                  context.read<HomeCubit>().fetchProfile();
+                },
+                child: CustomScrollView(
+                  slivers: <Widget>[
+                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                    _appBarBlocConsumer(
+                      context.watch<HomeCubit>().username,
+                      textTheme,
+                      colorScheme,
+                    ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                    _searchTextField(),
+                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                    _categoryTextHeader(textTheme),
+                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                    _categoryBlocConsumer(textTheme),
+                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                    _orderHistoryTextHeader(textTheme),
+                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                    _lastHistoryBlocConsumer(textTheme),
+                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                  ],
                 ),
-              ),
-              Positioned.fill(
-                child: BlocConsumer<AuthBloc, AuthState>(
-                  listener: (context, state) {
-                    if (state is AuthError) {
-                      _onSignOutError(context, state);
-                    }
-                    if (state is SignOutLoaded) {
-                      ManageAuthToken.deleteToken();
-                      context.goNamed('signInPage');
-                    }
-                  },
-                  builder: (context, state) {
-                    if (state is AuthLoading) {
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    }
-                    return RefreshIndicator(
-                      triggerMode: RefreshIndicatorTriggerMode.onEdge,
-                      onRefresh: () async {
-                        // context.read<HomeCubit>().fetchHome();
-                        context.read<HomeCubit>().fetchProfile();
-                      },
-                      child: CustomScrollView(
-                        slivers: <Widget>[
-                          const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                          _appBarBlocConsumer(
-                            context.watch<HomeCubit>().username,
-                            textTheme,
-                            colorScheme,
-                          ),
-                          const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                          _searchTextField(),
-                          const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                          _categoryTextHeader(textTheme),
-                          const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                          _categoryBlocConsumer(textTheme),
-                          const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                          _orderHistoryTextHeader(textTheme),
-                          const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                          _lastHistoryBlocConsumer(
-                            textTheme
-                          ),
-                          const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  BlocConsumer<HomeCubit, HomeState> _allHistoryConsumer(TextTheme textTheme) {
+    return BlocConsumer<HomeCubit, HomeState>(
+      listener: (context, state) {
+        if (state is OrderHistoryLoaded) {
+          context.read<HomeCubit>().orderHistory = state.history;
+          if (state.history.any((history) =>
+              history.orderStatus?.trim().toLowerCase() == 'pending' ||
+              history.orderStatus?.trim().toLowerCase() == 'paid' ||
+              history.orderStatus?.trim().toLowerCase() == 'otw' ||
+              history.orderStatus?.trim().toLowerCase() == 'arrived')) {
+            context.read<ManageOrderBloc>().haveActiveOrder = true;
+          } else {
+            context.read<ManageOrderBloc>().haveActiveOrder = false;
+          }
+          // if (context.read<HomeCubit>().orderHistory.isNotEmpty) {
+          //   context.read<HomeCubit>().lastHistory = orderHistory.last;
+          // }
+          // context.read<HomeCubit>().fetchCategories();
+        } else if (state is OrderHistoryError) {
+          _onOrderHistoryError(context, state);
+        }
+        if (context.read<HomeCubit>().orderHistory.isNotEmpty) {
+          context.read<HomeCubit>().lastHistory =
+              context.read<HomeCubit>().orderHistory.last;
+        }
+      },
+      builder: (context, state) {
+        if (state is HomeLoading) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+        return RefreshIndicator(
+          onRefresh: () async {
+            context.read<HomeCubit>().fetchHistory();
+          },
+          child: CustomScrollView(
+            slivers: <Widget>[
+              _historySliverAppBar(context, textTheme),
+              const SliverToBoxAdapter(child: SizedBox(height: 20)),
+              _allHistoryHeader(textTheme),
+              const SliverToBoxAdapter(child: SizedBox(height: 10)),
+              _allHistoryBuilder(textTheme, context),
             ],
+          ),
+        );
+      },
+    );
+  }
+
+  SliverList _allHistoryBuilder(TextTheme textTheme, BuildContext context) {
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          final history = context.read<HomeCubit>().orderHistory[index];
+          return _orderHistoryCard(
+            history,
+            textTheme,
+          );
+        },
+        childCount: context.read<HomeCubit>().orderHistory.length,
+      ),
+    );
+  }
+
+  SliverToBoxAdapter _allHistoryHeader(TextTheme textTheme) {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 25),
+        child: Text(
+          'Riwayat Masalah',
+          style: textTheme.titleLarge?.copyWith(
+            color: AppColors.lightTextColor,
+            fontWeight: FontWeight.w800,
           ),
         ),
       ),
@@ -135,7 +221,8 @@ class _HomePageState extends State<HomePage> {
           _onOrderHistoryError(context, state);
         }
         if (context.read<HomeCubit>().orderHistory.isNotEmpty) {
-          context.read<HomeCubit>().lastHistory = context.read<HomeCubit>().orderHistory.last;
+          context.read<HomeCubit>().lastHistory =
+              context.read<HomeCubit>().orderHistory.last;
         }
       },
       builder: (context, state) {
@@ -144,7 +231,7 @@ class _HomePageState extends State<HomePage> {
             child: SizedBox.shrink(),
           );
         } else {
-          return _orderHistoryCard(
+          return _sliverOrderHistoryCard(
             context.read<HomeCubit>().lastHistory,
             textTheme,
           );
@@ -359,6 +446,7 @@ class _HomePageState extends State<HomePage> {
               : AppColors.grey;
           return GestureDetector(
             onTap: () async {
+              // TODO: Ubah index 0(serabutan) nanti saat database berubah, ya intinya itu
               index == 0 || index == 1
                   ? context.pushNamed('selectProblemPage', queryParameters: {
                       'categoryId': category.id.toString(),
@@ -385,7 +473,29 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  SliverToBoxAdapter _orderHistoryCard(
+  GradientCard _orderHistoryCard(
+    OrderHistoryModel? history,
+    TextTheme textTheme,
+  ) {
+    return GradientCard(
+      width: 400,
+      height: 240,
+      cardColor: Colors.black,
+      child: Padding(
+        padding: const EdgeInsets.only(right: 20, left: 20),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            _orderCardHistoryInfoSection(history, textTheme),
+            _orderCardHistoryImageSection(history),
+          ],
+        ),
+      ),
+    );
+  }
+
+  SliverToBoxAdapter _sliverOrderHistoryCard(
     OrderHistoryModel? history,
     TextTheme textTheme,
   ) {
@@ -518,9 +628,9 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             GestureDetector(
-              onTap: () {
-                printInfo('You tap on all order history');
-              }, // TODO: Implement all order history page
+              onTap: () => setState(() {
+                showAllHistory = true;
+              }),
               child: Text(
                 'Lihat Semua',
                 style: textTheme.titleMedium?.copyWith(
@@ -595,8 +705,7 @@ class _HomePageState extends State<HomePage> {
               }),
               child: SvgPicture.asset(
                 'assets/icons/option.svg',
-                width: 35,
-                height: 8,
+                height: 7,
               ),
             ),
           ],
@@ -607,40 +716,49 @@ class _HomePageState extends State<HomePage> {
 
   SliverToBoxAdapter _searchTextField() {
     return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 25),
-        child: Container(
-          width: 360,
-          height: 60,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(25),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 5),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              const SizedBox(width: 10),
-              Icon(
-                Icons.search,
-                color: Colors.grey[600],
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: TextField(
-                  decoration: InputDecoration(
-                    hintText: 'Ceritakan masalahmu disini!',
-                    hintStyle: TextStyle(color: Colors.grey[600]),
-                    border: InputBorder.none,
+      child: GestureDetector(
+        onTap: () => ShowDialog.showAlertDialog(
+          context,
+          'Fitur dalam pengembangan',
+          'Ditunggu ya kakak fitur ini bakal hadir pada update yang akan datang',
+          null,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 25),
+          child: Container(
+            width: 360,
+            height: 60,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(25),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                const SizedBox(width: 10),
+                Icon(
+                  Icons.search,
+                  color: Colors.grey[600],
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: TextField(
+                    enabled: false,
+                    decoration: InputDecoration(
+                      hintText: 'Ceritakan masalahmu disini!',
+                      hintStyle: TextStyle(color: Colors.grey[600]),
+                      border: InputBorder.none,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -738,5 +856,25 @@ class _HomePageState extends State<HomePage> {
         printError('What are you tapping? $item');
         break;
     }
+  }
+
+  SliverAppBar _historySliverAppBar(BuildContext context, TextTheme textTheme) {
+    return SliverAppBar(
+      backgroundColor: Colors.black,
+      foregroundColor: AppColors.darkTextColor,
+      leading: IconButton(
+        onPressed: () => setState(() {
+          showAllHistory = false;
+        }),
+        icon: const BackButtonIcon(),
+      ),
+      title: Text(
+        'Help Me!',
+        style: textTheme.titleLarge?.copyWith(
+          color: AppColors.darkTextColor,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
   }
 }

@@ -15,7 +15,6 @@ part 'auth_state.dart';
 part 'auth_event.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-
   String fullName = '';
   String username = '';
   String password = '';

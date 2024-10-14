@@ -56,36 +56,36 @@ class ApiException {
   static String errorMessageBuilder(MessageErrorModel errorModel) {
     String errorMessage = ' ';
     if (errorModel.error != null) {
-      errorMessage += '${errorModel.error}, ';
+      errorMessage += '${errorModel.error}\n';
     }
     if (errorModel.message != null) {
-      errorMessage += '${errorModel.message}, ';
+      errorMessage += '${errorModel.message}\n';
     }
     if (errorModel.fullname != null) {
-      errorMessage += '${errorModel.fullname}, ';
+      errorMessage += '${errorModel.fullname}\n';
     }
     if (errorModel.username != null) {
-      errorMessage += '${errorModel.username}, ';
+      errorMessage += '${errorModel.username}\n';
     }
     if (errorModel.phoneNumber != null) {
-      errorMessage += '${errorModel.phoneNumber}, ';
+      errorMessage += '${errorModel.phoneNumber}\n';
     }
     if (errorModel.password != null) {
-      errorMessage += '${errorModel.password}, ';
+      errorMessage += '${errorModel.password}\n';
     }
     if (errorModel.role != null) {
-      errorMessage += '${errorModel.role}, ';
+      errorMessage += '${errorModel.role}\n';
     }
     if (errorModel.newPassword != null) {
-      errorMessage += '${errorModel.newPassword}, ';
+      errorMessage += '${errorModel.newPassword}\n';
     }
     if (errorModel.verificationCode != null) {
-      errorMessage += '${errorModel.verificationCode}, ';
+      errorMessage += '${errorModel.verificationCode}\n';
     }
     errorMessage = errorMessage.trim();
-    errorMessage = errorMessage.endsWith(',')
-        ? errorMessage.substring(0, errorMessage.length - 1)
-        : errorMessage;
+    // errorMessage = errorMessage.endsWith(',')
+    //     ? errorMessage.substring(0, errorMessage.length - 1)
+    //     : errorMessage;
     return errorMessage;
   }
 }

@@ -11,6 +11,7 @@ part 'manage_order_state.dart';
 
 class ManageOrderBloc extends Bloc<ManageOrderEvent, ManageOrderState> {
   bool haveActiveOrder = false;
+  String? snapToken;
 
   ManageOrderBloc() : super(ManageOrderInitial()) {
     on<SelectMitraSubmitted>(_onSelectMitraSubmitted);
@@ -18,7 +19,7 @@ class ManageOrderBloc extends Bloc<ManageOrderEvent, ManageOrderState> {
     on<RequestSnapToken>(_onRequestSnapToken);
   }
 
-  FutureOr<void> _onRequestSnapToken(event, emit) async {
+  Future<void> _onRequestSnapToken(event, emit) async {
     emit(ManageOrderLoading());
     final response = await ApiHelper.orderPayment(event.orderId);
     if (response is ApiErrorResponseModel) {
@@ -26,10 +27,11 @@ class ManageOrderBloc extends Bloc<ManageOrderEvent, ManageOrderState> {
       emit(SnapTokenError(message: message.toString()));
     } else {
       emit(SnapTokenRequested(code: response['snap_token']));
+      snapToken = response['snap_token'];
     }
   }
 
-  FutureOr<void> _onSelectMitraSubmitted(event, emit) async {
+  Future<void> _onSelectMitraSubmitted(event, emit) async {
     emit(ManageOrderLoading());
     final response = await ApiHelper.selectMitra(event.offerId);
     if (response is ApiErrorResponseModel) {
