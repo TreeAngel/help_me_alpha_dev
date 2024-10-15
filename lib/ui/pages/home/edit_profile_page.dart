@@ -14,7 +14,7 @@ import '../../../models/auth/user_model.dart';
 import '../../../models/misc/menu_item_model.dart';
 import '../../../services/api/api_controller.dart';
 import '../../../utils/logging.dart';
-import '../../../utils/manage_auth_token.dart';
+import '../../../utils/manage_token.dart';
 import '../../../utils/show_dialog.dart';
 
 class EditProfilePage extends StatefulWidget {

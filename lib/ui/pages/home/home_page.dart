@@ -8,7 +8,7 @@ import '../../../blocs/manage_order/manage_order_bloc.dart';
 import '../../../services/api/api_controller.dart';
 import '../../../data/cards_color.dart';
 import '../../../models/order/history/order_history_model.dart';
-import '../../../utils/manage_auth_token.dart';
+import '../../../utils/manage_token.dart';
 import '../../../cubits/home_cubit/home_cubit.dart';
 import '../../../configs/app_colors.dart';
 import '../../../data/menu_items_data.dart';
@@ -487,7 +487,8 @@ class _HomePageState extends State<HomePage> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            _orderCardHistoryInfoSection(history, textTheme),
+            _orderCardHistoryInfoSection(history, textTheme,
+                history?.orderStatus?.trim().toLowerCase() == 'complete'),
             _orderCardHistoryImageSection(history),
           ],
         ),
@@ -510,7 +511,8 @@ class _HomePageState extends State<HomePage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _orderCardHistoryInfoSection(history, textTheme),
+              _orderCardHistoryInfoSection(history, textTheme,
+                  history?.orderStatus?.trim().toLowerCase() == 'complete'),
               _orderCardHistoryImageSection(history),
             ],
           ),
@@ -549,6 +551,7 @@ class _HomePageState extends State<HomePage> {
   Column _orderCardHistoryInfoSection(
     OrderHistoryModel? history,
     TextTheme textTheme,
+    bool isDone,
   ) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -586,28 +589,39 @@ class _HomePageState extends State<HomePage> {
             fontWeight: FontWeight.w800,
           ),
         ),
-        ElevatedButton.icon(
-          onPressed: () {
-            printInfo('You tap on detail order');
-          },
-          style: ButtonStyle(
-            backgroundColor: const WidgetStatePropertyAll(
-              AppColors.primary,
-            ),
-            textStyle: WidgetStatePropertyAll(
-              textTheme.bodyMedium?.copyWith(
-                color: AppColors.lightTextColor,
-                fontWeight: FontWeight.w800,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ElevatedButton.icon(
+              onPressed: () {
+                printInfo('You tap on detail order');
+              },
+              style: ButtonStyle(
+                backgroundColor: const WidgetStatePropertyAll(
+                  AppColors.primary,
+                ),
+                textStyle: WidgetStatePropertyAll(
+                  textTheme.bodyMedium?.copyWith(
+                    color: AppColors.lightTextColor,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
               ),
+              icon: const Icon(
+                Icons.arrow_forward_rounded,
+                color: AppColors.lightTextColor,
+                size: 20,
+              ),
+              iconAlignment: IconAlignment.end,
+              label:
+                  const Text('Lihat Riwayat'), // TODO: Implement detail order
             ),
-          ),
-          icon: const Icon(
-            Icons.arrow_forward_rounded,
-            color: AppColors.lightTextColor,
-            size: 20,
-          ),
-          iconAlignment: IconAlignment.end,
-          label: const Text('Lihat Riwayat'), // TODO: Implement detail order
+            const SizedBox(width: 10),
+            Icon(
+              isDone ? Icons.done : Icons.pending,
+              color: isDone ? Colors.greenAccent : Colors.orangeAccent,
+            ),
+          ],
         )
       ],
     );

@@ -19,10 +19,10 @@ List<String?> questionsBuilder(
     questionChoices.addAll(ProblemQuestions.kunciMotor);
     return ['Jenis kuncinya apa?', 'Fotoin kendaraannya'];
   }
-  if (problemName.toLowerCase().contains('motor perlu servis')) {
+  if (problemName.toLowerCase().contains('motor perlu service')) {
     questionChoices.clear;
     questionChoices.addAll(ProblemQuestions.motorServiceRingan);
-    return ['Jenis servis', 'Fotoin kendaraannya'];
+    return ['Jenis service', 'Fotoin kendaraannya'];
   }
   if (problemName.toLowerCase().contains('motor perlu dicuci')) {
     questionChoices.clear;
@@ -33,7 +33,7 @@ List<String?> questionsBuilder(
   if (problemName.toLowerCase().contains('ban mobil')) {
     questionChoices.clear;
     questionChoices.addAll(ProblemQuestions.banMobil);
-    return ['Jenis servis?', 'Fotoin kendaraannya'];
+    return ['Jenis service?', 'Fotoin kendaraannya'];
   }
   if (problemName.toLowerCase().contains('mobil mogok')) {
     questionChoices.clear;
@@ -45,10 +45,10 @@ List<String?> questionsBuilder(
     questionChoices.addAll(ProblemQuestions.kunciMobil);
     return ['Jenis kuncinya apa?', 'Fotoin kendaraannya'];
   }
-  if (problemName.toLowerCase().contains('mobil perlu servis')) {
+  if (problemName.toLowerCase().contains('mobil perlu service')) {
     questionChoices.clear;
     questionChoices.addAll(ProblemQuestions.mobilServiceRingan);
-    return ['Jenis servis', 'Fotoin kendaraannya'];
+    return ['Jenis service', 'Fotoin kendaraannya'];
   }
   if (problemName.toLowerCase().contains('mobil perlu dicuci')) {
     questionChoices.clear;
@@ -67,7 +67,7 @@ List<String?> questionsBuilder(
   if (problemName.toLowerCase().contains('setel sepeda')) {
     questionChoices.clear;
     questionChoices.addAll(ProblemQuestions.setelSepeda);
-    return ['Pilih jenis servisnya', 'Fotoin kendaraannya'];
+    return ['Pilih jenis servicenya', 'Fotoin kendaraannya'];
   }
 
   // Bantuan rumah

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/misc/menu_item_model.dart';
-import '../services/api/api_controller.dart';
 
 class MenuItems {
   static const List<MenuItemModel> firstItems = [
@@ -8,7 +7,7 @@ class MenuItems {
   ];
 
   static List<MenuItemModel> secondItems = [
-    ApiController.token != null ? itemSignOut : itemSignIn,
+    itemSignOut
   ];
 
   static List<MenuItemModel> pickImageItems = [

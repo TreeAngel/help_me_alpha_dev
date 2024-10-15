@@ -48,3 +48,7 @@ final class SnapTokenError extends ManageOrderState {
   @override
   List<Object> get props => [message];
 }
+
+final class PaymentPending extends ManageOrderState {}
+
+final class PaymentDone extends ManageOrderState {}

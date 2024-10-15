@@ -8,7 +8,7 @@ import '../../../blocs/profile/profile_bloc.dart';
 import '../../../configs/app_colors.dart';
 import '../../../models/auth/user_model.dart';
 import '../../../services/api/api_controller.dart';
-import '../../../utils/manage_auth_token.dart';
+import '../../../utils/manage_token.dart';
 import '../../../utils/show_dialog.dart';
 
 class ProfilePage extends StatefulWidget {

@@ -172,7 +172,8 @@ class _AddTaskPageState extends State<AddTaskPage> {
                             icon: const Icon(Icons.arrow_forward_ios),
                             iconAlignment: IconAlignment.end,
                           ),
-                        )
+                        ),
+                        const SizedBox(),
                       ],
                     ],
                   ),
@@ -209,11 +210,15 @@ class _AddTaskPageState extends State<AddTaskPage> {
             context,
             'Success',
             state.message,
-            null,
+            OutlinedButton(
+              onPressed: () {
+                context.read<ManageOrderBloc>().haveActiveOrder = true;
+                context.read<HomeCubit>().fetchHistory();
+                Navigator.popUntil(context, (route) => route.isFirst);
+              },
+              child: const Text('Lanjut'),
+            ),
           );
-          context.read<ManageOrderBloc>().haveActiveOrder = true;
-          context.read<HomeCubit>().fetchHistory();
-          Navigator.popUntil(context, (route) => route.isFirst);
         }
       },
       builder: (context, state) {

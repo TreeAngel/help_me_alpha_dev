@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -9,6 +10,7 @@ import '../ui/pages/auth/forget_password_page.dart';
 import '../ui/pages/home/edit_profile_page.dart';
 import '../ui/pages/misc/image_zoom_page.dart';
 import '../ui/pages/misc/launch_page.dart';
+import '../ui/pages/misc/snap_midtrans.dart';
 import '../ui/pages/order/add_task_page.dart';
 import '../ui/pages/home/home_page.dart';
 import '../ui/pages/home/profile_page.dart';
@@ -27,11 +29,10 @@ class AppRoute {
       final haveOrder = context.read<ManageOrderBloc>().haveActiveOrder;
       final activeOrder = haveOrder == true
           ? context.read<HomeCubit>().orderHistory.firstWhere((history) =>
-              history.orderStatus?.trim().toLowerCase() == 'pending' 
-              || history.orderStatus?.trim().toLowerCase() == 'paid' ||
+              history.orderStatus?.trim().toLowerCase() == 'pending' ||
+              history.orderStatus?.trim().toLowerCase() == 'paid' ||
               history.orderStatus?.trim().toLowerCase() == 'otw' ||
-              history.orderStatus?.trim().toLowerCase() == 'arrived'
-              )
+              history.orderStatus?.trim().toLowerCase() == 'arrived')
           : null;
       // TODO: Add other guarded route later
       if (isAuthenticated == false && state.matchedLocation == '/home') {
@@ -63,7 +64,7 @@ class AppRoute {
         return null;
       }
     },
-    // errorBuilder: (context, state) => const Placeholder(),
+    errorBuilder: (context, state) => const Placeholder(),
   );
 
   static List<RouteBase> get _routes {
@@ -155,6 +156,14 @@ class AppRoute {
             imagePath: path,
             imageName: name,
           );
+        },
+      ),
+      GoRoute(
+        path: '/payOrder',
+        name: 'payPage',
+        builder: (context, state) {
+          final token = state.uri.queryParameters['token'].toString();
+          return SnapMidtrans(token: token);
         },
       ),
     ];

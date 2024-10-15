@@ -7,7 +7,7 @@ import '../../models/api_error_response/message_error_model.dart';
 import '../../models/auth/auth_response_model.dart';
 import '../../models/auth/login_model.dart';
 import '../../services/api/api_controller.dart';
-import '../../utils/manage_auth_token.dart';
+import '../../utils/manage_token.dart';
 import '../../models/auth/register_model.dart';
 import '../../services/api/api_helper.dart';
 

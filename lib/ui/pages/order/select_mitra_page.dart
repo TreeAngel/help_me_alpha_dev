@@ -1,12 +1,11 @@
 import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
-import 'package:midtrans_snap/midtrans_snap.dart';
+import 'package:help_me_client_alpha_ver/utils/logging.dart';
 import 'package:midtrans_snap/models.dart';
 
 import '../../../blocs/manage_order/manage_order_bloc.dart';
@@ -15,6 +14,7 @@ import '../../../configs/app_colors.dart';
 import '../../../models/offer/offer_model.dart';
 import '../../../services/api/api_controller.dart';
 import '../../../services/location_service.dart';
+import '../../../utils/manage_token.dart';
 import '../../../utils/show_dialog.dart';
 import '../../widgets/gradient_card.dart';
 
@@ -30,6 +30,7 @@ class SelectMitraPage extends StatefulWidget {
 class _SelectMitraPageState extends State<SelectMitraPage>
     with WidgetsBindingObserver {
   bool paymentDone = false;
+  String paymentMessage = 'Belum Bayar!';
 
   @override
   void initState() {
@@ -57,96 +58,259 @@ class _SelectMitraPageState extends State<SelectMitraPage>
     final screenHeight = MediaQuery.of(context).size.height;
 
     return SafeArea(
-      child: BlocProvider(
-        create: (context) => FetchOfferBloc(),
-        child: Scaffold(
-          appBar: _appBar(context, textTheme),
-          body: BlocConsumer<ManageOrderBloc, ManageOrderState>(
-            listener: (context, state) {
-              if (state is SnapTokenError) {
-                ShowDialog.showAlertDialog(
-                  context,
-                  'Peringatan!',
-                  state.message,
-                  null,
-                );
-              } else if (state is SelectMitraError) {
-                ShowDialog.showAlertDialog(
-                  context,
-                  'Peringatan!',
-                  state.message,
-                  null,
-                );
-              } else if (state is SelectMitraSuccess) {
-                context
-                    .read<ManageOrderBloc>()
-                    .add(RequestSnapToken(orderId: widget.orderId!));
-              }
-              if (state is SnapTokenRequested) {
-                showDialog(
-                  barrierDismissible: paymentDone,
-                  context: context,
-                  builder: (context) => _midtransSnap(state),
-                );
-              }
-            },
-            builder: (context, state) {
-              return Stack(
-                children: [
-                  Positioned(
-                    top: 0,
-                    width: screenWidth,
-                    height: screenHeight / 5,
-                    child: Container(
-                      color: Colors.black,
-                      child: _detailHeadline(textTheme),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    width: screenWidth,
-                    height: screenHeight / 1.43,
-                    child: Padding(
+      child: Scaffold(
+        appBar: _appBar(context, textTheme),
+        body: Stack(
+          children: [
+            Positioned(
+              top: 0,
+              width: screenWidth,
+              height: screenHeight / 5,
+              child: Container(
+                color: Colors.black,
+                child: _detailHeadline(textTheme),
+              ),
+            ),
+            Positioned(
+              bottom: 0,
+              width: screenWidth,
+              height: screenHeight / 1.43,
+              child: BlocConsumer<ManageOrderBloc, ManageOrderState>(
+                listener: (context, state) {
+                  if (state is SnapTokenError) {
+                    ShowDialog.showAlertDialog(
+                      context,
+                      'Peringatan!',
+                      state.message,
+                      null,
+                    );
+                    context.read<ManageOrderBloc>().add(WaitingPayment());
+                  } else if (state is SelectMitraError) {
+                    ShowDialog.showAlertDialog(
+                      context,
+                      'Peringatan!',
+                      state.message,
+                      null,
+                    );
+                    if (state.message
+                        .trim()
+                        .toLowerCase()
+                        .contains('sudah dipilih')) {
+                      context.read<ManageOrderBloc>().add(WaitingPayment());
+                    }
+                  } else if (state is SelectMitraSuccess) {
+                    context
+                        .read<ManageOrderBloc>()
+                        .add(RequestSnapToken(orderId: widget.orderId!));
+                  }
+                  if (state is SnapTokenRequested) {
+                    context.read<ManageOrderBloc>().add(WaitingPayment());
+                    ManageSnapToken.writeToken(state.code);
+                    context.read<ManageOrderBloc>().snapToken = state.code;
+                  }
+                },
+                builder: (context, state) {
+                  if (state is ManageOrderLoading) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  } else if (state is PaymentPending || state is PaymentDone) {
+                    return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10),
-                      child: state is ManageOrderLoading == true
-                          ? const SizedBox.expand(
-                              child: Center(
-                                child: CircularProgressIndicator(),
-                              ),
+                      child: Column(
+                        children: [
+                          Text(
+                            paymentMessage,
+                            style: textTheme.titleLarge?.copyWith(
+                              color: AppColors.lightTextColor,
+                            ),
+                          ),
+                          if (paymentDone == false)
+                            ..._notPayedTxt(textTheme)
+                          else
+                            ..._payedTxt(textTheme),
+                          const SizedBox(height: 20),
+                          _paymentStatusIcon(),
+                          const SizedBox(height: 20),
+                          if (paymentDone == false)
+                            ..._notPayedBtn(
+                              context,
+                              textTheme,
+                              screenWidth,
+                              screenHeight,
                             )
-                          : _fetchOfferConsumer(textTheme),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
+                          else
+                            ..._payedBtn(textTheme),
+                        ],
+                      ),
+                    );
+                  } else {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      child: BlocProvider(
+                        create: (context) => FetchOfferBloc(),
+                        child: _fetchOfferConsumer(textTheme),
+                      ),
+                    );
+                  }
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  MidtransSnap _midtransSnap(SnapTokenRequested state) {
-    return MidtransSnap(
-      mode: kReleaseMode
-          ? MidtransEnvironment.production
-          : MidtransEnvironment.sandbox,
-      token: state.code,
-      midtransClientKey: 'SB-Mid-client-Dq1J9Sr45BhVF9WQ',
-      onResponse: (result) {
-        log(result.toJsonSnake().toString());
-        result.transactionStatus.toLowerCase() == 'settlement' &&
-                result.statusCode == 200 &&
-                result.fraudStatus.toLowerCase() == 'accept'
-            ? paymentDone = true
-            : false;
-      },
-      onPageStarted: (url) {
-        log(url);
-      },
-      onPageFinished: (url) {
-        log(url);
-      },
+  List<Widget> _notPayedTxt(TextTheme textTheme) {
+    return [
+      const SizedBox(height: 10),
+      Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 8.0,
+        ),
+        child: Text(
+          'Harap selesaikan pembayaran dengan harga yang sudah ditentukan!\nJangan lupa diskusiin harga jasa ama abannya nanti ya',
+          style: textTheme.bodyLarge?.copyWith(
+            color: AppColors.lightTextColor,
+          ),
+        ),
+      ),
+    ];
+  }
+
+  List<Widget> _payedTxt(TextTheme textTheme) {
+    return [
+      const SizedBox(height: 10),
+      Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 8.0,
+        ),
+        child: Text(
+          'Pembayaran berhasil lanjut ke halaman detail buat\nhubungin abannya dan pantau progres orderan ya!',
+          style: textTheme.bodyLarge?.copyWith(
+            color: AppColors.lightTextColor,
+          ),
+        ),
+      ),
+    ];
+  }
+
+  List<Widget> _payedBtn(TextTheme textTheme) {
+    return [
+      SizedBox(
+        width: 353,
+        height: 56,
+        child: ElevatedButton(
+          onPressed: () {},
+          style: ButtonStyle(
+            backgroundColor: WidgetStateProperty.all(
+              AppColors.primary,
+            ),
+            shape: WidgetStateProperty.all(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          ),
+          child: Text(
+            'Lanjut',
+            style: textTheme.bodyLarge?.copyWith(
+              color: AppColors.lightTextColor,
+            ),
+          ),
+        ),
+      ),
+    ];
+  }
+
+  List<Widget> _notPayedBtn(
+    BuildContext context,
+    TextTheme textTheme,
+    double screenWidht,
+    double screenHeight,
+  ) {
+    return [
+      SizedBox(
+        width: 353,
+        height: 56,
+        child: ElevatedButton(
+          onPressed: () async {
+            MidtransResponse? response;
+            ManageSnapToken.readToken();
+            if (context.read<ManageOrderBloc>().snapToken == null) {
+              context
+                  .read<ManageOrderBloc>()
+                  .add(RequestSnapToken(orderId: widget.orderId!));
+              response = await context.pushNamed(
+                'payPage',
+                queryParameters: {
+                  'token': context.read<ManageOrderBloc>().snapToken
+                },
+              );
+            } else {
+              response = await context.pushNamed(
+                'payPage',
+                queryParameters: {
+                  'token': context.read<ManageOrderBloc>().snapToken
+                },
+              );
+            }
+            if (context.mounted) {
+              _midtransResponseHandling(response, context);
+            } else {
+              printError('Error midtrans response handling has escaped');
+            }
+          },
+          style: ButtonStyle(
+            backgroundColor: WidgetStateProperty.all(
+              AppColors.primary,
+            ),
+            shape: WidgetStateProperty.all(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          ),
+          child: Text(
+            'Lanjut Bayar',
+            style: textTheme.bodyLarge?.copyWith(
+              color: AppColors.lightTextColor,
+            ),
+          ),
+        ),
+      ),
+    ];
+  }
+
+  void _midtransResponseHandling(
+      MidtransResponse? response, BuildContext context) {
+    if (response?.transactionStatus.trim().toLowerCase() == 'settlement' &&
+        response?.statusCode == 200 &&
+        response?.fraudStatus.trim().toLowerCase() == 'accept') {
+      paymentDone = true;
+      paymentMessage = 'Pembayaran berhasil!';
+      context.read<ManageOrderBloc>().add(CompletingPayment());
+    } else if (response?.statusCode == 201 &&
+        response?.transactionStatus.trim().toLowerCase() == 'pending') {
+      paymentDone = false;
+      paymentMessage = response!.statusMessage.toString();
+    } else if (response?.statusCode == 407) {
+      paymentDone = false;
+      paymentMessage = 'Transaksi kadaluarsa, coba ulang proses pembayaran';
+      ManageSnapToken.deleteToken();
+      context.read<ManageOrderBloc>().snapToken = null;
+    } else {
+      paymentDone = false;
+      paymentMessage = response!.statusMessage.toString();
+    }
+  }
+
+  Icon _paymentStatusIcon() {
+    return Icon(
+      paymentDone ? Icons.done : Icons.warning_rounded,
+      color: paymentDone ? Colors.greenAccent : Colors.orangeAccent,
+      size: 145,
     );
   }
 
@@ -213,7 +377,6 @@ class _SelectMitraPageState extends State<SelectMitraPage>
               padding: const EdgeInsets.only(right: 20, left: 20),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                // crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   _orderCardHistoryInfoSection(
                     data,

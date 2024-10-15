@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:dio/dio.dart';
 
 import '../../models/offer/offer_model.dart';
@@ -196,7 +194,6 @@ class ApiHelper {
   static Stream getOfferFromMitra(int orderId) async* {
     yield* Stream.periodic(const Duration(seconds: 10)).asyncMap((_) async {
       final response = await ApiController.getData('users/offers/$orderId');
-      log(response.toString());
       if (response is ApiErrorResponseModel) {
         return response;
       } else {

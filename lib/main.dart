@@ -9,7 +9,7 @@ import 'blocs/send_order/send_order_bloc.dart';
 import 'blocs/profile/profile_bloc.dart';
 import 'configs/app_theme.dart';
 import 'utils/image_picker_util.dart';
-import 'utils/manage_auth_token.dart';
+import 'utils/manage_token.dart';
 import 'configs/app_route.dart';
 
 void main() {
@@ -24,6 +24,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final imagePicker = ImagePickerUtil();
     ManageAuthToken.readToken();
+    ManageSnapToken.readToken();
 
     return MultiBlocProvider(
       providers: [

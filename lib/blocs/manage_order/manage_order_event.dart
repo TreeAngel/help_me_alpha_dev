@@ -24,3 +24,7 @@ final class RequestSnapToken extends ManageOrderEvent {
   @override
   List<Object> get props => [orderId];
 }
+
+final class WaitingPayment extends ManageOrderEvent {}
+
+final class CompletingPayment extends ManageOrderEvent {}
