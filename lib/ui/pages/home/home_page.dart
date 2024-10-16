@@ -8,6 +8,8 @@ import '../../../blocs/manage_order/manage_order_bloc.dart';
 import '../../../services/api/api_controller.dart';
 import '../../../data/cards_color.dart';
 import '../../../models/order/history/order_history_model.dart';
+import '../../../services/firebase/firebase_api.dart';
+import '../../../services/location_service.dart';
 import '../../../utils/manage_token.dart';
 import '../../../cubits/home/home_cubit.dart';
 import '../../../configs/app_colors.dart';
@@ -311,8 +313,9 @@ class _HomePageState extends State<HomePage> {
       },
       builder: (context, state) {
         if (state is HomeInitial) {
-          // context.read<HomeCubit>().fetchHome(historyStatus: null);
           context.read<HomeCubit>().fetchProfile();
+          _requestPermission(context);
+          // context.read<HomeCubit>().fetchHome(historyStatus: null);
           // context.read<HomeCubit>().add(FetchCategories());
           // context.read<HomeCubit>().add(const FetchHistory(''));
         }
@@ -324,6 +327,34 @@ class _HomePageState extends State<HomePage> {
         );
       },
     );
+  }
+
+  void _requestPermission(BuildContext context) {
+    return WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final locationPermission = await LocationService.setPermission();
+      if (locationPermission is String && locationPermission.isNotEmpty) {
+        context.mounted
+            ? ShowDialog.showAlertDialog(
+                context,
+                'Peringatan!',
+                locationPermission,
+                null,
+              )
+            : null;
+      }
+      final notificationPermission = await FirebaseMessagingApi.setPermission();
+      if (notificationPermission is String &&
+          notificationPermission.isNotEmpty) {
+        context.mounted
+            ? ShowDialog.showAlertDialog(
+                context,
+                'Peringatan!',
+                notificationPermission,
+                null,
+              )
+            : null;
+      }
+    });
   }
 
   void _onProfileError(BuildContext context, ProfileError state) {

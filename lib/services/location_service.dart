@@ -8,20 +8,21 @@ class LocationService {
   static double? lat;
   static double? long;
 
-  static Future<Position> getLocation() async {
+  static Future setPermission() async {
     LocationPermission permission;
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        return Future.error('Location permission denied');
+        return 'Izin lokasi sangat diperlukan, berikan izin secara manual di pengaturan atau restart aplikasi';
       }
     }
     if (permission == LocationPermission.deniedForever) {
-      return Future.error(
-        'Location permission denied forever, we cannot access your location',
-      );
+      return 'Izin lokasi sangat diperlukan, berikan izin secara manual di pengaturan atau restart aplikasi';
     }
+  }
+
+  static Future<Position> getLocation() async {
     return await Geolocator.getCurrentPosition(
       locationSettings: const LocationSettings(
         accuracy: LocationAccuracy.high,

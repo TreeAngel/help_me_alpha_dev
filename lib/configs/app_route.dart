@@ -58,9 +58,9 @@ class AppRoute {
         return '/home';
       } else if (haveOrder == true &&
           state.matchedLocation == '/selectProblem') {
-        return '/selectMitra?orderId=${activeOrder?.orderId}';
+        return '/selectMitra?orderId=${activeOrder?.orderId}&status=${activeOrder?.orderStatus}';
       } else if (haveOrder == true && state.matchedLocation == '/addTask') {
-        return '/selectMitra?orderId=${activeOrder?.orderId}';
+        return '/selectMitra?orderId=${activeOrder?.orderId}&status=${activeOrder?.orderStatus}';
       } else {
         return null;
       }
@@ -144,16 +144,21 @@ class AppRoute {
         name: 'selectMitraPage',
         builder: (context, state) {
           String id = state.uri.queryParameters['orderId'].toString();
+          String status = state.uri.queryParameters['statue'].toString();
           return SelectMitraPage(
-              orderId: !id.contains('null') ? int.parse(id) : null);
+            orderId: !id.contains('null') ? int.parse(id) : null,
+            orderStatus: status,
+          );
         },
       ),
       GoRoute(
         path: '/imageZoom',
         name: 'imageZoomPage',
         builder: (context, state) {
-          final path = state.uri.queryParameters['imagePaths']?.split(',') ?? [];
-          final name = state.uri.queryParameters['imageNames']?.split(',') ?? [];
+          final path =
+              state.uri.queryParameters['imagePaths']?.split(',') ?? [];
+          final name =
+              state.uri.queryParameters['imageNames']?.split(',') ?? [];
           return ImageZoomPage(
             imagePaths: path,
             imageNames: name,

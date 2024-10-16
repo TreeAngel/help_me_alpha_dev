@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:help_me_client_alpha_ver/firebase_options.dart';
 
 import 'blocs/fetch_offer/fetch_offer_bloc.dart';
 import 'blocs/manage_order/manage_order_bloc.dart';
@@ -12,8 +14,11 @@ import 'utils/image_picker_util.dart';
 import 'utils/manage_token.dart';
 import 'configs/app_route.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MainApp());
 }
 

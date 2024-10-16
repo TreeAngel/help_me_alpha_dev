@@ -28,3 +28,5 @@ final class RequestSnapToken extends ManageOrderEvent {
 final class WaitingPayment extends ManageOrderEvent {}
 
 final class CompletingPayment extends ManageOrderEvent {}
+
+final class LastOrderNotPending extends ManageOrderEvent {}

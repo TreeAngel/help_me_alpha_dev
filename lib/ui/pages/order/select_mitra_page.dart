@@ -18,8 +18,10 @@ import '../../widgets/gradient_card.dart';
 
 class SelectMitraPage extends StatefulWidget {
   final int? orderId;
+  final String? orderStatus;
 
-  const SelectMitraPage({super.key, required this.orderId});
+  const SelectMitraPage(
+      {super.key, required this.orderId, required this.orderStatus});
 
   @override
   State<SelectMitraPage> createState() => _SelectMitraPageState();
@@ -108,6 +110,16 @@ class _SelectMitraPageState extends State<SelectMitraPage>
                   }
                 },
                 builder: (context, state) {
+                  if (state is ManageOrderInitial) {
+                    if (!widget.orderStatus!
+                        .trim()
+                        .toLowerCase()
+                        .contains('pending')) {
+                      context
+                          .read<ManageOrderBloc>()
+                          .add(LastOrderNotPending());
+                    }
+                  }
                   if (state is ManageOrderLoading) {
                     return const Center(
                       child: CircularProgressIndicator(),

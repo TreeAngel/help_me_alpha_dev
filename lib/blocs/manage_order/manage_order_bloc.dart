@@ -21,6 +21,8 @@ class ManageOrderBloc extends Bloc<ManageOrderEvent, ManageOrderState> {
     on<WaitingPayment>((event, emit) => emit(PaymentPending()));
 
     on<CompletingPayment>((event, emit) => emit(PaymentDone()));
+
+    on<LastOrderNotPending>((event, emit) => emit(PaymentDone()));
   }
 
   Future<void> _onRequestSnapToken(event, emit) async {

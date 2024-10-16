@@ -26,6 +26,7 @@ class SignUpPage extends StatelessWidget {
       child: Scaffold(
         backgroundColor: Colors.black,
         body: CustomScrollView(
+          physics: const ClampingScrollPhysics(),
           slivers: <Widget>[
             const SliverToBoxAdapter(child: SizedBox(height: 20)),
             _sliverAPpBSliverAppBar(context, textTheme),
