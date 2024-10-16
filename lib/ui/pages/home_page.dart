@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:help_me_mitra_alpha_ver/blocs/home_blocs/home_bloc.dart';
 import 'package:help_me_mitra_alpha_ver/data/menu_items_data.dart';
+import 'package:help_me_mitra_alpha_ver/ui/pages/home_screen.dart';
 import 'package:help_me_mitra_alpha_ver/ui/pages/order_popup.dart';
 import 'package:help_me_mitra_alpha_ver/ui/pages/selected_popup.dart';
 
@@ -18,12 +19,10 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final appTheme = Theme.of(context);
-    final textTheme = appTheme.textTheme;
     // final colorScheme = appTheme.colorScheme;
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-    String username = 'mitra';
+    String username = 'Mitra';
 
     return Scaffold(
       body: Stack(
@@ -77,9 +76,9 @@ class HomePage extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(height: 40),
+                      const SizedBox(height: 40),
                       Text(
-                        "Abang",
+                        "$username",
                         style: GoogleFonts.poppins(
                           color: Colors.white,
                           fontSize: 22.15,
@@ -177,7 +176,7 @@ class HomePage extends StatelessWidget {
   Container _riwayatContainer(double screenWidth, double screenHeight) {
     return Container(
       margin: const EdgeInsets.only(
-          top: 350, left: 25, right: 25),
+          top: 365, left: 25, right: 25),
       child: Column(
         children: [
           Container(
@@ -203,9 +202,9 @@ class HomePage extends StatelessWidget {
   Container _riwayatTextHeader(double screenHeight) {
     return Container(
         margin: EdgeInsets.only(top: screenHeight / 1.41, left: 25),
-        child: const Text(
+        child: Text(
           "Riwayat",
-          style: TextStyle(
+          style: GoogleFonts.poppins(
             fontSize: 22.15,
             fontWeight: FontWeight.bold,
             color: Colors.black,
@@ -217,7 +216,7 @@ class HomePage extends StatelessWidget {
   Container _orderanContainer(double screenWidth, double screenHeight, context) {
     return Container(
       margin: const EdgeInsets.only(
-          top: 125, left: 25, right: 25),
+          top: 130, left: 25, right: 25),
       child: Column(
         children: [
           Container(
@@ -231,9 +230,9 @@ class HomePage extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(25),
             ),
-            child: const Center(
+            child: Center(
               child: Text('Tunggu orderan ya!',
-              style: TextStyle(
+              style: GoogleFonts.poppins(
                 fontSize: 15
               ),),
             ),
@@ -247,7 +246,7 @@ class HomePage extends StatelessWidget {
                 iconSize: 30,
                 color: const Color.fromARGB(255, 200, 119, 53),
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => OrderPop()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen()));
                 },
               ),
               IconButton(
@@ -268,9 +267,9 @@ class HomePage extends StatelessWidget {
   Container _orderanTextHeader(double screenHeight) {
     return Container(
         margin: EdgeInsets.only(top: screenHeight / 2.23, left: 25),
-        child: const Text(
+        child: Text(
           "Orderan",
-          style: TextStyle(
+          style: GoogleFonts.poppins(
             fontSize: 22.15,
             fontWeight: FontWeight.bold,
             color: Colors.black,
@@ -353,7 +352,7 @@ class HomePage extends StatelessWidget {
         children: [
           RichText(
             text: TextSpan(
-              text: "Hi, \n",
+              text: "Hi,\n",
               style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontSize: 22.15,

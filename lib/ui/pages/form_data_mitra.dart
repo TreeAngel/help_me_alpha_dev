@@ -1,7 +1,7 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../services/api/api_exception.dart';
 import '../../configs/app_colors.dart';
@@ -94,6 +94,14 @@ class FormDataMitraPage extends StatelessWidget {
                                 'Masukkan nama usaha',
                                 TextInputEvent.fullname),
                             const SizedBox(height: 10),
+                            Text(
+                              'Nama Usaha',
+                              style: textTheme.titleMedium?.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
                             _textInputField(context, textTheme,
                                 'Masukan username', TextInputEvent.username),
                             const SizedBox(height: 10),
@@ -103,6 +111,9 @@ class FormDataMitraPage extends StatelessWidget {
                             DropdownButtonFormField(
                               decoration: InputDecoration(
                                 labelText: 'Pilih Kategori Bantuan yang akan dikerjakan',
+                                labelStyle: GoogleFonts.poppins(
+                                  color: Colors.white,
+                                ),
                                 border: OutlineInputBorder()
                               ),
                               value: _selectedMitraType,

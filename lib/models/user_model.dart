@@ -17,7 +17,6 @@ class UserModel {
   final String? username;
   final String? role;
   final int? isActive;
-  final String? email;
   final String? emailVerifiedAt;
   final String? imageProfile;
 
@@ -28,7 +27,6 @@ class UserModel {
     this.username,
     this.role,
     this.isActive,
-    this.email,
     this.emailVerifiedAt,
     this.imageProfile,
   });
@@ -40,7 +38,6 @@ class UserModel {
         username: json['username'],
         role: json['role'],
         isActive: json['is_active'],
-        email: json['email'],
         emailVerifiedAt: json['email_verified_at'],
         imageProfile: json['image_profile'],
       );

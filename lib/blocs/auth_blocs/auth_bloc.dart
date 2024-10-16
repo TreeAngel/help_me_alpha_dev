@@ -17,6 +17,7 @@ part 'auth_event.dart';
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final ApiController apiController;
 
+  var fcmToken = '';
   var fullName = '';
   var username = '';
   var password = '';
@@ -32,6 +33,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   var mitraType = '';
 
   AuthBloc({required this.apiController}) : super(const AuthState()) {
+    on<FcmTokenChanged>((event, emit) {
+      fcmToken = event.fcmToken;
+      emit(state.copyWith(fcmToken: event.fcmToken));
+    });
+
     on<FullNameChanged>((event, emit) {
       fullName = event.fullName;
       emit(state.copyWith(fullName: event.fullName));
@@ -104,7 +110,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(AuthLoading());
     final signOutResponse = await ApiHelper.authLogout();
     if (signOutResponse.error != null) {
-      emit(SignOutLoaded(message: signOutResponse.error!.message.toString()));
+      final message =
+          signOutResponse.error?.message ?? signOutResponse.error?.error;
+      emit(SignOutLoaded(
+        message: message.toString(),
+      ));
     } else {
       emit(
         const AuthError(

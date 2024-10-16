@@ -7,6 +7,15 @@ sealed class AuthEvent extends Equatable {
   List<Object> get props => [];
 }
 
+class FcmTokenChanged extends AuthEvent {
+  final String fcmToken;
+
+  const FcmTokenChanged(this.fcmToken);
+
+  @override
+  List<Object> get props => [fcmToken];
+}
+
 class FullNameChanged extends AuthEvent {
   final String fullName;
 

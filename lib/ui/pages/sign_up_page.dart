@@ -11,6 +11,7 @@ import '../../blocs/auth_blocs/auth_state.dart';
 import '../../utils/show_dialog.dart';
 
 enum TextInputEvent {
+  fcmToken,
   fullname,
   username,
 }
@@ -54,6 +55,20 @@ class SignUpPage extends StatelessWidget {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            Text(
+                              'FCM Token',
+                              style: textTheme.titleMedium?.copyWith(
+                                color: AppColors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            _textInputField(
+                                context,
+                                textTheme,
+                                'Masukkan fcm token',
+                                TextInputEvent.fcmToken),
+                            const SizedBox(height: 10),
                             Text(
                               'Nama lengkap',
                               style: textTheme.titleMedium?.copyWith(
@@ -303,8 +318,10 @@ class SignUpPage extends StatelessWidget {
     return TextFormField(
       cursorColor: Colors.black,
       onChanged: (textInput) => context.read<AuthBloc>().add(switch (event) {
+            TextInputEvent.fcmToken => FcmTokenChanged(textInput),
             TextInputEvent.fullname => FullNameChanged(textInput),
             TextInputEvent.username => UsernameChanged(textInput),
+            
           }),
       decoration: InputDecoration(
         filled: true,

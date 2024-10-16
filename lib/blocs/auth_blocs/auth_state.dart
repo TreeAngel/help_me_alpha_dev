@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 import '../../models/api_error_response/message_error_model.dart';
 
 class AuthState extends Equatable {
+  final String? fcmToken;
   final String? fullName;
   final String username;
   final String? phoneNumber;
@@ -16,6 +17,7 @@ class AuthState extends Equatable {
   final String mitraType;
 
   const AuthState({
+    this.fcmToken = '',
     this.fullName = '',
     this.username = '',
     this.phoneNumber = '',
@@ -29,6 +31,7 @@ class AuthState extends Equatable {
   });
 
   AuthState copyWith({
+    String? fcmToken,
     String? fullName,
     String? username,
     String? password,
@@ -41,6 +44,7 @@ class AuthState extends Equatable {
 
   }) {
     return AuthState(
+      fcmToken: fcmToken ?? this.fcmToken,
       fullName: fullName ?? this.fullName,
       username: username ?? this.username,
       password: password ?? this.password,
@@ -55,6 +59,7 @@ class AuthState extends Equatable {
 
   @override
   List<Object?> get props => [
+        fcmToken,
         fullName,
         username,
         password,

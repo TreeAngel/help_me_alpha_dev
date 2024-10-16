@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "404544287268",
+    "project_id": "helpme-3dc64",
+    "storage_bucket": "helpme-3dc64.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:404544287268:android:033a69cce36b1bb96f5eb1",
+        "android_client_info": {
+          "package_name": "com.example.app.cobain"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCK_bBDgHsBWc7_I3qqsOYkdpb7Hg7GPjY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:404544287268:android:ec0b2ccf4d32345b6f5eb1",
+        "android_client_info": {
+          "package_name": "com.example.helpme.mitra"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCK_bBDgHsBWc7_I3qqsOYkdpb7Hg7GPjY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
