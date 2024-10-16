@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:midtrans_snap/midtrans_snap.dart';
@@ -16,10 +15,12 @@ class SnapMidtrans extends StatelessWidget {
       canPop: false,
       child: SafeArea(
         child: MidtransSnap(
-          mode: kReleaseMode
-              ? MidtransEnvironment.production
-              : MidtransEnvironment.sandbox,
+          mode: MidtransEnvironment.sandbox,
+          // kReleaseMode
+          //     ? MidtransEnvironment.production
+          //     : MidtransEnvironment.sandbox,
           token: token,
+          // TODO: Move the client key to safe place somewhere before production
           midtransClientKey: 'SB-Mid-client-Dq1J9Sr45BhVF9WQ',
           onResponse: (result) {
             pageResponse = result;

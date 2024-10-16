@@ -9,8 +9,8 @@ class GradientCard extends StatelessWidget {
     required this.child,
   });
 
-  final double? width;
-  final double? height;
+  final double width;
+  final double height;
   final Color cardColor;
   final Widget child;
 

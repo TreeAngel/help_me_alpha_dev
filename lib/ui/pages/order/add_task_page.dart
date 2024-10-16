@@ -5,7 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:help_me_client_alpha_ver/blocs/manage_order/manage_order_bloc.dart';
-import 'package:help_me_client_alpha_ver/cubits/home_cubit/home_cubit.dart';
+import 'package:help_me_client_alpha_ver/cubits/home/home_cubit.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../blocs/send_order/send_order_bloc.dart';
@@ -306,15 +306,22 @@ class _AddTaskPageState extends State<AddTaskPage> {
       BlocBuilder<SendOrderBloc, SendOrderState>(
         builder: (context, state) {
           if (state is ImagePicked) {
+            List<String> imagePaths = [];
+            List<String> imageNames = [];
             state.pickedImage != null && problemPictures.length < 2
                 ? problemPictures.add(state.pickedImage)
                 : null;
             showedPicture.clear();
             for (var i = 0; i < problemPictures.length; i++) {
-              XFile? picture = problemPictures[i];
+              final data = problemPictures[i];
+              imagePaths.add(data!.path);
+              imageNames.add(data.name);
+              XFile? picture = data;
               showedPicture.add(
                 _previewImage(
-                  picture!.path,
+                  imagePaths,
+                  imageNames,
+                  picture.path,
                   picture.name,
                   i,
                 ),
@@ -323,13 +330,20 @@ class _AddTaskPageState extends State<AddTaskPage> {
             context.read<SendOrderBloc>().add(OrderIsIdle());
           }
           if (state is ImageDeleted) {
+            List<String> imagePaths = [];
+            List<String> imageNames = [];
             problemPictures.removeAt(state.imageIndex);
             showedPicture.clear();
             for (var i = 0; i < problemPictures.length; i++) {
-              XFile? picture = problemPictures[i];
+              final data = problemPictures[i];
+              imagePaths.add(data!.path);
+              imageNames.add(data.name);
+              XFile? picture = data;
               showedPicture.add(
                 _previewImage(
-                  picture!.path,
+                  imagePaths,
+                  imageNames,
+                  picture.path,
                   picture.name,
                   i,
                 ),
@@ -350,13 +364,13 @@ class _AddTaskPageState extends State<AddTaskPage> {
     ];
   }
 
-  Widget _previewImage(String imagePath, String imageName, int imageIndex) {
+  Widget _previewImage(List<String?> imagePaths, List<String?> imageNames, String imagePath, String imageName, int imageIndex,) {
     return GestureDetector(
       onTap: () => context.pushNamed(
         'imageZoomPage',
         queryParameters: {
-          'imagePath': imagePath,
-          'imageName': imageName,
+          'imagePaths': imagePaths.join(','),
+          'imageNames': imageNames.join(','),
         },
       ),
       onLongPress: () => context

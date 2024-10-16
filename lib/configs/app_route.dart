@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../blocs/manage_order/manage_order_bloc.dart';
-import '../cubits/home_cubit/home_cubit.dart';
+import '../cubits/home/home_cubit.dart';
 import '../services/api/api_controller.dart';
 import '../ui/pages/auth/change_password_page.dart';
 import '../ui/pages/auth/forget_password_page.dart';
@@ -16,6 +16,7 @@ import '../ui/pages/home/home_page.dart';
 import '../ui/pages/home/profile_page.dart';
 import '../ui/pages/auth/sign_in_page.dart';
 import '../ui/pages/auth/sign_up_page.dart';
+import '../ui/pages/order/detail_order_page.dart';
 import '../ui/pages/order/select_mitra_page.dart';
 import '../ui/pages/order/select_probelm_page.dart';
 import '../ui/pages/auth/verify_phone_number_page.dart';
@@ -121,7 +122,7 @@ class AppRoute {
           final id = state.uri.queryParameters['categoryId'].toString();
           final category = state.uri.queryParameters['category'];
           return SelectProblemPage(
-            categoryId: int.parse(id),
+            categoryId: !id.contains('null') ? int.parse(id) : null,
             category: category.toString(),
           );
         },
@@ -133,7 +134,7 @@ class AppRoute {
           String id = state.uri.queryParameters['problemId'].toString();
           final problem = state.uri.queryParameters['problem'];
           return AddTaskPage(
-            problemId: id.isNotEmpty ? int.parse(id) : null,
+            problemId: !id.contains('null') ? int.parse(id) : null,
             problem: problem.toString(),
           );
         },
@@ -143,18 +144,19 @@ class AppRoute {
         name: 'selectMitraPage',
         builder: (context, state) {
           String id = state.uri.queryParameters['orderId'].toString();
-          return SelectMitraPage(orderId: id.isNotEmpty ? int.parse(id) : null);
+          return SelectMitraPage(
+              orderId: !id.contains('null') ? int.parse(id) : null);
         },
       ),
       GoRoute(
         path: '/imageZoom',
         name: 'imageZoomPage',
         builder: (context, state) {
-          final path = state.uri.queryParameters['imagePath'].toString();
-          final name = state.uri.queryParameters['imageName'].toString();
+          final path = state.uri.queryParameters['imagePaths']?.split(',') ?? [];
+          final name = state.uri.queryParameters['imageNames']?.split(',') ?? [];
           return ImageZoomPage(
-            imagePath: path,
-            imageName: name,
+            imagePaths: path,
+            imageNames: name,
           );
         },
       ),
@@ -164,6 +166,19 @@ class AppRoute {
         builder: (context, state) {
           final token = state.uri.queryParameters['token'].toString();
           return SnapMidtrans(token: token);
+        },
+      ),
+      GoRoute(
+        path: '/detailOrder',
+        name: 'detailOrderPage',
+        builder: (context, state) {
+          final orderId = state.uri.queryParameters['orderId'].toString();
+          final distance = state.uri.queryParameters['distance'].toString();
+          return DetailOrderPage(
+            orderId: !orderId.contains('null') ? int.parse(orderId) : null,
+            distanceInKm:
+                !distance.contains('null') ? double.parse(distance) : null,
+          );
         },
       ),
     ];

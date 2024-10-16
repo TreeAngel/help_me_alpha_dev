@@ -6,9 +6,7 @@ class MenuItems {
     itemProfile,
   ];
 
-  static List<MenuItemModel> secondItems = [
-    itemSignOut
-  ];
+  static List<MenuItemModel> secondItems = [itemSignOut];
 
   static List<MenuItemModel> pickImageItems = [
     itemFromCamera,

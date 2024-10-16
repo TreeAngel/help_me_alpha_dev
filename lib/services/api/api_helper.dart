@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import '../../models/offer/offer_model.dart';
 import '../../models/offer/offer_response_model.dart';
 import '../../models/offer/select_mitra_response_model/select_mitra_response_model.dart';
+import '../../models/order/detail_order_model.dart';
 import '../../models/order/history/order_history_model.dart';
 import '../../models/order/order_response_model/order_response_model.dart';
 import '../../models/category_problem/problem_model.dart';
@@ -227,6 +228,15 @@ class ApiHelper {
       return response;
     } else {
       return response;
+    }
+  }
+
+  static Future getDetailOrder(int orderId) async {
+    final response = await ApiController.getData('users/orders/$orderId');
+    if (response is ApiErrorResponseModel) {
+      return response;
+    } else {
+      return DetailOrderModel.fromMap(response);
     }
   }
 }

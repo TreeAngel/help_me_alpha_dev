@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -378,12 +376,12 @@ class _SelectMitraPageState extends State<SelectMitraPage>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _orderCardHistoryInfoSection(
+                  _offerCardInfoSection(
                     data,
                     distance,
                     textTheme,
                   ),
-                  _orderCardHistoryImageSection(data),
+                  _offerCardImageSection(data),
                 ],
               ),
             ),
@@ -393,7 +391,7 @@ class _SelectMitraPageState extends State<SelectMitraPage>
     );
   }
 
-  Container _orderCardHistoryImageSection(OfferModel? offer) {
+  Container _offerCardImageSection(OfferModel? offer) {
     return Container(
       alignment: Alignment.topCenter,
       padding: const EdgeInsets.only(top: 40),
@@ -412,7 +410,7 @@ class _SelectMitraPageState extends State<SelectMitraPage>
     );
   }
 
-  Column _orderCardHistoryInfoSection(
+  Column _offerCardInfoSection(
     OfferModel? offer,
     double distance,
     TextTheme textTheme,

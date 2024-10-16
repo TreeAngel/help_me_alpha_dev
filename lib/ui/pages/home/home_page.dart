@@ -9,7 +9,7 @@ import '../../../services/api/api_controller.dart';
 import '../../../data/cards_color.dart';
 import '../../../models/order/history/order_history_model.dart';
 import '../../../utils/manage_token.dart';
-import '../../../cubits/home_cubit/home_cubit.dart';
+import '../../../cubits/home/home_cubit.dart';
 import '../../../configs/app_colors.dart';
 import '../../../data/menu_items_data.dart';
 import '../../../models/category_problem/category_model.dart';
@@ -594,7 +594,10 @@ class _HomePageState extends State<HomePage> {
           children: [
             ElevatedButton.icon(
               onPressed: () {
-                printInfo('You tap on detail order');
+                context.pushNamed(
+                  'detailOrderPage',
+                  queryParameters: {'orderId': history?.orderId.toString()},
+                );
               },
               style: ButtonStyle(
                 backgroundColor: const WidgetStatePropertyAll(
@@ -613,8 +616,7 @@ class _HomePageState extends State<HomePage> {
                 size: 20,
               ),
               iconAlignment: IconAlignment.end,
-              label:
-                  const Text('Lihat Riwayat'), // TODO: Implement detail order
+              label: const Text('Lihat Detail'),
             ),
             const SizedBox(width: 10),
             Icon(

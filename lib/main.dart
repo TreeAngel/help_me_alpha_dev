@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'blocs/fetch_offer/fetch_offer_bloc.dart';
 import 'blocs/manage_order/manage_order_bloc.dart';
-import 'cubits/home_cubit/home_cubit.dart';
+import 'cubits/home/home_cubit.dart';
 import 'blocs/auth/auth_bloc.dart';
 import 'blocs/send_order/send_order_bloc.dart';
 import 'blocs/profile/profile_bloc.dart';
