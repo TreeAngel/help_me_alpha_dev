@@ -11,7 +11,6 @@ class MessageErrorModel {
   final List<String>? phoneNumber;
   final List<String>? password;
   final List<String>? role;
-  final List<String>? email;
 
   const MessageErrorModel({
     this.error,
@@ -21,12 +20,11 @@ class MessageErrorModel {
     this.phoneNumber,
     this.password,
     this.role,
-    this.email,
   });
 
   @override
   String toString() {
-    return 'Error(error: $error, message: $message, fullname: $fullname, username: $username, phoneNumber: $phoneNumber, password: $password, role: $role, email: $email)';
+    return 'Error(error: $error, message: $message, fullname: $fullname, username: $username, phoneNumber: $phoneNumber, password: $password, role: $role';
   }
 
   factory MessageErrorModel.fromMap(Map<String, dynamic> data) =>
@@ -38,7 +36,6 @@ class MessageErrorModel {
         phoneNumber: data['phone_number'] as List<String>?,
         password: data['password'] as List<String>?,
         role: data['role'] as List<String>?,
-        email: data['email'] as List<String>?,
       );
 
   Map<String, dynamic> toMap() => {
@@ -49,7 +46,6 @@ class MessageErrorModel {
         'phone_number': phoneNumber,
         'password': password,
         'role': role,
-        'email': email,
       };
 
   /// `dart:convert`
@@ -72,7 +68,6 @@ class MessageErrorModel {
     List<String>? phoneNumber,
     List<String>? password,
     List<String>? role,
-    List<String>? email,
   }) {
     return MessageErrorModel(
       error: error ?? this.error,
@@ -82,7 +77,6 @@ class MessageErrorModel {
       phoneNumber: phoneNumber ?? this.phoneNumber,
       password: password ?? this.password,
       role: role ?? this.role,
-      email: email ?? this.email,
     );
   }
 }

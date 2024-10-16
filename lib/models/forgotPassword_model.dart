@@ -1,13 +1,13 @@
 class ForgotPasswordModel {
-  final String email;
+  final String phoneNumber;
 
   ForgotPasswordModel({
-    required this.email,
+    required this.phoneNumber,
   });
 
   Map<String, dynamic> toJson() {
     return {
-      'email': email,
+      'phone_number': phoneNumber,
     };
   }
 }

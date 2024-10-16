@@ -68,13 +68,6 @@ class ForgotPasswordPage extends StatelessWidget {
                       fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
-                  // TextField(
-                  //   controller: _phoneController,
-                  //   decoration: const InputDecoration(
-                  //     labelText: 'Nomor Telepon',
-                  //     border: OutlineInputBorder(),
-                  //   ),
-                  // ),
                   TextFormField(
                     controller: _phoneController,
                     cursorColor: Colors.black,
@@ -87,7 +80,7 @@ class ForgotPasswordPage extends StatelessWidget {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      contentPadding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 12.0),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 12.0),
                     ),
                     style: textTheme.bodyLarge?.copyWith(
                       color: AppColors.lightTextColor,

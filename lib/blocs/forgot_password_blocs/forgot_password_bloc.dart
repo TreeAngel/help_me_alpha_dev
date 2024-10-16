@@ -20,30 +20,37 @@ class ForgotPasswordBloc extends Bloc<ForgotPasswordEvent, ForgotPasswordState> 
         'auth/forgot-password',
         data: {'phone_number': event.phoneNumber},
       );
-      print(response); // Log response to check what's coming back
+      print(response);
 
 
       if (response is! ApiErrorResponseModel) {
         emit(ForgotPasswordSuccess());
-      } else if (response is ApiErrorResponseModel) {
-        final errorMessage = response.error?.message ?? 'API error occurred, please try again';
-        // print('Error message from API: $errorMessage'); // Log the error message
-        emit(ForgotPasswordError(errorMessage));
       } else {
-        emit(ForgotPasswordError('Unknown error occurred'));
+        final errorMessage = response.error?.message ?? 'API error occurred, please try again';
+        emit(ForgotPasswordError(errorMessage, ForgotPasswordErrorType.unknown));
       }
     } catch (e) {
-  // Print detailed exception information
-      // print('DioException: $e');
       if (e is DioException && e.response != null) {
+        final statusCode = e.response?.statusCode;
         final errorData = e.response?.data;
-        // print('Error Data: $errorData'); // Log detailed error data from Dio response
-        final errorMessage = errorData is Map<String, dynamic> && errorData['message'] != null
-          ? errorData['message']
-          : 'An unknown error occurred';
-        emit(ForgotPasswordError(errorMessage));
-      } else {
-        emit(ForgotPasswordError(e.toString()));
+
+        if (errorData is Map<String, dynamic> && errorData.containsKey('message')) {
+          final errorMessage = errorData['message'];
+
+          // Pengecekan berdasarkan status code
+          if (statusCode == 422) {
+            if (errorMessage == 'Nomor telepon belum diverifikasi') {
+              emit(ForgotPasswordPhoneNotVerified());
+            } else {
+              emit(ForgotPasswordError(errorMessage, ForgotPasswordErrorType.phoneNotVerified));
+            }
+          } else if (statusCode == 500) {
+            emit(ForgotPasswordError('Server error, please try again later', ForgotPasswordErrorType.unknown));
+          } else {
+            // Default error handling
+            emit(ForgotPasswordError(errorMessage, ForgotPasswordErrorType.unknown));
+          }
+        }
       }
     }
   }

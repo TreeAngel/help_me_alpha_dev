@@ -1,7 +1,7 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../services/api/api_exception.dart';
 import '../../configs/app_colors.dart';
@@ -94,29 +94,72 @@ class FormDataMitraPage extends StatelessWidget {
                                 'Masukkan nama usaha',
                                 TextInputEvent.fullname),
                             const SizedBox(height: 10),
+                            Text(
+                              'Nama Usaha',
+                              style: textTheme.titleMedium?.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
                             _textInputField(context, textTheme,
                                 'Masukan username', TextInputEvent.username),
                             const SizedBox(height: 10),
                             
 
                             //TODO MITRA TYPE
-                            DropdownButtonFormField(
+                            // DropdownButtonFormField(
+                            //   decoration: InputDecoration(
+                            //     labelText: 'Pilih Kategori Bantuan yang akan dikerjakan',
+                            //     labelStyle: GoogleFonts.poppins(
+                            //       color: Colors.white,
+                            //     ),
+                            //     border: OutlineInputBorder()
+                            //   ),
+                            //   value: _selectedMitraType,
+                            //   hint: Text('Pilih Kategori'),
+                            //   items: _items,
+                            //   onChanged: (value){
+                            //     if (value != null) {
+                            //       print("Mitra Type terpilih: $value");
+                            //       BlocProvider.of<AuthBloc>(context).add(
+                            //         MitraTypeChanged(mitraType: value),
+                            //       );
+                            //     }
+                            //   }
+                            // ),
+                            DropdownButtonFormField<String>(
                               decoration: InputDecoration(
-                                labelText: 'Pilih Kategori Bantuan yang akan dikerjakan',
-                                border: OutlineInputBorder()
+                                labelText: 'Select User', // Ubah label sesuai keinginan
+                                labelStyle: GoogleFonts.poppins(
+                                  fontSize: 16, // Sesuaikan ukuran font
+                                  color: Colors.black, // Warna hitam sesuai desain
+                                ),
+                                prefixIcon: Icon(Icons.person), // Ikon pengguna di sebelah kiri
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10), // Membuat sudut border rounded
+                                  borderSide: BorderSide(color: Colors.black, width: 1), // Border hitam
+                                ),
                               ),
+                              dropdownColor: Colors.white, // Warna dropdown
                               value: _selectedMitraType,
-                              hint: Text('Pilih Kategori'),
-                              items: _items,
-                              onChanged: (value){
+                              hint: Text(
+                                'Select User', // Ubah hint sesuai keinginan
+                                style: GoogleFonts.poppins(color: Colors.black),
+                              ),
+                              icon: Icon(Icons.arrow_drop_down, color: Colors.black), // Ikon dropdown hitam
+                              items: _items, // Item dropdown yang sudah Anda buat
+                              onChanged: (value) {
                                 if (value != null) {
+                                  _selectedMitraType = value; // Menyimpan nilai terpilih
                                   print("Mitra Type terpilih: $value");
                                   BlocProvider.of<AuthBloc>(context).add(
                                     MitraTypeChanged(mitraType: value),
                                   );
                                 }
-                              }
+                              },
                             ),
+
                             //TODO PICK LOCATION
 
                             const SizedBox(height: 40),

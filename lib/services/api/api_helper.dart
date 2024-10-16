@@ -37,14 +37,20 @@ class ApiHelper {
     }
   }
 
-  // static Future authForgotPassword(String email) async {
-  //   final response = await ApiController.postData('auth/forgot-password', {'email': email});
-  //   if (response is ApiErrorResponseModel) {
-  //     return response;
-  //   } else {
-  //     return AuthResponseModel.fromMap(response);
-  //   }
-  // }
+  static Future authForgotPassword(String phoneNumber) async {
+    print('Sending forgot password request for phone number: $phoneNumber');
+    final response = await ApiController.postData(
+      'auth/forgot-password',
+      data: {'phone_number': phoneNumber},
+    );
+    print('Response received: $response');
+    if (response is ApiErrorResponseModel) {
+      return response;
+    } else {
+      return AuthResponseModel.fromMap(response);
+    }
+  }
+
 
   static Future<ApiErrorResponseModel> authLogout() async {
     final response = await ApiController.postData('auth/logout');

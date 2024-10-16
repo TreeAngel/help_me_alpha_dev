@@ -1,3 +1,5 @@
+// import 'package:firebase_core/firebase_core.dart';
+// import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -7,10 +9,19 @@ import 'configs/app_theme.dart';
 import 'services/api/api_controller.dart';
 import 'utils/manage_auth_token.dart';
 import 'configs/app_route.dart';
+// import 'firebase_options.dart';
 
-void main() {
-  WidgetsFlutterBinding.ensureInitialized();
+void main() async{
+  // WidgetsFlutterBinding.ensureInitialized();
+  // await Firebase.initializeApp(            // Inisialisasi Firebase
+  //   options: DefaultFirebaseOptions.currentPlatform, // Menggunakan opsi Firebase sesuai platform
+  // );
+  // FirebaseMessaging messaging = FirebaseMessaging.instance;
+  // WidgetsFlutterBinding.ensureInitialized();
+  // await Firebase.initializeApp();
+
   runApp(const MainApp());
+
 }
 
 class MainApp extends StatelessWidget {
