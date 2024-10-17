@@ -323,8 +323,7 @@ class SignUpPage extends StatelessWidget {
     );
   }
 
-  SliverAppBar _sliverAPpBSliverAppBar(
-      BuildContext context, TextTheme textTheme) {
+  SliverAppBar _sliverAPpBSliverAppBar(BuildContext context, TextTheme textTheme) {
     return SliverAppBar(
       centerTitle: true,
       backgroundColor: Colors.black,

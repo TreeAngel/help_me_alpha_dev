@@ -23,18 +23,15 @@ class ApiException {
         };
       case DioExceptionType.badResponse:
         if (dioException.response?.statusCode == 400) {
-          return {
-            'error': 'Bad Request',
-          };
+          final message = dioException.response?.data as Map<String, dynamic>;
+          return message;
         } else if (dioException.response?.statusCode == 401) {
           return {
             'error': 'Unauthorized',
           };
-          // } else if (dioException.response?.statusCode == 403) {
-          //   return {
-          //     'error': 'Acount is inactive'
-          //   };
-          // }
+        } else if (dioException.response?.statusCode == 422) {
+          final message = dioException.response?.data as Map<String, dynamic>;
+          return message;
         } else {
           return {
             'error': 'Failed to process data, try again after a few seconds',
@@ -59,31 +56,31 @@ class ApiException {
   static String errorMessageBuilder(MessageErrorModel errorModel) {
     String errorMessage = '';
     if (errorModel.error != null) {
-      errorMessage += '${errorModel.error}, ';
+      errorMessage += '${errorModel.error}\n';
     }
     if (errorModel.message != null) {
-      errorMessage += '${errorModel.message}, ';
+      errorMessage += '${errorModel.message}\n';
     }
     if (errorModel.fullname != null) {
-      errorMessage += '${errorModel.fullname}, ';
+      errorMessage += '${errorModel.fullname}\n';
     }
     if (errorModel.username != null) {
-      errorMessage += '${errorModel.username}, ';
+      errorMessage += '${errorModel.username}\n';
     }
     if (errorModel.phoneNumber != null) {
-      errorMessage += '${errorModel.phoneNumber}, ';
+      errorMessage += '${errorModel.phoneNumber}\n';
     }
     if (errorModel.password != null) {
-      errorMessage += '${errorModel.password}, ';
+      errorMessage += '${errorModel.password}\n';
     }
     if (errorModel.role != null) {
-      errorMessage += '${errorModel.role}, ';
+      errorMessage += '${errorModel.role}\n';
     }
     errorMessage = errorMessage.trim();
-    errorMessage = errorMessage.endsWith(',')
-        ? errorMessage.substring(
-            errorMessage.length - errorMessage.length, errorMessage.length)
-        : errorMessage;
+    // errorMessage = errorMessage.endsWith(',')
+    //     ? errorMessage.substring(
+    //         errorMessage.length - errorMessage.length, errorMessage.length)
+    //     : errorMessage;
     return errorMessage;
   }
 }

@@ -376,7 +376,7 @@ class HomePage extends StatelessWidget {
             ),
             tooltip: 'Menu',
             position: PopupMenuPosition.under,
-            onSelected: (item) => _menuFunction(context, item),
+            onSelected: (item) => _appBarMenuFunction(context, item),
             itemBuilder: (context) => [
               ...MenuItems.firstItems.map(_buildItem),
               const PopupMenuDivider(),
@@ -400,27 +400,22 @@ class HomePage extends StatelessWidget {
         ),
       );
 
-  void _menuFunction(BuildContext context, MenuItemModel item) {
+    void _appBarMenuFunction(BuildContext context, MenuItemModel item) {
     switch (item) {
       case MenuItems.itemProfile:
-        printInfo('You tap on profile');
-        break;  
-      // case MenuItems.itemOrderHistory:
-      //   printInfo('You tap on order history');
-      //   break;
-      case MenuItems.itemSignIn:
-        context.goNamed('signInPage');
+        context.pushNamed('profilePage');
         break;
       case MenuItems.itemSignOut:
         ShowDialog.showAlertDialog(
           context,
-          'Yakin',
-          'mau keluar? :(',
-          TextButton(
+          'Sign Out',
+          'Are you sure want to sign out?',
+          OutlinedButton(
             onPressed: () {
+              context.pop();
               context.read<AuthBloc>().add(SignOutSubmitted());
             },
-            child: const Text('Keluar'),
+            child: const Text('Sign out'),
           ),
         );
         break;

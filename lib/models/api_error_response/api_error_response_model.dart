@@ -7,22 +7,25 @@ import 'message_error_model.dart';
 @immutable
 class ApiErrorResponseModel {
   final MessageErrorModel? error;
+  final String? message;
 
-  const ApiErrorResponseModel({this.error});
+  const ApiErrorResponseModel({this.error, this.message});
 
   @override
-  String toString() => 'AuthErrorResponse(error: $error)';
+  String toString() => 'AuthErrorResponse(error: $error, message: $message)';
 
   factory ApiErrorResponseModel.fromMap(Map<String, dynamic> data) {
     return ApiErrorResponseModel(
       error: data['error'] == null
           ? null
           : MessageErrorModel.fromMap(data['error'] as Map<String, dynamic>),
+        message: data['message'] as String?,
     );
   }
 
   Map<String, dynamic> toMap() => {
         'error': error?.toMap(),
+        'message': message,
       };
 
   /// `dart:convert`
@@ -40,9 +43,11 @@ class ApiErrorResponseModel {
 
   ApiErrorResponseModel copyWith({
     MessageErrorModel? error,
+    String? message,
   }) {
     return ApiErrorResponseModel(
       error: error ?? this.error,
+      message: message ?? this.message,
     );
   }
 }

@@ -18,40 +18,40 @@ class ForgotPasswordBloc extends Bloc<ForgotPasswordEvent, ForgotPasswordState> 
     try {
       final response = await ApiController.postData(
         'auth/forgot-password',
-        data: {'phone_number': event.phoneNumber},
+        {'phone_number': event.phoneNumber},
       );
       print(response);
 
 
-      if (response is! ApiErrorResponseModel) {
-        emit(ForgotPasswordSuccess());
-      } else {
-        final errorMessage = response.error?.message ?? 'API error occurred, please try again';
-        emit(ForgotPasswordError(errorMessage, ForgotPasswordErrorType.unknown));
-      }
+    if (response is! ApiErrorResponseModel) {
+      emit(ForgotPasswordSuccess());
+    } else {
+      // Periksa apakah error message null atau tidak
+      final errorMessage = response.error?.message ?? response.message ?? 'API error occurred, please try again';
+      emit(ForgotPasswordError(errorMessage, ForgotPasswordErrorType.unknown));
+    }
+
     } catch (e) {
       if (e is DioException && e.response != null) {
         final statusCode = e.response?.statusCode;
         final errorData = e.response?.data;
 
-        if (errorData is Map<String, dynamic> && errorData.containsKey('message')) {
-          final errorMessage = errorData['message'];
+        if (statusCode == 422) {
+          final errorMessage = errorData['message'] ?? 'Nomor telepon belum diverifikasi';
 
-          // Pengecekan berdasarkan status code
-          if (statusCode == 422) {
-            if (errorMessage == 'Nomor telepon belum diverifikasi') {
-              emit(ForgotPasswordPhoneNotVerified());
-            } else {
-              emit(ForgotPasswordError(errorMessage, ForgotPasswordErrorType.phoneNotVerified));
-            }
-          } else if (statusCode == 500) {
-            emit(ForgotPasswordError('Server error, please try again later', ForgotPasswordErrorType.unknown));
+          if (errorMessage == 'Nomor telepon belum diverifikasi') {
+            emit(ForgotPasswordPhoneNotVerified());
           } else {
-            // Default error handling
-            emit(ForgotPasswordError(errorMessage, ForgotPasswordErrorType.unknown));
+            emit(ForgotPasswordError(errorMessage, ForgotPasswordErrorType.phoneNotVerified));
           }
+        } else if (statusCode == 500) {
+          emit(ForgotPasswordError('Server error, please try again later', ForgotPasswordErrorType.unknown));
+        } else {
+          final errorMessage = errorData['message'] ?? 'API error occurred, please try again';
+          emit(ForgotPasswordError(errorMessage, ForgotPasswordErrorType.unknown));
         }
       }
+
     }
   }
 }

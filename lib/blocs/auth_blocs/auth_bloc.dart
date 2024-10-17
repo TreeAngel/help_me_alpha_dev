@@ -112,7 +112,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } else {
       emit(
         const AuthError(
-          errorMessage: MessageErrorModel(message: 'Unknown error occured'),
+          errorMessage: MessageErrorModel(
+            message: 'Unknown error occured',
+          ),
         ),
       );
     }

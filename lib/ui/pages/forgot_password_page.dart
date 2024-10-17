@@ -19,37 +19,47 @@ class ForgotPasswordPage extends StatelessWidget {
       child: Scaffold(
         backgroundColor: Colors.black,
         appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        leading: IconButton(
-          icon: Icon(Icons.keyboard_backspace, color: Colors.white), // Ikon close (X)
-          onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const SignInPage()));
-          },
-        ),
-        title: const Text(
-          'HelpMe!',
-          style: TextStyle(
-            fontSize: 24,
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          leading: IconButton(
+            padding: const EdgeInsets.only(left: 25.0),
+            icon: const Icon(Icons.close, color: Colors.white),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const SignInPage()));
+            },
           ),
+          title: const Text(
+            'HelpMe!',
+            style: TextStyle(
+              fontSize: 24,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          centerTitle: true,
         ),
-        centerTitle: true,
-      ),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: BlocConsumer<ForgotPasswordBloc, ForgotPasswordState>(
             listener: (context, state) {
               if (state is ForgotPasswordSuccess) {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                  content: Text('Reset link sent to your phone!'),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SignInPage()),
+                );
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    duration: Duration(seconds: 5),
+                    content: Text('Tautan untuk reset kata sandi telah dikirim!'),
                 ));
               } else if (state is ForgotPasswordError) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text(state.error),
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    duration: const Duration(seconds: 5),
+                    content: Text(state.error),
                 ));
               }
+              
             },
             builder: (context, state) {
               if (state is ForgotPasswordLoading) {
