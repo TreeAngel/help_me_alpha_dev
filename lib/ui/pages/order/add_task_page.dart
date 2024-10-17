@@ -51,9 +51,9 @@ class _AddTaskPageState extends State<AddTaskPage> {
     getLocation();
   }
 
-  void getLocation() {
+  void getLocation() async {
+    await LocationService.fetchLocation(context);
     setState(() {
-      LocationService.fetchLocation(context);
       lat = LocationService.lat;
       long = LocationService.long;
     });
@@ -144,7 +144,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                         if (questionChoices.isNotEmpty) ...[
                           _drowdownQuesitonChoices(context, textTheme)
                         ],
-                        if (widget.problem!.toLowerCase().contains('serabutan'))
+                        if (widget.problem!.toLowerCase().contains('lainnya'))
                           _serabutanInputField(textTheme),
                         if (!widget.problem!
                             .toLowerCase()
@@ -364,7 +364,13 @@ class _AddTaskPageState extends State<AddTaskPage> {
     ];
   }
 
-  Widget _previewImage(List<String?> imagePaths, List<String?> imageNames, String imagePath, String imageName, int imageIndex,) {
+  Widget _previewImage(
+    List<String?> imagePaths,
+    List<String?> imageNames,
+    String imagePath,
+    String imageName,
+    int imageIndex,
+  ) {
     return GestureDetector(
       onTap: () => context.pushNamed(
         'imageZoomPage',

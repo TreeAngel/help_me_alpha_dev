@@ -198,7 +198,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       final response = await ApiHelper.editProfile(formData);
       if (response is ApiErrorResponseModel) {
         final message = response.error?.message ?? response.error?.error;
-        emit(EditPasswordLoaded(
+        emit(EditProfileError(
           message: message.toString(),
         ));
       } else {

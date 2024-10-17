@@ -129,7 +129,7 @@ List<String?> questionsBuilder(
     return ['Kenapa HP nya?', 'Fotoin HP nya'];
   }
 
-  // Bantuan personal
+  // Serabutan
   if (problemName.toLowerCase().contains('keseleo')) {
     questionChoices.clear;
     questionChoices.addAll(ProblemQuestions.keseleo);
@@ -140,9 +140,7 @@ List<String?> questionsBuilder(
     questionChoices.addAll(ProblemQuestions.genderTerapis);
     return ['Gender terapis'];
   }
-
-  // Serabutan
-  if (problemName.toLowerCase().contains('serabutan')) {
+  if (problemName.toLowerCase().contains('lainnya')) {
     return ['Kasih tau kami apa masalahmu', 'Fotoin masalahnya\n*Opsional'];
   }
 

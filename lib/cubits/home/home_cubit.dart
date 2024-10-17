@@ -46,7 +46,7 @@ class HomeCubit extends Cubit<HomeState> {
     final response = await ApiHelper.getOrderHistory(status ?? '');
     if (response is ApiErrorResponseModel) {
       final message = response.error?.error ?? response.error?.message;
-      if (message.toString().toLowerCase().trim().contains('order not found')) {
+      if (message.toString().toLowerCase().trim().contains('no order found')) {
         emit(const OrderHistoryLoaded(history: <OrderHistoryModel>[]));
       } else {
         emit(OrderHistoryError(errorMessage: message.toString()));

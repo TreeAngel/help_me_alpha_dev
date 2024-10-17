@@ -8,7 +8,7 @@ import '../../utils/logging.dart';
 
 class ApiController {
   // TODO: Add base url untuk akses api saat sudah dihosting
-  static const baseUrl = 'https://a098-2001-448a-3023-3589-dcf7-ba74-99ec-96aa.ngrok-free.app';
+  static const baseUrl = 'https://719377969abad25381bffc18afd37b25.serveo.net';
   static String? token;
 
   static var dio = Dio(

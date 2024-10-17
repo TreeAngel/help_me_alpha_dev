@@ -10,8 +10,11 @@ import '../../../utils/show_dialog.dart';
 // enum ProblemCategory { serabutan, kendaraan, rumah, elektronik }
 
 class SelectProblemPage extends StatefulWidget {
-  const SelectProblemPage(
-      {super.key, required this.categoryId, required this.category});
+  const SelectProblemPage({
+    super.key,
+    required this.categoryId,
+    required this.category,
+  });
 
   final int? categoryId;
   final String? category;
@@ -202,33 +205,10 @@ class _SelectProblemPageState extends State<SelectProblemPage> {
   }
 
   void _onInitProblem(BuildContext contextBuilder, BuildContext context) {
-    if (widget.categoryId != 0 &&
-        widget.category?.toLowerCase() != 'serabutan') {
+    if (widget.categoryId != 0) {
       contextBuilder
           .read<SendOrderBloc>()
           .add(FetchProblems(problemName: widget.category!));
-    } else if (widget.categoryId != 0 &&
-        widget.category?.toLowerCase() == 'serabutan') {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        // ShowDialog.showAlertDialog(
-        //   contextBuilder,
-        //   'Masih dikembangin!',
-        //   'Fitur masih dikembangkan ya ka\n Mohon tunggu',
-        //   ElevatedButton.icon(
-        //     onPressed: () =>
-        //         context.canPop() ? context.pop() : context.goNamed('homePage'),
-        //     icon: const Icon(Icons.arrow_forward_ios),
-        //     label: const Text('Kembali'),
-        //   ),
-        // );
-        context.pushReplacementNamed(
-          'addTaskPage',
-          queryParameters: {
-            'problemId': '',
-            'problem': 'serabutan',
-          },
-        );
-      });
     } else {
       _categoryIdNotFound(contextBuilder);
     }

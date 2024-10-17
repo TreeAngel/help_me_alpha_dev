@@ -10,7 +10,7 @@ import '../ui/pages/auth/forget_password_page.dart';
 import '../ui/pages/home/edit_profile_page.dart';
 import '../ui/pages/misc/image_zoom_page.dart';
 import '../ui/pages/misc/launch_page.dart';
-import '../ui/pages/misc/snap_midtrans.dart';
+import '../ui/pages/misc/snap_midtrans_page.dart';
 import '../ui/pages/order/add_task_page.dart';
 import '../ui/pages/home/home_page.dart';
 import '../ui/pages/home/profile_page.dart';
@@ -28,13 +28,15 @@ class AppRoute {
     redirect: (context, state) {
       final isAuthenticated = ApiController.token != null ? true : false;
       final haveOrder = context.read<ManageOrderBloc>().haveActiveOrder;
-      final activeOrder = haveOrder == true
+      final activeOrder = (haveOrder == true)
           ? context.read<HomeCubit>().orderHistory.firstWhere((history) =>
               history.orderStatus?.trim().toLowerCase() == 'pending' ||
               history.orderStatus?.trim().toLowerCase() == 'paid' ||
               history.orderStatus?.trim().toLowerCase() == 'otw' ||
               history.orderStatus?.trim().toLowerCase() == 'arrived')
           : null;
+      context.read<ManageOrderBloc>().activeOrder = activeOrder;
+
       // TODO: Add other guarded route later
       if (isAuthenticated == false && state.matchedLocation == '/home') {
         return '/signIn';
@@ -61,6 +63,10 @@ class AppRoute {
         return '/selectMitra?orderId=${activeOrder?.orderId}&status=${activeOrder?.orderStatus}';
       } else if (haveOrder == true && state.matchedLocation == '/addTask') {
         return '/selectMitra?orderId=${activeOrder?.orderId}&status=${activeOrder?.orderStatus}';
+      } else if (haveOrder == true &&
+          activeOrder!.orderStatus!.trim().toLowerCase().contains('pending') &&
+          state.uri.query.contains('orderId=${activeOrder.orderId}')) {
+        return '/selectMitra?orderId=${activeOrder.orderId}&status=${activeOrder.orderStatus}';
       } else {
         return null;
       }
@@ -131,7 +137,7 @@ class AppRoute {
         path: '/addTask',
         name: 'addTaskPage',
         builder: (context, state) {
-          String id = state.uri.queryParameters['problemId'].toString();
+          final id = state.uri.queryParameters['problemId'].toString();
           final problem = state.uri.queryParameters['problem'];
           return AddTaskPage(
             problemId: !id.contains('null') ? int.parse(id) : null,
@@ -144,7 +150,7 @@ class AppRoute {
         name: 'selectMitraPage',
         builder: (context, state) {
           String id = state.uri.queryParameters['orderId'].toString();
-          String status = state.uri.queryParameters['statue'].toString();
+          String status = state.uri.queryParameters['status'].toString();
           return SelectMitraPage(
             orderId: !id.contains('null') ? int.parse(id) : null,
             orderStatus: status,
@@ -170,7 +176,7 @@ class AppRoute {
         name: 'payPage',
         builder: (context, state) {
           final token = state.uri.queryParameters['token'].toString();
-          return SnapMidtrans(token: token);
+          return SnapMidtransPage(token: token);
         },
       ),
       GoRoute(

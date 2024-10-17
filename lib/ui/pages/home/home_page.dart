@@ -5,7 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../blocs/manage_order/manage_order_bloc.dart';
-import '../../../services/api/api_controller.dart';
+import '../../../blocs/send_order/send_order_bloc.dart';
 import '../../../data/cards_color.dart';
 import '../../../models/order/history/order_history_model.dart';
 import '../../../services/firebase/firebase_api.dart';
@@ -68,51 +68,77 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         Positioned.fill(
-          child: BlocConsumer<AuthBloc, AuthState>(
+          child: BlocListener<SendOrderBloc, SendOrderState>(
             listener: (context, state) {
-              if (state is AuthError) {
-                _onSignOutError(context, state);
-              }
-              if (state is SignOutLoaded) {
-                ManageAuthToken.deleteToken();
-                context.goNamed('signInPage');
-              }
-            },
-            builder: (context, state) {
-              if (state is AuthLoading) {
-                return const Center(
-                  child: CircularProgressIndicator(),
+              if (state is OrderUploaded) {
+                context.pushNamed(
+                  'selectMitraPage',
+                  queryParameters: {
+                    'orderId':
+                        context.read<ManageOrderBloc>().activeOrder?.orderId,
+                    'status': context
+                        .read<ManageOrderBloc>()
+                        .activeOrder
+                        ?.orderStatus,
+                  },
                 );
               }
-              return RefreshIndicator(
-                triggerMode: RefreshIndicatorTriggerMode.onEdge,
-                onRefresh: () async {
-                  // context.read<HomeCubit>().fetchHome();
-                  context.read<HomeCubit>().fetchProfile();
-                },
-                child: CustomScrollView(
-                  slivers: <Widget>[
-                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                    _appBarBlocConsumer(
-                      context.watch<HomeCubit>().username,
-                      textTheme,
-                      colorScheme,
-                    ),
-                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                    _searchTextField(),
-                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                    _categoryTextHeader(textTheme),
-                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                    _categoryBlocConsumer(textTheme),
-                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                    _orderHistoryTextHeader(textTheme),
-                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                    _lastHistoryBlocConsumer(textTheme),
-                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                  ],
-                ),
-              );
             },
+            child: BlocConsumer<AuthBloc, AuthState>(
+              listener: (context, state) {
+                if (state is AuthError) {
+                  _onSignOutError(context, state);
+                }
+                if (state is SignOutLoaded) {
+                  if (state.message.isNotEmpty) {
+                    ShowDialog.showAlertDialog(
+                      context,
+                      'Signout',
+                      state.message,
+                      TextButton(
+                        onPressed: () => context.goNamed('signInPage'),
+                        child: const Text('Lanjut'),
+                      ),
+                    );
+                  }
+                }
+              },
+              builder: (context, state) {
+                if (state is AuthLoading) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+                return RefreshIndicator(
+                  triggerMode: RefreshIndicatorTriggerMode.onEdge,
+                  onRefresh: () async {
+                    // context.read<HomeCubit>().fetchHome();
+                    context.read<HomeCubit>().fetchProfile();
+                  },
+                  child: CustomScrollView(
+                    slivers: <Widget>[
+                      const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                      _appBarBlocConsumer(
+                        context.watch<HomeCubit>().username,
+                        textTheme,
+                        colorScheme,
+                      ),
+                      const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                      _searchTextField(),
+                      const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                      _categoryTextHeader(textTheme),
+                      const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                      _categoryBlocConsumer(textTheme),
+                      const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                      _orderHistoryTextHeader(textTheme),
+                      const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                      _lastHistoryBlocConsumer(textTheme),
+                      const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
         ),
       ],
@@ -476,7 +502,7 @@ class _HomePageState extends State<HomePage> {
               ? CardsColor.categoryCardsColor[index]
               : AppColors.grey;
           return GestureDetector(
-            onTap: () async {
+            onTap: () {
               // TODO: Ubah index 0(serabutan) nanti saat database berubah, ya intinya itu
               index == 0 || index == 1
                   ? context.pushNamed('selectProblemPage', queryParameters: {
@@ -570,7 +596,8 @@ class _HomePageState extends State<HomePage> {
           child: CircleAvatar(
             backgroundImage: history != null
                 ? CachedNetworkImageProvider(
-                    '${ApiController.baseUrl}/${history.userProfile}',
+                    history.userProfile ??
+                        'https://st2.depositphotos.com/1561359/12101/v/950/depositphotos_121012076-stock-illustration-blank-photo-icon.jpg',
                   )
                 : const AssetImage('assets/images/girl1.png'),
           ),

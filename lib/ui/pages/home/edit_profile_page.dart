@@ -12,7 +12,6 @@ import '../../../configs/app_colors.dart';
 import '../../../data/menu_items_data.dart';
 import '../../../models/auth/user_model.dart';
 import '../../../models/misc/menu_item_model.dart';
-import '../../../services/api/api_controller.dart';
 import '../../../utils/logging.dart';
 import '../../../utils/manage_token.dart';
 import '../../../utils/show_dialog.dart';
@@ -74,11 +73,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
               child: BlocConsumer<ProfileBloc, ProfileState>(
                 listener: (context, state) {
                   if (state is EditProfileError) {
-                    _onStateError(context, state);
+                    _onStateError(context, state.message);
                   } else if (state is ProfileEdited) {
                     _onProfileEdited(context, state);
                   } else if (state is ImagePicked) {
                     pickedImg = state.pickedImage;
+                  } else if (state is EditPasswordError) {
+                    _onStateError(context, state.errorMessage);
                   }
                 },
                 builder: (context, state) {
@@ -341,12 +342,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
     context.read<ProfileBloc>().add(FetchProfile());
   }
 
-  void _onStateError(BuildContext context, EditProfileError state) {
+  void _onStateError(BuildContext context, String message) {
     ShowDialog.showAlertDialog(
       context,
       'Gagal!',
-      state.message,
-      state.message.toString().toLowerCase().contains('unauthorized')
+      message,
+      message.toString().toLowerCase().contains('unauthorized')
           ? OutlinedButton.icon(
               onPressed: () {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -383,7 +384,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
         radius: 80,
         backgroundImage: profile?.imageProfile != null
             ? CachedNetworkImageProvider(
-                '${ApiController.baseUrl}/${profile!.imageProfile}',
+                profile?.imageProfile ??
+                    'https://st2.depositphotos.com/1561359/12101/v/950/depositphotos_121012076-stock-illustration-blank-photo-icon.jpg',
                 maxWidth: 150,
                 maxHeight: 150,
               )

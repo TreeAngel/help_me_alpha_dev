@@ -8,6 +8,7 @@ class RegisterModel {
   final String? passwordConfirmation;
   final XFile? imageProfile;
   final String role;
+  final String? fcmToken;
 
   RegisterModel({
     required this.fullName,
@@ -17,6 +18,7 @@ class RegisterModel {
     required this.passwordConfirmation,
     this.imageProfile,
     required this.role,
+    required this.fcmToken,
   });
 
   Map<String, dynamic> toJson() {
@@ -28,6 +30,7 @@ class RegisterModel {
       'password_confirmation': passwordConfirmation,
       'image_profile': imageProfile,
       'role': role,
+      'fcm_token': fcmToken,
     };
   }
 }

@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../models/api_error_response/api_error_response_model.dart';
 import '../../models/offer/select_mitra_response_model/select_mitra_response_model.dart';
+import '../../models/order/history/order_history_model.dart';
 import '../../services/api/api_helper.dart';
 
 part 'manage_order_event.dart';
@@ -12,6 +13,7 @@ part 'manage_order_state.dart';
 class ManageOrderBloc extends Bloc<ManageOrderEvent, ManageOrderState> {
   bool haveActiveOrder = false;
   String? snapToken;
+  OrderHistoryModel? activeOrder;
 
   ManageOrderBloc() : super(ManageOrderInitial()) {
     on<SelectMitraSubmitted>(_onSelectMitraSubmitted);
@@ -23,6 +25,8 @@ class ManageOrderBloc extends Bloc<ManageOrderEvent, ManageOrderState> {
     on<CompletingPayment>((event, emit) => emit(PaymentDone()));
 
     on<LastOrderNotPending>((event, emit) => emit(PaymentDone()));
+
+    on<ManageOrderIsIdle>((event, emit) => emit(ManageOrderIdle()));
   }
 
   Future<void> _onRequestSnapToken(event, emit) async {

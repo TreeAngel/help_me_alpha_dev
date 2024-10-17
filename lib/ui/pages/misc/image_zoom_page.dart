@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 
 import '../../../configs/app_colors.dart';
 
@@ -24,6 +25,8 @@ class _ImageZoomPageState extends State<ImageZoomPage> {
   late List<String> imageNames;
   late String selectedImage;
   late String selectedName;
+  final CarouselSliderController _carouselController =
+      CarouselSliderController();
 
   @override
   void initState() {
@@ -39,57 +42,80 @@ class _ImageZoomPageState extends State<ImageZoomPage> {
     final textTheme = Theme.of(context).textTheme;
 
     return GestureDetector(
+      onTap: () => context.pop(),
       child: Scaffold(
         appBar: _appBar(context, textTheme, selectedName),
         backgroundColor: Colors.transparent,
         body: Center(
           child: Column(
             children: [
-              Hero(
-                tag: widget.imageNames,
-                child: Image.file(File(selectedImage)),
-              ),
-              Positioned(
-                bottom: 20,
-                child: ListView.builder(
+              Expanded(
+                child: CarouselSlider.builder(
+                  carouselController: _carouselController,
                   itemCount: imagePaths.length,
-                  physics: const ClampingScrollPhysics(),
-                  scrollDirection: Axis.horizontal,
-                  itemBuilder: (BuildContext context, int index) {
-                    return GestureDetector(
-                      onTap: () => setState(() {
-                        if (selectedImage != imagePaths[index] &&
-                            selectedName != imageNames[index]) {
-                          selectedImage = selectedImage[index];
-                          selectedName = imageNames[index];
-                        }
-                      }),
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          border: Border.all(color: AppColors.primary),
-                          borderRadius: BorderRadius.circular(20),
+                  itemBuilder: (context, index, realIndex) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          width: 3,
+                          color: AppColors.strokeColor,
                         ),
-                        child: Center(
-                          child: Text(
-                            index.toString(),
-                            style: textTheme.bodyLarge?.copyWith(
-                              color: AppColors.lightTextColor,
-                            ),
-                          ),
-                        ),
+                      ),
+                      child: Image.file(
+                        File(imagePaths[index]),
+                        fit: BoxFit.cover,
                       ),
                     );
                   },
+                  options: CarouselOptions(
+                    enableInfiniteScroll: false,
+                    height: 400,
+                    viewportFraction: 1,
+                  ),
                 ),
-              )
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 40),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    IconButton.outlined(
+                      iconSize: 35,
+                      onPressed: () {
+                        _carouselController.previousPage();
+                      },
+                      icon: const Icon(Icons.arrow_back_ios_new),
+                      style: const ButtonStyle(
+                        iconColor: WidgetStatePropertyAll(AppColors.primary),
+                        side: WidgetStatePropertyAll(
+                          BorderSide(
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    ),
+                    IconButton.outlined(
+                      iconSize: 35,
+                      onPressed: () {
+                        _carouselController.nextPage();
+                      },
+                      icon: const Icon(Icons.arrow_forward_ios),
+                      style: const ButtonStyle(
+                        iconColor: WidgetStatePropertyAll(AppColors.primary),
+                        side: WidgetStatePropertyAll(
+                          BorderSide(
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
       ),
-      onTap: () => context.pop(),
     );
   }
 

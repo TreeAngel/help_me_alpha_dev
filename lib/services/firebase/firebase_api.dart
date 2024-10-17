@@ -1,6 +1,7 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 class FirebaseMessagingApi {
+  static String? fcmToken;
   static FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
 
   static Future setPermission() async {
@@ -16,10 +17,8 @@ class FirebaseMessagingApi {
     }
   }
 
-  static void getFCMToken() async {
-    final String? fcmToken = await firebaseMessaging.getToken();
-    if (fcmToken != null && fcmToken.isNotEmpty) {
-      
-    }
+  static Future<String?> getFCMToken() async {
+    final token = await firebaseMessaging.getToken();
+    return token;
   }
 }

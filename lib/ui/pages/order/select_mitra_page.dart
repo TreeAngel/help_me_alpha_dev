@@ -3,14 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
-import 'package:help_me_client_alpha_ver/utils/logging.dart';
-import 'package:midtrans_snap/models.dart';
 
 import '../../../blocs/manage_order/manage_order_bloc.dart';
 import '../../../blocs/fetch_offer/fetch_offer_bloc.dart';
 import '../../../configs/app_colors.dart';
 import '../../../models/offer/offer_model.dart';
-import '../../../services/api/api_controller.dart';
 import '../../../services/location_service.dart';
 import '../../../utils/manage_token.dart';
 import '../../../utils/show_dialog.dart';
@@ -95,8 +92,8 @@ class _SelectMitraPageState extends State<SelectMitraPage>
                     if (state.message
                         .trim()
                         .toLowerCase()
-                        .contains('sudah dipilih')) {
-                      context.read<ManageOrderBloc>().add(WaitingPayment());
+                        .contains('sudah dipilih') && context.read<ManageOrderBloc>().snapToken == null) {
+                      context.read<ManageOrderBloc>().add(RequestSnapToken(orderId: widget.orderId!));
                     }
                   } else if (state is SelectMitraSuccess) {
                     context
@@ -108,51 +105,26 @@ class _SelectMitraPageState extends State<SelectMitraPage>
                     ManageSnapToken.writeToken(state.code);
                     context.read<ManageOrderBloc>().snapToken = state.code;
                   }
+                  if (state is PaymentPending) {
+                    context.replaceNamed('payPage', queryParameters: {
+                      'token': context.read<ManageOrderBloc>().snapToken
+                    });
+                  }
                 },
                 builder: (context, state) {
                   if (state is ManageOrderInitial) {
-                    if (!widget.orderStatus!
+                    if (widget.orderStatus!
                         .trim()
                         .toLowerCase()
-                        .contains('pending')) {
+                        .contains('booked') && context.read<ManageOrderBloc>().snapToken == null) {
                       context
                           .read<ManageOrderBloc>()
-                          .add(LastOrderNotPending());
+                          .add(RequestSnapToken(orderId: widget.orderId!));
                     }
                   }
                   if (state is ManageOrderLoading) {
                     return const Center(
                       child: CircularProgressIndicator(),
-                    );
-                  } else if (state is PaymentPending || state is PaymentDone) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      child: Column(
-                        children: [
-                          Text(
-                            paymentMessage,
-                            style: textTheme.titleLarge?.copyWith(
-                              color: AppColors.lightTextColor,
-                            ),
-                          ),
-                          if (paymentDone == false)
-                            ..._notPayedTxt(textTheme)
-                          else
-                            ..._payedTxt(textTheme),
-                          const SizedBox(height: 20),
-                          _paymentStatusIcon(),
-                          const SizedBox(height: 20),
-                          if (paymentDone == false)
-                            ..._notPayedBtn(
-                              context,
-                              textTheme,
-                              screenWidth,
-                              screenHeight,
-                            )
-                          else
-                            ..._payedBtn(textTheme),
-                        ],
-                      ),
                     );
                   } else {
                     return Padding(
@@ -169,158 +141,6 @@ class _SelectMitraPageState extends State<SelectMitraPage>
           ],
         ),
       ),
-    );
-  }
-
-  List<Widget> _notPayedTxt(TextTheme textTheme) {
-    return [
-      const SizedBox(height: 10),
-      Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 8.0,
-        ),
-        child: Text(
-          'Harap selesaikan pembayaran dengan harga yang sudah ditentukan!\nJangan lupa diskusiin harga jasa ama abannya nanti ya',
-          style: textTheme.bodyLarge?.copyWith(
-            color: AppColors.lightTextColor,
-          ),
-        ),
-      ),
-    ];
-  }
-
-  List<Widget> _payedTxt(TextTheme textTheme) {
-    return [
-      const SizedBox(height: 10),
-      Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 8.0,
-        ),
-        child: Text(
-          'Pembayaran berhasil lanjut ke halaman detail buat\nhubungin abannya dan pantau progres orderan ya!',
-          style: textTheme.bodyLarge?.copyWith(
-            color: AppColors.lightTextColor,
-          ),
-        ),
-      ),
-    ];
-  }
-
-  List<Widget> _payedBtn(TextTheme textTheme) {
-    return [
-      SizedBox(
-        width: 353,
-        height: 56,
-        child: ElevatedButton(
-          onPressed: () {},
-          style: ButtonStyle(
-            backgroundColor: WidgetStateProperty.all(
-              AppColors.primary,
-            ),
-            shape: WidgetStateProperty.all(
-              RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-          ),
-          child: Text(
-            'Lanjut',
-            style: textTheme.bodyLarge?.copyWith(
-              color: AppColors.lightTextColor,
-            ),
-          ),
-        ),
-      ),
-    ];
-  }
-
-  List<Widget> _notPayedBtn(
-    BuildContext context,
-    TextTheme textTheme,
-    double screenWidht,
-    double screenHeight,
-  ) {
-    return [
-      SizedBox(
-        width: 353,
-        height: 56,
-        child: ElevatedButton(
-          onPressed: () async {
-            MidtransResponse? response;
-            ManageSnapToken.readToken();
-            if (context.read<ManageOrderBloc>().snapToken == null) {
-              context
-                  .read<ManageOrderBloc>()
-                  .add(RequestSnapToken(orderId: widget.orderId!));
-              response = await context.pushNamed(
-                'payPage',
-                queryParameters: {
-                  'token': context.read<ManageOrderBloc>().snapToken
-                },
-              );
-            } else {
-              response = await context.pushNamed(
-                'payPage',
-                queryParameters: {
-                  'token': context.read<ManageOrderBloc>().snapToken
-                },
-              );
-            }
-            if (context.mounted) {
-              _midtransResponseHandling(response, context);
-            } else {
-              printError('Error midtrans response handling has escaped');
-            }
-          },
-          style: ButtonStyle(
-            backgroundColor: WidgetStateProperty.all(
-              AppColors.primary,
-            ),
-            shape: WidgetStateProperty.all(
-              RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-          ),
-          child: Text(
-            'Lanjut Bayar',
-            style: textTheme.bodyLarge?.copyWith(
-              color: AppColors.lightTextColor,
-            ),
-          ),
-        ),
-      ),
-    ];
-  }
-
-  void _midtransResponseHandling(
-      MidtransResponse? response, BuildContext context) {
-    if (response?.transactionStatus.trim().toLowerCase() == 'settlement' &&
-        response?.statusCode == 200 &&
-        response?.fraudStatus.trim().toLowerCase() == 'accept') {
-      paymentDone = true;
-      paymentMessage = 'Pembayaran berhasil!';
-      context.read<ManageOrderBloc>().add(CompletingPayment());
-    } else if (response?.statusCode == 201 &&
-        response?.transactionStatus.trim().toLowerCase() == 'pending') {
-      paymentDone = false;
-      paymentMessage = response!.statusMessage.toString();
-    } else if (response?.statusCode == 407) {
-      paymentDone = false;
-      paymentMessage = 'Transaksi kadaluarsa, coba ulang proses pembayaran';
-      ManageSnapToken.deleteToken();
-      context.read<ManageOrderBloc>().snapToken = null;
-    } else {
-      paymentDone = false;
-      paymentMessage = response!.statusMessage.toString();
-    }
-  }
-
-  Icon _paymentStatusIcon() {
-    return Icon(
-      paymentDone ? Icons.done : Icons.warning_rounded,
-      color: paymentDone ? Colors.greenAccent : Colors.orangeAccent,
-      size: 145,
     );
   }
 
@@ -368,6 +188,7 @@ class _SelectMitraPageState extends State<SelectMitraPage>
 
   ListView _offerCardBuilder(BuildContext context, TextTheme textTheme) {
     return ListView.builder(
+      physics: const ClampingScrollPhysics(),
       itemCount: context.read<FetchOfferBloc>().offerList.length,
       itemBuilder: (BuildContext context, int index) {
         final data = context.read<FetchOfferBloc>().offerList[index];
@@ -414,7 +235,8 @@ class _SelectMitraPageState extends State<SelectMitraPage>
           radius: 16,
           backgroundImage: offer != null
               ? CachedNetworkImageProvider(
-                  '${ApiController.baseUrl}/${offer.mitraProfile}',
+                  offer.mitraProfile ??
+                      'https://st2.depositphotos.com/1561359/12101/v/950/depositphotos_121012076-stock-illustration-blank-photo-icon.jpg',
                 )
               : const AssetImage('assets/images/girl1.png'),
         ),
@@ -590,7 +412,8 @@ class _SelectMitraPageState extends State<SelectMitraPage>
           child: CircleAvatar(
             radius: 17,
             backgroundImage: CachedNetworkImageProvider(
-              '${ApiController.baseUrl}/${offer.mitraProfile}',
+              offer.mitraProfile ??
+                  'https://st2.depositphotos.com/1561359/12101/v/950/depositphotos_121012076-stock-illustration-blank-photo-icon.jpg',
               maxWidth: 36,
               maxHeight: 36,
             ),

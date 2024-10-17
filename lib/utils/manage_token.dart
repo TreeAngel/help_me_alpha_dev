@@ -1,3 +1,4 @@
+import '../services/firebase/firebase_api.dart';
 import 'logging.dart';
 import 'secure_storage.dart';
 import '../services/api/api_controller.dart';
@@ -46,7 +47,11 @@ class ManageSnapToken {
 
 class ManageFCMToken {
   static Future<String?> readToken() async {
-    final value = await SecureStorage().readSecureData('fcmToken');
+    final value = await SecureStorage().readSecureData('fcmToken').then(
+          (value) => FirebaseMessagingApi.fcmToken == null
+              ? FirebaseMessagingApi.fcmToken = value
+              : null,
+        );
     return value;
   }
 

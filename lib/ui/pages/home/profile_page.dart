@@ -7,7 +7,6 @@ import '../../../blocs/auth/auth_bloc.dart';
 import '../../../blocs/profile/profile_bloc.dart';
 import '../../../configs/app_colors.dart';
 import '../../../models/auth/user_model.dart';
-import '../../../services/api/api_controller.dart';
 import '../../../utils/manage_token.dart';
 import '../../../utils/show_dialog.dart';
 
@@ -380,7 +379,8 @@ class _ProfilePageState extends State<ProfilePage> {
             radius: 80,
             backgroundImage: profile?.imageProfile != null
                 ? CachedNetworkImageProvider(
-                    '${ApiController.baseUrl}/${profile!.imageProfile}',
+                    profile?.imageProfile ??
+                        'https://st2.depositphotos.com/1561359/12101/v/950/depositphotos_121012076-stock-illustration-blank-photo-icon.jpg',
                     maxWidth: 150,
                     maxHeight: 150,
                   )

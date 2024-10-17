@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 
@@ -7,6 +8,7 @@ import '../../models/api_error_response/message_error_model.dart';
 import '../../models/auth/auth_response_model.dart';
 import '../../models/auth/login_model.dart';
 import '../../services/api/api_controller.dart';
+import '../../services/firebase/firebase_api.dart';
 import '../../utils/manage_token.dart';
 import '../../models/auth/register_model.dart';
 import '../../services/api/api_helper.dart';
@@ -103,9 +105,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     if (signOutResponse.error != null) {
       final message =
           signOutResponse.error?.message ?? signOutResponse.error?.error;
-      emit(SignOutLoaded(
-        message: message.toString(),
-      ));
+      log('Signout: $message');
+      if (message!.trim().toLowerCase().contains('unauthorized')) {
+        emit(AuthError(
+          errorMessage: MessageErrorModel(error: message),
+        ));
+      } else {
+        ApiController.token = null;
+        FirebaseMessagingApi.fcmToken = null;
+        ManageAuthToken.deleteToken();
+        ManageFCMToken.deleteToken();
+        emit(SignOutLoaded(
+          message: message.toString(),
+        ));
+      }
     } else {
       emit(
         const AuthError(
@@ -121,8 +134,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     SignInSubmitted event,
     Emitter<AuthState> emit,
   ) async {
-    // username = state.username;
-    // password = state.password;
     if (username.isEmpty) {
       emit(
         const AuthError(
@@ -141,17 +152,29 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
     } else {
       emit(AuthLoading());
-      final loginModel = LoginModel(
+      late LoginModel loginRequest;
+      String? fcmToken = await ManageFCMToken.readToken();
+      if (fcmToken == null || fcmToken.isEmpty) {
+        fcmToken = await FirebaseMessagingApi.getFCMToken();
+      }
+      loginRequest = LoginModel(
         username: username,
         password: password,
+        fcmToken: fcmToken,
       );
-      final signInResponse = await ApiHelper.authLogin(loginModel);
+      final signInResponse = await ApiHelper.authLogin(loginRequest);
       if (signInResponse is AuthResponseModel) {
         final authMessage = signInResponse.message.toString();
         final authToken = signInResponse.token;
         if (authToken != null) {
           ApiController.token = authToken;
-          rememberMe == true ? ManageAuthToken.writeToken() : null;
+          FirebaseMessagingApi.fcmToken = fcmToken;
+          rememberMe == true
+              ? {
+                  ManageAuthToken.writeToken(),
+                  ManageFCMToken.writeToken(fcmToken),
+                }
+              : null;
           emit(
             SignInLoaded(
               message: authMessage.toString(),
@@ -180,11 +203,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     SignUpSubmitted event,
     Emitter<AuthState> emit,
   ) async {
-    // fullName = state.fullName;
-    // username = state.username;
-    // password = state.password;
-    // passwordConfirmation = state.passwordConfirmation;
-    // phoneNumber = state.phoneNumber;
     if (fullName.isEmpty) {
       emit(
         const AuthError(
@@ -231,6 +249,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
     } else {
       emit(AuthLoading());
+      String? fcmToken = await ManageFCMToken.readToken();
+      if (fcmToken == null || fcmToken.isEmpty) {
+        fcmToken = await FirebaseMessagingApi.getFCMToken();
+      } else {
+        emit(
+          const AuthError(
+              errorMessage: MessageErrorModel(error: 'Gagal memuat FCM token')),
+        );
+        return;
+      }
       final signUpModel = RegisterModel(
         fullName: fullName,
         username: username,
@@ -238,6 +266,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         passwordConfirmation: passwordConfirmation,
         phoneNumber: phoneNumber,
         role: role,
+        fcmToken: fcmToken,
       );
       final signUpResponse = await ApiHelper.authRegister(signUpModel);
       if (signUpResponse is AuthResponseModel) {
@@ -245,6 +274,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         final authToken = signUpResponse.token;
         if (authToken != null) {
           ApiController.token = authToken;
+          FirebaseMessagingApi.fcmToken = fcmToken;
           emit(
             SignUpLoaded(
               message: authMessage.toString(),

@@ -6,7 +6,6 @@ import 'package:timelines/timelines.dart';
 import '../../../configs/app_colors.dart';
 import '../../../cubits/detail_order/detail_order_cubit.dart';
 import '../../../models/order/detail_order_model.dart';
-import '../../../services/api/api_controller.dart';
 import '../../../utils/show_dialog.dart';
 import '../../widgets/gradient_card.dart';
 
@@ -119,7 +118,6 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
                           Flexible(
                             child: Timeline(
                               physics: const NeverScrollableScrollPhysics(),
-                              
                             ),
                           ),
                         ],
@@ -146,7 +144,8 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
           radius: 16,
           backgroundImage: detailOrder?.mitraProfile != null
               ? CachedNetworkImageProvider(
-                  '${ApiController.baseUrl}/${detailOrder?.mitraProfile}',
+                  detailOrder?.mitraProfile ??
+                      'https://st2.depositphotos.com/1561359/12101/v/950/depositphotos_121012076-stock-illustration-blank-photo-icon.jpg',
                 )
               : const AssetImage('assets/images/girl1.png'),
         ),
