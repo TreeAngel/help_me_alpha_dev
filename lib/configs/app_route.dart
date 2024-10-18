@@ -18,8 +18,9 @@ import '../ui/pages/auth/sign_in_page.dart';
 import '../ui/pages/auth/sign_up_page.dart';
 import '../ui/pages/order/detail_order_page.dart';
 import '../ui/pages/order/select_mitra_page.dart';
-import '../ui/pages/order/select_probelm_page.dart';
+import '../ui/pages/order/select_problem_page.dart';
 import '../ui/pages/auth/verify_phone_number_page.dart';
+import '../utils/manage_token.dart';
 
 class AppRoute {
   static final GoRouter appRoute = GoRouter(
@@ -36,6 +37,11 @@ class AppRoute {
               history.orderStatus?.trim().toLowerCase() == 'arrived')
           : null;
       context.read<ManageOrderBloc>().activeOrder = activeOrder;
+      if (activeOrder != null && !activeOrder.orderStatus!.trim().toLowerCase().contains('pending') &&
+          context.read<ManageOrderBloc>().snapToken != null) {
+        ManageSnapToken.deleteToken();
+        context.read<ManageOrderBloc>().snapToken = null;
+      }
 
       // TODO: Add other guarded route later
       if (isAuthenticated == false && state.matchedLocation == '/home') {
@@ -65,8 +71,19 @@ class AppRoute {
         return '/selectMitra?orderId=${activeOrder?.orderId}&status=${activeOrder?.orderStatus}';
       } else if (haveOrder == true &&
           activeOrder!.orderStatus!.trim().toLowerCase().contains('pending') &&
-          state.uri.query.contains('orderId=${activeOrder.orderId}')) {
+          state.uri.query.contains('orderId=${activeOrder.orderId}') &&
+          state.matchedLocation == '/detailOrder') {
         return '/selectMitra?orderId=${activeOrder.orderId}&status=${activeOrder.orderStatus}';
+      } else if (haveOrder == true &&
+          activeOrder!.orderStatus!.trim().toLowerCase().contains('pending') &&
+          state.uri.query.contains('orderId=${activeOrder.orderId}') &&
+          state.matchedLocation == '/selectMitra') {
+        return '/payOrder?token=${context.read<ManageOrderBloc>().snapToken}';
+      } else if (haveOrder == true &&
+          !activeOrder!.orderStatus!.trim().toLowerCase().contains('pending') &&
+          state.uri.query.contains('orderId=${activeOrder.orderId}') &&
+          state.matchedLocation == '/selectMitra') {
+        return '/detailOrder?orderId=${context.read<ManageOrderBloc>().activeOrder?.orderId}';
       } else {
         return null;
       }

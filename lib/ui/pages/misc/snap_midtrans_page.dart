@@ -23,7 +23,8 @@ class SnapMidtransPage extends StatelessWidget {
     return PopScope(
       canPop: willPop,
       child: SafeArea(
-        child: BlocConsumer<ManageOrderBloc, ManageOrderState>(listener: (context, state) {
+        child: BlocConsumer<ManageOrderBloc, ManageOrderState>(
+            listener: (context, state) {
           if (state is SnapTokenRequested) {
             snapToken = state.code;
           }
@@ -86,6 +87,7 @@ class SnapMidtransPage extends StatelessWidget {
             midtransClientKey: 'SB-Mid-client-Dq1J9Sr45BhVF9WQ',
             onResponse: (result) {
               pageResponse = result;
+              willPop = true;
               context.pop(pageResponse);
             },
           );

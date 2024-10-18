@@ -27,7 +27,7 @@ class DetailOrderCubit extends Cubit<DetailOrderState> {
     } else {
       emit(const OpenWhatsAppError(
         message:
-            'Gagal membuka WhatsAPp, pastikan aplikasi terinstall dan nomer valid',
+            'Gagal membuka WhatsApp, pastikan aplikasi terinstall dan nomer valid',
       ));
     }
   }
@@ -37,9 +37,6 @@ class DetailOrderCubit extends Cubit<DetailOrderState> {
     final response = await ApiHelper.getDetailOrder(orderId);
     if (response is ApiErrorResponseModel) {
       var message = response.error?.error ?? response.error?.message;
-      if (message == null || message.isEmpty) {
-        message = response.error.toString();
-      }
       emit(DetailOrderError(message: message.toString()));
     } else {
       emit(DetailOrderLoaded(data: response));

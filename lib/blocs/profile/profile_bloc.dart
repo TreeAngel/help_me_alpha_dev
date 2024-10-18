@@ -210,7 +210,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   FutureOr<void> _onFetchProfile(event, emit) async {
     emit(ProfileLoading());
     try {
-      final response = await ApiHelper.getUseProfile();
+      final response = await ApiHelper.getUserProfile();
       if (response is ApiErrorResponseModel) {
         emit(ProfileError(errorMessage: response.error!.error.toString()));
       } else {

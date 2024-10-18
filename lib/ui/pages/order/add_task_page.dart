@@ -214,7 +214,8 @@ class _AddTaskPageState extends State<AddTaskPage> {
               onPressed: () {
                 context.read<ManageOrderBloc>().haveActiveOrder = true;
                 context.read<HomeCubit>().fetchHistory();
-                Navigator.popUntil(context, (route) => route.isFirst);
+                context.pop();
+                context.pop();
               },
               child: const Text('Lanjut'),
             ),

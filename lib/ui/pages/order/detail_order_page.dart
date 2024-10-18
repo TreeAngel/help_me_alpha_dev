@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -48,6 +50,7 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
           appBar: _appBar(context, textTheme),
           body: BlocConsumer<DetailOrderCubit, DetailOrderState>(
             listener: (context, state) {
+              log('Detail order: ${state.toString()}');
               if (state is DetailOrderLoaded) {
                 detailOrder = state.data;
               } else if (state is DetailOrderError) {
@@ -74,7 +77,8 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
               }
             },
             builder: (context, state) {
-              if (state is DetailOrderInitial || detailOrder == null) {
+              log('Detail order: ${state.toString()}');
+              if (detailOrder == null) {
                 context
                     .read<DetailOrderCubit>()
                     .fetchDetailOrder(orderId: widget.orderId!);
@@ -115,9 +119,26 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
                             ),
                           ),
                           const SizedBox(height: 20),
-                          Flexible(
-                            child: Timeline(
-                              physics: const NeverScrollableScrollPhysics(),
+                          FixedTimeline.tileBuilder(
+                            builder: TimelineTileBuilder.connectedFromStyle(
+                              itemCount: 5,
+                              contentsAlign: ContentsAlign.reverse,
+                              oppositeContentsBuilder: (context, index) =>
+                                  Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  'Order status\nTime',
+                                  style: textTheme.bodyLarge?.copyWith(
+                                    color: AppColors.darkTextColor,
+                                  ),
+                                ),
+                              ),
+                              firstConnectorStyle: ConnectorStyle.transparent,
+                              lastConnectorStyle: ConnectorStyle.transparent,
+                              connectorStyleBuilder: (context, index) =>
+                                  ConnectorStyle.solidLine,
+                              indicatorStyleBuilder: (context, index) =>
+                                  IndicatorStyle.dot,
                             ),
                           ),
                         ],
@@ -169,6 +190,7 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
             ),
           ),
         ),
+        const SizedBox(height: 10),
         LimitedBox(
             maxWidth: 310,
             child: Text(
@@ -179,6 +201,7 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
                 color: AppColors.aquamarine,
               ),
             )),
+        const SizedBox(height: 10),
         Text(
           detailOrder?.price != null ? 'Rp${detailOrder?.price}' : 'N/A',
           style: textTheme.titleMedium?.copyWith(

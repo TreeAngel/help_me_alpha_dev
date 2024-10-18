@@ -90,10 +90,13 @@ class _SelectMitraPageState extends State<SelectMitraPage>
                       null,
                     );
                     if (state.message
-                        .trim()
-                        .toLowerCase()
-                        .contains('sudah dipilih') && context.read<ManageOrderBloc>().snapToken == null) {
-                      context.read<ManageOrderBloc>().add(RequestSnapToken(orderId: widget.orderId!));
+                            .trim()
+                            .toLowerCase()
+                            .contains('sudah dipilih') &&
+                        context.read<ManageOrderBloc>().snapToken == null) {
+                      context
+                          .read<ManageOrderBloc>()
+                          .add(RequestSnapToken(orderId: widget.orderId!));
                     }
                   } else if (state is SelectMitraSuccess) {
                     context
@@ -106,17 +109,21 @@ class _SelectMitraPageState extends State<SelectMitraPage>
                     context.read<ManageOrderBloc>().snapToken = state.code;
                   }
                   if (state is PaymentPending) {
-                    context.replaceNamed('payPage', queryParameters: {
-                      'token': context.read<ManageOrderBloc>().snapToken
-                    });
+                    context.replaceNamed(
+                      'payPage',
+                      queryParameters: {
+                        'token': context.read<ManageOrderBloc>().snapToken,
+                      },
+                    );
                   }
                 },
                 builder: (context, state) {
                   if (state is ManageOrderInitial) {
                     if (widget.orderStatus!
-                        .trim()
-                        .toLowerCase()
-                        .contains('booked') && context.read<ManageOrderBloc>().snapToken == null) {
+                            .trim()
+                            .toLowerCase()
+                            .contains('booked') &&
+                        context.read<ManageOrderBloc>().snapToken == null) {
                       context
                           .read<ManageOrderBloc>()
                           .add(RequestSnapToken(orderId: widget.orderId!));

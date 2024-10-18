@@ -32,7 +32,7 @@ class HomeCubit extends Cubit<HomeState> {
 
   Future<void> fetchProfile() async {
     emit(HomeLoading());
-    final response = await ApiHelper.getUseProfile();
+    final response = await ApiHelper.getUserProfile();
     if (response is ApiErrorResponseModel) {
       final message = response.error?.error ?? response.error?.message;
       emit(ProfileError(errorMessage: message.toString()));

@@ -29,7 +29,6 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final imagePicker = ImagePickerUtil();
     ManageAuthToken.readToken();
-    ManageSnapToken.readToken();
 
     return MultiBlocProvider(
       providers: [
