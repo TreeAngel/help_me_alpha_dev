@@ -228,7 +228,7 @@ class _FormDataMitraPageState extends State<FormDataMitraPage> {
               borderRadius: BorderRadius.circular(10),
             ),
           ),
-        ),
+        ), 
         child: Text(
           'Daftar Mitra',
           style: GoogleFonts.poppins(
