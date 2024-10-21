@@ -16,6 +16,7 @@ import '../ui/pages/home/home_page.dart';
 import '../ui/pages/home/profile_page.dart';
 import '../ui/pages/auth/sign_in_page.dart';
 import '../ui/pages/auth/sign_up_page.dart';
+import '../ui/pages/order/chat_page.dart';
 import '../ui/pages/order/detail_order_page.dart';
 import '../ui/pages/order/select_mitra_page.dart';
 import '../ui/pages/order/select_problem_page.dart';
@@ -37,7 +38,8 @@ class AppRoute {
               history.orderStatus?.trim().toLowerCase() == 'arrived')
           : null;
       context.read<ManageOrderBloc>().activeOrder = activeOrder;
-      if (activeOrder != null && !activeOrder.orderStatus!.trim().toLowerCase().contains('pending') &&
+      if (activeOrder != null &&
+          !activeOrder.orderStatus!.trim().toLowerCase().contains('pending') &&
           context.read<ManageOrderBloc>().snapToken != null) {
         ManageSnapToken.deleteToken();
         context.read<ManageOrderBloc>().snapToken = null;
@@ -46,47 +48,50 @@ class AppRoute {
       // TODO: Add other guarded route later
       if (isAuthenticated == false && state.matchedLocation == '/home') {
         return '/signIn';
-      } else if (isAuthenticated == false &&
-          state.matchedLocation == '/profile') {
+      }
+      if (isAuthenticated == false && state.matchedLocation == '/profile') {
         return '/signIn';
-      } else if (isAuthenticated == false &&
-          state.matchedLocation == '/editProfile') {
+      }
+      if (isAuthenticated == false && state.matchedLocation == '/editProfile') {
         return '/signIn';
-      } else if (isAuthenticated == false &&
-          state.matchedLocation == '/detail') {
+      }
+      if (isAuthenticated == false && state.matchedLocation == '/detail') {
         return '/signIn';
-      } else if (isAuthenticated == false &&
-          state.matchedLocation == '/addTask') {
+      }
+      if (isAuthenticated == false && state.matchedLocation == '/addTask') {
         return '/signIn';
-      } else if (isAuthenticated == true &&
-          state.matchedLocation == '/signIn') {
+      }
+      if (isAuthenticated == true && state.matchedLocation == '/signIn') {
         return '/home';
-      } else if (isAuthenticated == true &&
-          state.matchedLocation == '/signUp') {
+      }
+      if (isAuthenticated == true && state.matchedLocation == '/signUp') {
         return '/home';
-      } else if (haveOrder == true &&
-          state.matchedLocation == '/selectProblem') {
+      }
+      if (haveOrder == true && state.matchedLocation == '/selectProblem') {
         return '/selectMitra?orderId=${activeOrder?.orderId}&status=${activeOrder?.orderStatus}';
-      } else if (haveOrder == true && state.matchedLocation == '/addTask') {
+      }
+      if (haveOrder == true && state.matchedLocation == '/addTask') {
         return '/selectMitra?orderId=${activeOrder?.orderId}&status=${activeOrder?.orderStatus}';
-      } else if (haveOrder == true &&
+      }
+      if (haveOrder == true &&
           activeOrder!.orderStatus!.trim().toLowerCase().contains('pending') &&
           state.uri.query.contains('orderId=${activeOrder.orderId}') &&
           state.matchedLocation == '/detailOrder') {
         return '/selectMitra?orderId=${activeOrder.orderId}&status=${activeOrder.orderStatus}';
-      } else if (haveOrder == true &&
-          activeOrder!.orderStatus!.trim().toLowerCase().contains('pending') &&
+      }
+      if (haveOrder == true &&
+          activeOrder!.orderStatus!.trim().toLowerCase().contains('booked') &&
           state.uri.query.contains('orderId=${activeOrder.orderId}') &&
           state.matchedLocation == '/selectMitra') {
         return '/payOrder?token=${context.read<ManageOrderBloc>().snapToken}';
-      } else if (haveOrder == true &&
+      }
+      if (haveOrder == true &&
           !activeOrder!.orderStatus!.trim().toLowerCase().contains('pending') &&
           state.uri.query.contains('orderId=${activeOrder.orderId}') &&
           state.matchedLocation == '/selectMitra') {
         return '/detailOrder?orderId=${context.read<ManageOrderBloc>().activeOrder?.orderId}';
-      } else {
-        return null;
       }
+      return null;
     },
     errorBuilder: (context, state) => const Placeholder(),
   );
@@ -209,6 +214,22 @@ class AppRoute {
           );
         },
       ),
+      GoRoute(
+        path: '/chat',
+        name: 'chatPage',
+        builder: (context, state) {
+          final userId = state.uri.queryParameters['id'].toString();
+          final chatId = state.uri.queryParameters['chatId'].toString();
+          final mitraName = state.uri.queryParameters['name'].toString();
+          final imgPath = state.uri.queryParameters['img'].toString();
+          return ChatPage(
+            userId: !userId.contains('null') ? int.parse(userId) : 0,
+            chatId: !chatId.contains('null') ? int.parse(chatId) : 0,
+            mitraName: mitraName,
+            imgPath: imgPath,
+          );
+        },
+      )
     ];
   }
 }

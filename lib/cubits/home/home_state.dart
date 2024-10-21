@@ -29,24 +29,6 @@ final class CategoryError extends HomeState {
   List<Object> get props => [errorMessage];
 }
 
-final class ProfileLoaded extends HomeState {
-  final DataUser data;
-
-  const ProfileLoaded({required this.data});
-
-  @override
-  List<Object> get props => [data];
-}
-
-final class ProfileError extends HomeState {
-  final String errorMessage;
-
-  const ProfileError({required this.errorMessage});
-
-  @override
-  List<Object> get props => [errorMessage];
-}
-
 final class OrderHistoryLoaded extends HomeState {
   final List<OrderHistoryModel> history;
 
@@ -63,20 +45,6 @@ final class OrderHistoryError extends HomeState {
 
   @override
   List<Object> get props => [errorMessage];
-}
-
-final class HomeLoaded extends HomeState {
-  final DataUser profile;
-  final List<CategoryModel> categories;
-  final List<OrderHistoryModel> histories;
-
-  const HomeLoaded(
-      {required this.profile,
-      required this.categories,
-      required this.histories});
-
-  @override
-  List<Object> get props => [profile, categories, histories];
 }
 
 final class HomeIdle extends HomeState {}

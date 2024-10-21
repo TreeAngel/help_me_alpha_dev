@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../blocs/manage_order/manage_order_bloc.dart';
+import '../../../blocs/profile/profile_bloc.dart';
 import '../../../data/cards_color.dart';
 import '../../../models/order/history/order_history_model.dart';
 import '../../../services/firebase/firebase_api.dart';
@@ -97,14 +98,19 @@ class _HomePageState extends State<HomePage> {
               return RefreshIndicator(
                 triggerMode: RefreshIndicatorTriggerMode.onEdge,
                 onRefresh: () async {
-                  // context.read<HomeCubit>().fetchHome();
-                  context.read<HomeCubit>().fetchProfile();
+                  context.read<ProfileBloc>().add(FetchProfile());
+                  context.read<HomeCubit>().fetchCategories();
                 },
                 child: CustomScrollView(
                   slivers: <Widget>[
                     const SliverToBoxAdapter(child: SizedBox(height: 20)),
                     _appBarBlocConsumer(
-                      context.watch<HomeCubit>().username,
+                      context
+                              .watch<ProfileBloc>()
+                              .profile
+                              ?.username
+                              .toString() ??
+                          'Kamu!',
                       textTheme,
                       colorScheme,
                     ),
@@ -305,25 +311,23 @@ class _HomePageState extends State<HomePage> {
     context.read<AuthBloc>().add(ResetAuthState());
   }
 
-  BlocConsumer<HomeCubit, HomeState> _appBarBlocConsumer(
+  BlocConsumer<ProfileBloc, ProfileState> _appBarBlocConsumer(
     String username,
     TextTheme textTheme,
     ColorScheme colorScheme,
   ) {
-    return BlocConsumer<HomeCubit, HomeState>(
+    return BlocConsumer<ProfileBloc, ProfileState>(
       listener: (context, state) {
         if (state is ProfileLoaded) {
-          context.read<HomeCubit>().username =
-              state.data.user.username.toString();
-          context.read<HomeCubit>().fetchCategories();
-          // context.read<HomeCubit>().fetchHistory('');
+          context.read<ProfileBloc>().profile = state.data.user;
         } else if (state is ProfileError) {
           _onProfileError(context, state);
         }
       },
       builder: (context, state) {
-        if (state is HomeInitial) {
-          context.read<HomeCubit>().fetchProfile();
+        if (state is ProfileInitial) {
+          context.read<ProfileBloc>().add(FetchProfile());
+          context.read<HomeCubit>().fetchCategories();
           _requestPermission(context);
           if (context.read<ManageOrderBloc>().snapToken == null) {
             WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -332,9 +336,6 @@ class _HomePageState extends State<HomePage> {
             });
           }
           log('Snap token: ${context.read<ManageOrderBloc>().snapToken}');
-          // context.read<HomeCubit>().fetchHome(historyStatus: null);
-          // context.read<HomeCubit>().add(FetchCategories());
-          // context.read<HomeCubit>().add(const FetchHistory(''));
         }
         return _homeAppBar(
           context,
@@ -395,7 +396,7 @@ class _HomePageState extends State<HomePage> {
           : IconButton.outlined(
               onPressed: () {
                 context.pop();
-                context.read<HomeCubit>().fetchProfile();
+                context.read<ProfileBloc>().add(FetchProfile());
               },
               icon: const Icon(Icons.refresh_outlined),
             ),
@@ -408,15 +409,6 @@ class _HomePageState extends State<HomePage> {
   ) {
     return BlocConsumer<HomeCubit, HomeState>(
       listener: (context, state) {
-        if (state is HomeLoaded) {
-          context.read<HomeCubit>().username =
-              state.profile.user.username.toString();
-          context.read<HomeCubit>().allCategories = state.categories;
-          context.read<HomeCubit>().fourCategories =
-              state.categories.take(4).toList();
-          context.read<HomeCubit>().orderHistory = state.histories;
-          context.read<HomeCubit>().homeIdle();
-        }
         if (state is CategoryLoaded) {
           context.read<HomeCubit>().allCategories = state.categories;
           context.read<HomeCubit>().fourCategories =

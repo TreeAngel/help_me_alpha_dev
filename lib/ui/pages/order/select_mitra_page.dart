@@ -17,8 +17,11 @@ class SelectMitraPage extends StatefulWidget {
   final int? orderId;
   final String? orderStatus;
 
-  const SelectMitraPage(
-      {super.key, required this.orderId, required this.orderStatus});
+  const SelectMitraPage({
+    super.key,
+    required this.orderId,
+    required this.orderStatus,
+  });
 
   @override
   State<SelectMitraPage> createState() => _SelectMitraPageState();

@@ -242,4 +242,17 @@ class ApiHelper {
       return DetailOrderModel.fromMap(response);
     }
   }
+
+  // Chat
+  static Future createChatRoom(int orderId) async {
+    final response = await ApiController.postData(
+      'users/chats',
+      {'order_id': orderId},
+    );
+    if (response is ApiErrorResponseModel) {
+      return response;
+    } else {
+      return response['id'];
+    }
+  }
 }

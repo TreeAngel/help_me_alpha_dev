@@ -5,6 +5,7 @@ import 'package:help_me_client_alpha_ver/firebase_options.dart';
 
 import 'blocs/fetch_offer/fetch_offer_bloc.dart';
 import 'blocs/manage_order/manage_order_bloc.dart';
+import 'cubits/detail_order/detail_order_cubit.dart';
 import 'cubits/home/home_cubit.dart';
 import 'blocs/auth/auth_bloc.dart';
 import 'blocs/send_order/send_order_bloc.dart';
@@ -49,6 +50,9 @@ class MainApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => FetchOfferBloc(),
+        ),
+        BlocProvider(
+          create: (context) => DetailOrderCubit(),
         ),
         // TODO: Add other blocs here
       ],

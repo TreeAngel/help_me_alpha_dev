@@ -1,8 +1,7 @@
-import 'dart:developer';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:timelines/timelines.dart';
 
 import '../../../configs/app_colors.dart';
@@ -34,92 +33,102 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
     final screenWidht = MediaQuery.sizeOf(context).width;
     final screenHeight = MediaQuery.sizeOf(context).height;
 
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (context) => DetailOrderCubit(),
-        ),
-        // TODO: Tambahkan bloc untuk fungsi chat nanti
-        // BlocProvider(
-        //   create: (context) => SubjectBloc(),
-        // ),
-      ],
-      child: SafeArea(
-        child: Scaffold(
-          backgroundColor: Colors.black,
-          appBar: _appBar(context, textTheme),
-          body: BlocConsumer<DetailOrderCubit, DetailOrderState>(
-            listener: (context, state) {
-              log('Detail order: ${state.toString()}');
-              if (state is DetailOrderLoaded) {
-                detailOrder = state.data;
-              } else if (state is DetailOrderError) {
-                ShowDialog.showAlertDialog(
-                  context,
-                  'Gagal!',
-                  state.message,
-                  null,
-                );
-              } else if (state is ListeningOrderStatusError) {
-                ShowDialog.showAlertDialog(
-                  context,
-                  'Terjadi Kesalahan!',
-                  state.message,
-                  null,
-                );
-              } else if (state is OpenWhatsAppError) {
-                ShowDialog.showAlertDialog(
-                  context,
-                  'Gagal Membuka WhatsApp!',
-                  state.message,
-                  null,
-                );
-              }
-            },
-            builder: (context, state) {
-              log('Detail order: ${state.toString()}');
-              if (detailOrder == null) {
-                context
-                    .read<DetailOrderCubit>()
-                    .fetchDetailOrder(orderId: widget.orderId!);
-              }
-              if (state is DetailOrderLoading) {
-                return const Center(
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        appBar: _appBar(context, textTheme),
+        body: BlocConsumer<DetailOrderCubit, DetailOrderState>(
+          listener: (context, state) {
+            if (state is DetailOrderLoading) {
+              showDialog(
+                barrierDismissible: false,
+                context: context,
+                builder: (context) => const Center(
                   child: CircularProgressIndicator(),
-                );
-              }
-              return RefreshIndicator(
-                onRefresh: () async => context
-                    .read<DetailOrderCubit>()
-                    .fetchDetailOrder(orderId: widget.orderId!),
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: GradientCard(
-                    width: screenWidht,
-                    height: screenHeight - (screenHeight / 8),
-                    cardColor: Colors.black,
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              _infoSection(textTheme),
-                              _imageSection(),
-                            ],
+                ),
+              );
+            }
+            if (state is DetailOrderLoaded) {
+              detailOrder = state.data;
+            }
+            if (state is DetailOrderError) {
+              ShowDialog.showAlertDialog(
+                context,
+                'Peringatan!',
+                state.message,
+                null,
+              );
+            }
+            if (state is ListeningOrderStatusError) {
+              ShowDialog.showAlertDialog(
+                context,
+                'Terjadi Kesalahan!',
+                state.message,
+                null,
+              );
+            }
+            if (state is OpenWhatsAppError) {
+              ShowDialog.showAlertDialog(
+                context,
+                'Gagal Membuka WhatsApp!',
+                state.message,
+                null,
+              );
+            }
+            if (state is CreateChatRoomSuccess) {
+              context.read<DetailOrderCubit>().isIdle();
+              context.pushNamed(
+                'chatPage',
+                queryParameters: {
+                  'chatId': context.read<DetailOrderCubit>().chatId.toString(),
+                  'name': detailOrder?.mitra.toString(),
+                  'img': detailOrder?.mitraProfile.toString(),
+                },
+              );
+            }
+          },
+          builder: (context, state) {
+            if (detailOrder == null) {
+              context
+                  .read<DetailOrderCubit>()
+                  .fetchDetailOrder(orderId: widget.orderId!);
+            }
+            return RefreshIndicator(
+              onRefresh: () async => context
+                  .read<DetailOrderCubit>()
+                  .fetchDetailOrder(orderId: widget.orderId!),
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: GradientCard(
+                  width: screenWidht,
+                  height: screenHeight - (screenHeight / 8),
+                  cardColor: Colors.black,
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _infoSection(textTheme),
+                            _imageSection(),
+                          ],
+                        ),
+                        const SizedBox(height: 40),
+                        Text(
+                          'Status Bantuan',
+                          style: textTheme.titleLarge?.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.bold,
                           ),
-                          const SizedBox(height: 40),
-                          Text(
-                            'Status Bantuan',
-                            style: textTheme.titleLarge?.copyWith(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.bold,
+                        ),
+                        const SizedBox(height: 20),
+                        Expanded(
+                          child: FixedTimeline.tileBuilder(
+                            theme: TimelineThemeData(
+                              color: AppColors.limeGreen,
                             ),
-                          ),
-                          const SizedBox(height: 20),
-                          FixedTimeline.tileBuilder(
                             builder: TimelineTileBuilder.connectedFromStyle(
                               itemCount: 5,
                               contentsAlign: ContentsAlign.reverse,
@@ -141,14 +150,86 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
                                   IndicatorStyle.dot,
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                        Align(
+                          alignment: Alignment.bottomCenter,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              _callBtn(context, textTheme),
+                              const SizedBox(width: 10),
+                              _chatBtn(context, textTheme),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              );
-            },
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Expanded _callBtn(BuildContext context, TextTheme textTheme) {
+    return Expanded(
+      child: ElevatedButton(
+        onPressed: () => context.read<DetailOrderCubit>().openWhatsApp(
+              detailOrder?.phoneNumberMitra ?? '',
+            ),
+        style: ButtonStyle(
+          backgroundColor: const WidgetStatePropertyAll(
+            AppColors.primary,
           ),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(42),
+            ),
+          ),
+        ),
+        child: Text(
+          'Call',
+          style: textTheme.bodyLarge?.copyWith(color: AppColors.lightTextColor),
+        ),
+      ),
+    );
+  }
+
+  Expanded _chatBtn(BuildContext context, TextTheme textTheme) {
+    return Expanded(
+      child: ElevatedButton(
+        onPressed: () {
+          if (context.read<DetailOrderCubit>().chatId == null) {
+            context
+                .read<DetailOrderCubit>()
+                .createChatRoom(orderId: detailOrder!.orderId!);
+          } else {
+            context.pushNamed(
+              'chatPage',
+              queryParameters: {
+                'chatId': context.read<DetailOrderCubit>().chatId.toString(),
+                'name': detailOrder?.mitra.toString(),
+                'img': detailOrder?.mitraProfile.toString(),
+              },
+            );
+          }
+        },
+        style: ButtonStyle(
+          backgroundColor: const WidgetStatePropertyAll(
+            AppColors.darkTextColor,
+          ),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(42),
+            ),
+          ),
+        ),
+        child: Text(
+          'Chat',
+          style: textTheme.bodyLarge?.copyWith(color: AppColors.lightTextColor),
         ),
       ),
     );

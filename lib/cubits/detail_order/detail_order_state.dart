@@ -52,3 +52,12 @@ final class OpenWhatsAppError extends DetailOrderState {
   @override
   List<Object> get props => [message];
 }
+
+final class CreateChatRoomSuccess extends DetailOrderState {
+  final int roomId;
+
+  const CreateChatRoomSuccess({required this.roomId});
+
+  @override
+  List<Object> get props => [roomId];
+}

@@ -26,6 +26,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final textTheme = appTheme.textTheme;
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
+    profile = context.watch<ProfileBloc>().profile;
 
     return SafeArea(
       top: false,
@@ -59,7 +60,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   }
                 },
                 builder: (context, state) {
-                  if (state is ProfileInitial || profile == null) {
+                  if (profile == null) {
                     context.read<ProfileBloc>().add(FetchProfile());
                   }
                   if (state is ProfileLoading) {

@@ -11,15 +11,18 @@ part 'detail_order_state.dart';
 class DetailOrderCubit extends Cubit<DetailOrderState> {
   DetailOrderCubit() : super(DetailOrderInitial());
 
-  void isIdle() {
-    emit(DetailOrderIdle());
-  }
+  int? chatId;
+  DetailOrderModel? order;
 
+  void isIdle() => emit(DetailOrderIdle());
+
+  // TODO: Untuk sekarang ini hanya support nomor region indonesia
   void openWhatsApp(String phoneNumber) async {
+    final indonesiaFormatNumber = '+62${phoneNumber.substring(1)}';
     final Uri whatsAppUrl = Uri(
       scheme: 'https',
       host: 'wa.me',
-      path: phoneNumber,
+      path: indonesiaFormatNumber,
     );
     if (await canLaunchUrl(whatsAppUrl)) {
       emit(OpenWhatsApp());
@@ -39,7 +42,20 @@ class DetailOrderCubit extends Cubit<DetailOrderState> {
       var message = response.error?.error ?? response.error?.message;
       emit(DetailOrderError(message: message.toString()));
     } else {
+      order = response;
       emit(DetailOrderLoaded(data: response));
+    }
+  }
+
+  void createChatRoom({required int orderId}) async {
+    emit(DetailOrderLoading());
+    final response = await ApiHelper.createChatRoom(orderId);
+    if (response is ApiErrorResponseModel) {
+      var message = response.error?.error ?? response.error?.message;
+      emit(DetailOrderError(message: message.toString()));
+    } else {
+      chatId = response;
+      emit(CreateChatRoomSuccess(roomId: chatId!));
     }
   }
 }

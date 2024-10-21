@@ -1,6 +1,6 @@
 class LoginModel {
   final String username;
-  final String password; 
+  final String password;
   final String? fcmToken;
 
   LoginModel({
