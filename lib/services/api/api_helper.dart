@@ -252,7 +252,7 @@ class ApiHelper {
     if (response is ApiErrorResponseModel) {
       return response;
     } else {
-      return response['id'];
+      return response['code_room'];
     }
   }
 }

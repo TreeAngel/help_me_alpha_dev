@@ -61,3 +61,38 @@ final class CreateChatRoomSuccess extends DetailOrderState {
   @override
   List<Object> get props => [roomId];
 }
+
+final class ConnectedToChat extends DetailOrderState {}
+
+final class DisconnectedFromChat extends DetailOrderState {}
+
+final class ReconnectingToChat extends DetailOrderState {}
+
+final class FailedReconnectToChat extends DetailOrderState {}
+
+final class ErrorChat extends DetailOrderState {
+  final String message;
+
+  const ErrorChat({required this.message});
+
+  @override
+  List<Object> get props => [message];
+}
+
+final class ReceiveChat extends DetailOrderState {
+  final ChatResponseModel response;
+
+  const ReceiveChat({required this.response});
+
+  @override
+  List<Object> get props => [response];
+}
+
+final class ImageSelected extends DetailOrderState {
+  final XFile image;
+
+  const ImageSelected({required this.image});
+
+  @override
+  List<Object> get props => [image];
+}

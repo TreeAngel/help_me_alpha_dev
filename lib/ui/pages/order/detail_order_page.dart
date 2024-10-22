@@ -47,6 +47,8 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
                   child: CircularProgressIndicator(),
                 ),
               );
+            } else {
+              null;
             }
             if (state is DetailOrderLoaded) {
               detailOrder = state.data;

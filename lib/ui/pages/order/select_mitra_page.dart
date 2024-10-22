@@ -27,27 +27,14 @@ class SelectMitraPage extends StatefulWidget {
   State<SelectMitraPage> createState() => _SelectMitraPageState();
 }
 
-class _SelectMitraPageState extends State<SelectMitraPage>
-    with WidgetsBindingObserver {
+class _SelectMitraPageState extends State<SelectMitraPage> {
   bool paymentDone = false;
   String paymentMessage = 'Belum Bayar!';
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
     LocationService.fetchLocation(context);
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.detached) {
-      context.read<FetchOfferBloc>().continueStream = false;
-    } else {
-      context.read<FetchOfferBloc>().continueStream = true;
-    }
-    super.didChangeAppLifecycleState(state);
   }
 
   @override
@@ -60,6 +47,14 @@ class _SelectMitraPageState extends State<SelectMitraPage>
     return SafeArea(
       child: Scaffold(
         appBar: _appBar(context, textTheme),
+        bottomNavigationBar: const Padding(
+          padding: EdgeInsets.only(
+            left: 2,
+            right: 2,
+            bottom: 2,
+          ),
+          child: LinearProgressIndicator(),
+        ),
         body: Stack(
           children: [
             Positioned(
@@ -168,9 +163,7 @@ class _SelectMitraPageState extends State<SelectMitraPage>
       builder: (context, state) {
         if (state is FetchOfferInitial) {
           if (widget.orderId != null) {
-            context.read<FetchOfferBloc>().add(
-                  FetchOffer(orderId: widget.orderId!),
-                );
+            context.read<FetchOfferBloc>().add(FetchOffer(orderId: widget.orderId!));
           } else {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               ShowDialog.showAlertDialog(
@@ -191,7 +184,13 @@ class _SelectMitraPageState extends State<SelectMitraPage>
             ),
           );
         }
-        return _offerCardBuilder(context, textTheme);
+        if (context.read<FetchOfferBloc>().offerList.isNotEmpty) {
+          return _offerCardBuilder(context, textTheme);
+        } else {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
       },
     );
   }
@@ -334,7 +333,6 @@ class _SelectMitraPageState extends State<SelectMitraPage>
       OutlinedButton(
         onPressed: () {
           context.pop();
-          context.read<FetchOfferBloc>().continueStream = false;
           context.read<ManageOrderBloc>().add(
                 SelectMitraSubmitted(
                   offerId: offer.offerId!,

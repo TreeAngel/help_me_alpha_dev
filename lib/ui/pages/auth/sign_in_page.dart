@@ -51,9 +51,6 @@ class SignInPage extends StatelessWidget {
                         }
                       },
                       builder: (context, state) {
-                        if (state is AuthInitial) {
-                          _requestPermission(context);
-                        }
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [

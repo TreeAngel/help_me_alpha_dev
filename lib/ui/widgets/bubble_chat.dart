@@ -7,7 +7,6 @@ class BubbleChat extends StatelessWidget {
   final int userId;
   final int senderId;
   final String? message;
-  final String? attachment;
   final DateTime sendTime;
 
   const BubbleChat({
@@ -15,7 +14,6 @@ class BubbleChat extends StatelessWidget {
     required this.userId,
     required this.senderId,
     this.message,
-    this.attachment,
     required this.sendTime,
   });
 
@@ -39,7 +37,7 @@ class BubbleChat extends StatelessWidget {
                     senderId == userId ? AppColors.primary : AppColors.surface,
               ),
               width: screenWidth / 2,
-              child: message != null
+              child: message!.startsWith('http')
                   ? Text(
                       message.toString(),
                       softWrap: true,
@@ -49,7 +47,7 @@ class BubbleChat extends StatelessWidget {
                       ),
                     )
                   : CachedNetworkImage(
-                      imageUrl: attachment.toString(),
+                      imageUrl: message.toString(),
                       errorWidget: (context, url, error) =>
                           const Icon(Icons.error_outline),
                       fit: BoxFit.cover,
@@ -58,24 +56,12 @@ class BubbleChat extends StatelessWidget {
             Positioned(
               bottom: 3,
               right: 3,
-              child: Container(
-                decoration: BoxDecoration(
-                  boxShadow: [
-                    BoxShadow(
-                      // Bayangan kiri
-                      offset: Offset(2, 2),
-                      color: Colors.black,
-                      blurRadius: 3,
-                    ),
-                  ],
-                ),
-                child: Text(
-                  '${sendTime.hour}:${sendTime.minute}:${sendTime.second}',
-                  style: textTheme.bodySmall?.copyWith(
+              child: Text(
+                '${sendTime.hour}:${sendTime.minute}:${sendTime.second}',
+                style: textTheme.bodySmall?.copyWith(
                     color: AppColors.darkTextColor,
                     fontWeight: FontWeight.w500,
-                  ),
-                ),
+                    backgroundColor: AppColors.lightTextColor),
               ),
             ),
           ],

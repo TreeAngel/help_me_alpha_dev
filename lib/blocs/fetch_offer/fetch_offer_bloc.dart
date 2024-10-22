@@ -10,7 +10,6 @@ part 'fetch_offer_event.dart';
 part 'fetch_offer_state.dart';
 
 class FetchOfferBloc extends Bloc<FetchOfferEvent, FetchOfferState> {
-  bool continueStream = true;
   List<OfferModel> offerList = [];
 
   FetchOfferBloc() : super(FetchOfferInitial()) {
@@ -20,8 +19,7 @@ class FetchOfferBloc extends Bloc<FetchOfferEvent, FetchOfferState> {
   Future<void> _onFetchOffer(event, emit) async {
     emit(FetchOfferLoading());
     await emit.forEach(
-      ApiHelper.getOfferFromMitra(event.orderId)
-          .takeWhile((response) => continueStream == true),
+      ApiHelper.getOfferFromMitra(event.orderId),
       onData: (response) {
         if (response is ApiErrorResponseModel) {
           final message = response.error?.error ?? response.error?.message;

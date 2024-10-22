@@ -214,8 +214,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
               onPressed: () {
                 context.read<ManageOrderBloc>().haveActiveOrder = true;
                 context.read<HomeCubit>().fetchHistory();
-                context.pop();
-                context.pop();
+                Navigator.popUntil(context, (route) => route.isFirst);
               },
               child: const Text('Lanjut'),
             ),
@@ -352,12 +351,25 @@ class _AddTaskPageState extends State<AddTaskPage> {
             }
             context.read<SendOrderBloc>().add(OrderIsIdle());
           }
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.center,
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ...showedPicture,
-              if (problemPictures.length < 2) _addImage(context, state),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  ...showedPicture,
+                  if (problemPictures.length < 2) _addImage(context, state),
+                ],
+              ),
+              if (problemPictures.isNotEmpty)
+                Text(
+                  'Tahan lama gambar untuk menghapus',
+                  style: textTheme.labelLarge?.copyWith(
+                    color: AppColors.lightTextColor,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
             ],
           );
         },
@@ -472,7 +484,10 @@ class _AddTaskPageState extends State<AddTaskPage> {
       );
 
   void _pickImageMenuFunction(
-      BuildContext context, SendOrderState state, MenuItemModel item) {
+    BuildContext context,
+    SendOrderState state,
+    MenuItemModel item,
+  ) {
     switch (item) {
       case MenuItems.itemFromCamera:
         context.read<SendOrderBloc>().add(CameraCapture());

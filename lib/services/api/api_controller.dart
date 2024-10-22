@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:dio/dio.dart';
 
 import '../../models/api_error_response/api_error_response_model.dart';
@@ -8,7 +6,9 @@ import '../../utils/logging.dart';
 
 class ApiController {
   // TODO: Add base url untuk akses api saat sudah dihosting
-  static const baseUrl = 'https://05569df08501caa1e5cc2f2fd36ca11f.serveo.net';
+  static const baseUrl = 'https://d0eba2c2de13b6bb248dc02fdbc23d57.serveo.net';
+  static const socketUrl =
+      'https://67718a22516e2284f0d2586e8760b4fc.serveo.net';
   static String? token;
 
   static var dio = Dio(
@@ -45,7 +45,6 @@ class ApiController {
     } on DioException catch (e) {
       final error = checkException(e);
       printError(e.toString());
-      log(e.response.toString());
       return ApiErrorResponseModel.fromMap(error);
     } catch (e) {
       printError(e.toString());
@@ -78,7 +77,6 @@ class ApiController {
     } on DioException catch (e) {
       final error = checkException(e);
       printError(e.toString());
-      log(e.response.toString());
       return ApiErrorResponseModel.fromMap(error);
     } catch (e) {
       printError(e.toString());
