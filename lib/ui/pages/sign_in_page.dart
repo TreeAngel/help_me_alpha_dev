@@ -124,7 +124,7 @@ class SignInPage extends StatelessWidget {
                 decoration: TextDecoration.underline,
               ),
               recognizer: TapGestureRecognizer()
-                ..onTap = () => context.goNamed('formDataMitraPage'),
+                ..onTap = () => context.goNamed('signUpPage'),
             )
           ],
         ),

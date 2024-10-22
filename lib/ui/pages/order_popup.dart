@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:help_me_mitra_alpha_ver/configs/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 // import 'package:help_me_mitra_alpha_ver/ui/pages/home_page.dart';
@@ -9,6 +10,8 @@ class OrderPage extends StatefulWidget {
 }
 
 class _OrderPageState extends State<OrderPage> {
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
+
   // State untuk data API
   String? imageUrl;
   String? distance;
@@ -44,7 +47,25 @@ class _OrderPageState extends State<OrderPage> {
   @override
   void initState() {
     super.initState();
+    // Mendapatkan token FCM
+    _getToken();
+    // Mendengarkan pesan ketika aplikasi berjalan di foreground
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print('Pesan diterima di foreground: ${message.notification?.title} - ${message.notification?.body}');
+      // Lakukan sesuatu saat pesan diterima
+    });
+
+    // Mengatur behavior jika aplikasi di background atau terminated
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print('Pesan diterima saat aplikasi di background/terminated');
+    });
     fetchData();
+  }
+
+   // Mendapatkan token FCM dari perangkat
+  void _getToken() async {
+    String? token = await messaging.getToken();
+    print('FCM Token: $token');
   }
 
   @override

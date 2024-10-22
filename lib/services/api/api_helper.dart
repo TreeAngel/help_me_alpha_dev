@@ -52,14 +52,20 @@ class ApiHelper {
   }
 
 
-  static Future<ApiErrorResponseModel> authLogout() async {
-    final response = await ApiController.postData('auth/logout');
+  static Future<ApiErrorResponseModel> authLogout({required String fcmToken}) async {
+    final response = await ApiController.postData(
+      'auth/logout',
+      {'fcmToken': fcmToken},
+    );
+
+    // Handle response
     if (response is ApiErrorResponseModel) {
       return response;
     } else {
       return ApiErrorResponseModel(error: MessageErrorModel.fromMap(response));
     }
   }
+
 
   static Future getUseProfile() async {
     final response = await ApiController.getData('auth/me');

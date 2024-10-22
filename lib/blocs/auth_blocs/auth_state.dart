@@ -86,7 +86,7 @@ final class SignInLoaded extends AuthState {
   final String message;
   final String token;
 
-  const SignInLoaded({required this.message, required this.token});
+  const SignInLoaded({required this.message, required this.token, required String fcmToken});
 
   @override
   List<Object> get props => [message, token];

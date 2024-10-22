@@ -1,6 +1,6 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-import 'logging.dart';
+import '../utils/logging.dart';
 
 class SecureStorage {
   final AndroidOptions _androidOptions = const AndroidOptions(

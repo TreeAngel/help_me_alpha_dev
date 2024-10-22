@@ -187,7 +187,7 @@ class SignUpPage extends StatelessWidget {
         null,
         TextButton.icon(
           onPressed: () {
-            context.goNamed('formDataMitraPage');
+            context.goNamed('homePage');
           },
           style: ButtonStyle(
             backgroundColor: WidgetStateProperty.all(Colors.transparent),

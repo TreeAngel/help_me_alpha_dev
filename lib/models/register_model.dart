@@ -5,6 +5,7 @@ class RegisterModel {
   final String password;
   final String passwordConfirmation;
   final String role;
+  final String? fcmToken;
 
   RegisterModel({
     required this.fullName,
@@ -13,6 +14,7 @@ class RegisterModel {
     required this.password,
     required this.passwordConfirmation,
     required this.role,
+    this.fcmToken,
   });
 
   Map<String, dynamic> toJson() {
@@ -23,6 +25,7 @@ class RegisterModel {
       'password': password,
       'password_confirmation': passwordConfirmation,
       'role': role,
+      'fcm_token': fcmToken,
     };
   }
 }

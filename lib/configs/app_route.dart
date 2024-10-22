@@ -4,7 +4,7 @@ import 'package:help_me_mitra_alpha_ver/ui/pages/form_data_mitra.dart';
 import 'package:help_me_mitra_alpha_ver/ui/pages/launch_page.dart';
 import 'package:help_me_mitra_alpha_ver/ui/pages/order_popup.dart';
 import 'package:help_me_mitra_alpha_ver/ui/pages/selected_popup.dart';
-import 'package:help_me_mitra_alpha_ver/ui/pages/track_maps_page.dart';
+// import 'package:help_me_mitra_alpha_ver/ui/pages/track_maps_page.dart';
 
 import '../services/api/api_controller.dart';
 import '../ui/pages/home_page.dart';
@@ -72,11 +72,11 @@ class AppRoute {
         name: 'selectedPop',
         builder: (context, state) => const SelectedPop(),
       ),
-      GoRoute(
-        path: '/trackmaps',
-        name: 'trackmapsPage',
-        builder: (context, state) => const TrackMaps(),
-      ),
+      // GoRoute(
+      //   path: '/trackmaps',
+      //   name: 'trackmapsPage',
+      //   builder: (context, state) => const TrackMaps(),
+      // ),
     ];
   }
 }

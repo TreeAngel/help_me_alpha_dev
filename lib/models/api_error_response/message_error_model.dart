@@ -31,12 +31,21 @@ class MessageErrorModel {
       MessageErrorModel(
         error: data['error'] as String?,
         message: data['message'] as String?,
-        fullname: data['fullname'] as List<String>?,
-        username: data['username'] as List<String>?,
-        phoneNumber: data['phone_number'] as List<String>?,
-        password: data['password'] as List<String>?,
-        role: data['role'] as List<String>?,
+        fullname: (data['fullname'] as List<dynamic>?)?.map((e) => e.toString()).toList(),
+        username: (data['username'] as List<dynamic>?)?.map((e) => e.toString()).toList(),
+        phoneNumber: (data['phone_number'] as List<dynamic>?)?.map((e) => e.toString()).toList(),
+        password: (data['password'] as List<dynamic>?)?.map((e) => e.toString()).toList(),
+        role: (data['role'] as List<dynamic>?)?.map((e) => e.toString()).toList(),
       );
+      // MessageErrorModel(
+      //   error: data['error'] as String?,
+      //   message: data['message'] as String?,
+      //   fullname: data['fullname'] as List<String>?,
+      //   username: data['username'] as List<String>?,
+      //   phoneNumber: data['phone_number'] as List<String>?,
+      //   password: data['password'] as List<String>?,
+      //   role: data['role'] as List<String>?,
+      // );
 
   Map<String, dynamic> toMap() => {
         'error': error,
