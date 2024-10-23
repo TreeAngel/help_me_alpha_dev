@@ -74,7 +74,10 @@ class _ChatPageState extends State<ChatPage> {
                       BackButton(
                         onPressed: () => context.pop(),
                       ),
-                      Image.file(File(state.image.path)),
+                      Image.file(
+                        File(state.image.path),
+                        fit: BoxFit.cover,
+                      ),
                       Align(
                         alignment: Alignment.centerRight,
                         child: IconButton(

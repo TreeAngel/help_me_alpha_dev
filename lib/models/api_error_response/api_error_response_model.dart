@@ -25,9 +25,13 @@ class ApiErrorResponseModel {
       }
     } else if (data.containsKey('message')) {
       final value = data['message'];
-      return ApiErrorResponseModel(
-        error: MessageErrorModel(message: value),
-      );
+      if (value is String) {
+        return ApiErrorResponseModel(
+          error: MessageErrorModel(message: value),
+        );
+      } else {
+        return ApiErrorResponseModel(error: MessageErrorModel.fromMap(value));
+      }
     } else {
       return const ApiErrorResponseModel(
         error: MessageErrorModel(error: 'Unknown error'),

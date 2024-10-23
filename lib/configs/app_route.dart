@@ -7,21 +7,20 @@ import '../cubits/home/home_cubit.dart';
 import '../services/api/api_controller.dart';
 import '../ui/pages/auth/change_password_page.dart';
 import '../ui/pages/auth/forget_password_page.dart';
+import '../ui/pages/auth/sign_in_page.dart';
+import '../ui/pages/auth/sign_up_page.dart';
+import '../ui/pages/auth/verify_phone_number_page.dart';
 import '../ui/pages/home/edit_profile_page.dart';
+import '../ui/pages/home/home_page.dart';
+import '../ui/pages/home/profile_page.dart';
 import '../ui/pages/misc/image_zoom_page.dart';
 import '../ui/pages/misc/launch_page.dart';
 import '../ui/pages/misc/snap_midtrans_page.dart';
 import '../ui/pages/order/add_task_page.dart';
-import '../ui/pages/home/home_page.dart';
-import '../ui/pages/home/profile_page.dart';
-import '../ui/pages/auth/sign_in_page.dart';
-import '../ui/pages/auth/sign_up_page.dart';
 import '../ui/pages/order/chat_page.dart';
 import '../ui/pages/order/detail_order_page.dart';
 import '../ui/pages/order/select_mitra_page.dart';
 import '../ui/pages/order/select_problem_page.dart';
-import '../ui/pages/auth/verify_phone_number_page.dart';
-import '../utils/manage_token.dart';
 
 class AppRoute {
   static final GoRouter appRoute = GoRouter(
@@ -33,17 +32,12 @@ class AppRoute {
       final activeOrder = (haveOrder == true)
           ? context.read<HomeCubit>().orderHistory.firstWhere((history) =>
               history.orderStatus?.trim().toLowerCase() == 'pending' ||
+              history.orderStatus?.trim().toLowerCase() == 'booked' ||
               history.orderStatus?.trim().toLowerCase() == 'paid' ||
               history.orderStatus?.trim().toLowerCase() == 'otw' ||
               history.orderStatus?.trim().toLowerCase() == 'arrived')
           : null;
       context.read<ManageOrderBloc>().activeOrder = activeOrder;
-      if (activeOrder != null &&
-          !activeOrder.orderStatus!.trim().toLowerCase().contains('pending') &&
-          context.read<ManageOrderBloc>().snapToken != null) {
-        ManageSnapToken.deleteToken();
-        context.read<ManageOrderBloc>().snapToken = null;
-      }
 
       // TODO: Add other guarded route later
       if (isAuthenticated == false && state.matchedLocation == '/home') {
@@ -80,14 +74,17 @@ class AppRoute {
         return '/selectMitra?orderId=${activeOrder.orderId}&status=${activeOrder.orderStatus}';
       }
       if (haveOrder == true &&
-          activeOrder!.orderStatus!.trim().toLowerCase().contains('booked') &&
-          state.uri.query.contains('orderId=${activeOrder.orderId}') &&
-          state.matchedLocation == '/selectMitra') {
-        return '/payOrder?token=${context.read<ManageOrderBloc>().snapToken}';
+          !activeOrder!.orderStatus!.trim().toLowerCase().contains('pending') &&
+          state.matchedLocation == '/selectProblem') {
+        return '/detailOrder?orderId=${context.read<ManageOrderBloc>().activeOrder?.orderId}';
       }
       if (haveOrder == true &&
           !activeOrder!.orderStatus!.trim().toLowerCase().contains('pending') &&
-          state.uri.query.contains('orderId=${activeOrder.orderId}') &&
+          state.matchedLocation == '/selectTask') {
+        return '/detailOrder?orderId=${context.read<ManageOrderBloc>().activeOrder?.orderId}';
+      }
+      if (haveOrder == true &&
+          !activeOrder!.orderStatus!.trim().toLowerCase().contains('pending') &&
           state.matchedLocation == '/selectMitra') {
         return '/detailOrder?orderId=${context.read<ManageOrderBloc>().activeOrder?.orderId}';
       }
@@ -229,7 +226,7 @@ class AppRoute {
             imgPath: imgPath,
           );
         },
-      )
+      ),
     ];
   }
 }

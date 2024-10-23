@@ -11,6 +11,8 @@ final class FetchOfferInitial extends FetchOfferState {}
 
 final class FetchOfferLoading extends FetchOfferState {}
 
+final class FetchOfferIdle extends FetchOfferState {}
+
 final class FetchOfferLoaded extends FetchOfferState {
   final OfferResponseModel data;
 

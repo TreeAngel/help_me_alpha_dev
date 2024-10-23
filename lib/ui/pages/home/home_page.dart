@@ -1,27 +1,25 @@
-import 'dart:developer';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../blocs/auth/auth_bloc.dart';
 import '../../../blocs/manage_order/manage_order_bloc.dart';
 import '../../../blocs/profile/profile_bloc.dart';
-import '../../../data/cards_color.dart';
-import '../../../models/order/history/order_history_model.dart';
-import '../../../services/firebase/firebase_api.dart';
-import '../../../services/location_service.dart';
-import '../../../utils/manage_token.dart';
-import '../../../cubits/home/home_cubit.dart';
 import '../../../configs/app_colors.dart';
+import '../../../cubits/home/home_cubit.dart';
+import '../../../data/cards_color.dart';
 import '../../../data/menu_items_data.dart';
 import '../../../models/category_problem/category_model.dart';
 import '../../../models/misc/menu_item_model.dart';
-import '../../widgets/gradient_card.dart';
+import '../../../models/order/history/order_history_model.dart';
+import '../../../services/firebase/firebase_api.dart';
+import '../../../services/location_service.dart';
 import '../../../utils/logging.dart';
+import '../../../utils/manage_token.dart';
 import '../../../utils/show_dialog.dart';
-import '../../../blocs/auth/auth_bloc.dart';
+import '../../widgets/gradient_card.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -123,7 +121,7 @@ class _HomePageState extends State<HomePage> {
                     const SliverToBoxAdapter(child: SizedBox(height: 20)),
                     _orderHistoryTextHeader(textTheme),
                     const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                    _lastHistoryBlocConsumer(textTheme),
+                    _lastHistoryBlocBuilder(textTheme),
                     const SliverToBoxAdapter(child: SizedBox(height: 20)),
                   ],
                 ),
@@ -140,8 +138,10 @@ class _HomePageState extends State<HomePage> {
       listener: (context, state) {
         if (state is OrderHistoryLoaded) {
           context.read<HomeCubit>().orderHistory = state.history;
+          context.read<HomeCubit>().lastHistory = state.history.last;
           if (state.history.any((history) =>
               history.orderStatus?.trim().toLowerCase() == 'pending' ||
+              history.orderStatus?.trim().toLowerCase() == 'booked' ||
               history.orderStatus?.trim().toLowerCase() == 'paid' ||
               history.orderStatus?.trim().toLowerCase() == 'otw' ||
               history.orderStatus?.trim().toLowerCase() == 'arrived')) {
@@ -149,16 +149,11 @@ class _HomePageState extends State<HomePage> {
           } else {
             context.read<ManageOrderBloc>().haveActiveOrder = false;
           }
-          // if (context.read<HomeCubit>().orderHistory.isNotEmpty) {
-          //   context.read<HomeCubit>().lastHistory = orderHistory.last;
-          // }
-          // context.read<HomeCubit>().fetchCategories();
-        } else if (state is OrderHistoryError) {
-          _onOrderHistoryError(context, state);
         }
-        if (context.read<HomeCubit>().orderHistory.isNotEmpty) {
-          context.read<HomeCubit>().lastHistory =
-              context.read<HomeCubit>().orderHistory.last;
+        if (state is OrderHistoryError) {
+          _onOrderHistoryError(context, state);
+        } else {
+          return;
         }
       },
       builder: (context, state) {
@@ -190,9 +185,12 @@ class _HomePageState extends State<HomePage> {
       delegate: SliverChildBuilderDelegate(
         (context, index) {
           final history = context.read<HomeCubit>().orderHistory[index];
-          return _orderHistoryCard(
-            history,
-            textTheme,
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: _orderHistoryCard(
+              history,
+              textTheme,
+            ),
           );
         },
         childCount: context.read<HomeCubit>().orderHistory.length,
@@ -215,34 +213,10 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  BlocConsumer<HomeCubit, HomeState> _lastHistoryBlocConsumer(
+  BlocBuilder<HomeCubit, HomeState> _lastHistoryBlocBuilder(
     TextTheme textTheme,
   ) {
-    return BlocConsumer<HomeCubit, HomeState>(
-      listener: (context, state) {
-        if (state is OrderHistoryLoaded) {
-          context.read<HomeCubit>().orderHistory = state.history;
-          if (state.history.any((history) =>
-              history.orderStatus?.trim().toLowerCase() == 'pending' ||
-              history.orderStatus?.trim().toLowerCase() == 'paid' ||
-              history.orderStatus?.trim().toLowerCase() == 'otw' ||
-              history.orderStatus?.trim().toLowerCase() == 'arrived')) {
-            context.read<ManageOrderBloc>().haveActiveOrder = true;
-          } else {
-            context.read<ManageOrderBloc>().haveActiveOrder = false;
-          }
-          // if (context.read<HomeCubit>().orderHistory.isNotEmpty) {
-          //   context.read<HomeCubit>().lastHistory = orderHistory.last;
-          // }
-          // context.read<HomeCubit>().fetchCategories();
-        } else if (state is OrderHistoryError) {
-          _onOrderHistoryError(context, state);
-        }
-        if (context.read<HomeCubit>().orderHistory.isNotEmpty) {
-          context.read<HomeCubit>().lastHistory =
-              context.read<HomeCubit>().orderHistory.last;
-        }
-      },
+    return BlocBuilder<HomeCubit, HomeState>(
       builder: (context, state) {
         if (state is HomeLoading) {
           return const SliverToBoxAdapter(
@@ -335,7 +309,6 @@ class _HomePageState extends State<HomePage> {
                   await ManageSnapToken.readToken();
             });
           }
-          log('Snap token: ${context.read<ManageOrderBloc>().snapToken}');
         }
         return _homeAppBar(
           context,
@@ -416,6 +389,24 @@ class _HomePageState extends State<HomePage> {
           context.read<HomeCubit>().fetchHistory(status: null);
         } else if (state is CategoryError) {
           _onCategoryError(context, state);
+        } else if (state is OrderHistoryLoaded) {
+          context.read<HomeCubit>().orderHistory = state.history;
+          context.read<HomeCubit>().lastHistory = state.history.last;
+          if (state.history.any((history) =>
+              history.orderStatus?.trim().toLowerCase() == 'pending' ||
+              history.orderStatus?.trim().toLowerCase() == 'booked' ||
+              history.orderStatus?.trim().toLowerCase() == 'paid' ||
+              history.orderStatus?.trim().toLowerCase() == 'otw' ||
+              history.orderStatus?.trim().toLowerCase() == 'arrived')) {
+            context.read<ManageOrderBloc>().haveActiveOrder = true;
+          } else {
+            context.read<ManageOrderBloc>().haveActiveOrder = false;
+          }
+        }
+        if (state is OrderHistoryError) {
+          _onOrderHistoryError(context, state);
+        } else {
+          return;
         }
       },
       builder: (context, state) {
@@ -602,10 +593,11 @@ class _HomePageState extends State<HomePage> {
           maxWidth: 310,
           child: Text(
             history != null
-                ? history.category.toString().replaceFirst(
+                ? history.category?.replaceFirst(
                       history.category.toString()[0],
                       history.category.toString()[0].toUpperCase(),
-                    )
+                    ) ??
+                    'Belum milih mitra'
                 : 'Kamu belum minta bantuan sama sekali',
             style: textTheme.titleLarge?.copyWith(
               color: AppColors.primary,

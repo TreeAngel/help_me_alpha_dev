@@ -47,6 +47,12 @@ class SendOrderBloc extends Bloc<SendOrderEvent, SendOrderState> {
       emit(OrderInitial());
     });
 
+    on<RestAddPage>((event, emit) {
+      problemPictures.clear();
+      selectedSolution = null;
+      emit(OrderIdle());
+    });
+
     on<CameraCapture>(_onCameraCapture);
 
     on<GalleryImagePicker>(_onGalleryImagePicker);
@@ -88,61 +94,63 @@ class SendOrderBloc extends Bloc<SendOrderEvent, SendOrderState> {
 
   _orderSubmitted(event, emit) async {
     emit(OrderLoading());
-    if (selectedProblem != null ||
+    if (selectedProblem == null ||
         (event as OrderSubmitted).problem.toLowerCase().contains('serabutan')) {
-      if (selectedSolution == null || selectedSolution!.isEmpty) {
-        emit(const SendOrderError(message: 'Sertakan detail masalahnya!'));
-      } else if (lat == null && long == null) {
-        emit(const SendOrderError(message: 'Kamu belum ngasih lokasi kamu!'));
-      } else {
-        List<MultipartFile> images = [];
-        if (problemPictures.isNotEmpty) {
-          for (XFile? file in problemPictures) {
-            if (file != null) {
-              images.add(
-                await MultipartFile.fromFile(
-                  file.path,
-                  filename: file.name.split('/').last,
-                  contentType: MediaType.parse(
-                    lookupMimeType(file.path) ?? 'application/octet-stream',
-                  ),
-                ),
-              );
-            }
-          }
-        }
-        int? id;
-        selectedProblem != null ? id = selectedProblem?.id : null;
-        final orderRequest = OrderRequestModel(
-          problemId: id,
-          description: selectedSolution,
-          attachments: images,
-          lat: lat!,
-          long: long!,
-        );
-        final formData = FormData.fromMap({
-          if (id != null) 'problem_id': id,
-          'description': orderRequest.description,
-          'latitude': orderRequest.lat,
-          'longitude': orderRequest.long,
-          if (images.isNotEmpty) 'attachments[]': orderRequest.attachments,
-        });
-        final response = await ApiHelper.postOrder(formData);
-        if (response is ApiErrorResponseModel) {
-          final message = response.error?.error ?? response.error?.message;
-          emit(SendOrderError(message: message.toString()));
-        } else {
-          emit(
-            OrderUploaded(message: response.message, order: response.order),
+      emit(const SendOrderError(
+        message:
+            'Terjadi kesalahan pada aplikasi, pilih kembali kategori masalah di halaman home',
+      ));
+      return;
+    }
+    if (selectedSolution == null || selectedSolution!.isEmpty) {
+      emit(const SendOrderError(message: 'Sertakan detail masalahnya!'));
+      return;
+    }
+    if (lat == null && long == null) {
+      emit(const SendOrderError(message: 'Kamu belum ngasih lokasi kamu!'));
+      return;
+    }
+    List<MultipartFile> images = [];
+    if (problemPictures.isNotEmpty) {
+      for (XFile? file in problemPictures) {
+        if (file != null) {
+          images.add(
+            await MultipartFile.fromFile(
+              file.path,
+              filename: file.name.split('/').last,
+              contentType: MediaType.parse(
+                lookupMimeType(file.path) ?? 'application/octet-stream',
+              ),
+            ),
           );
         }
       }
+    }
+    int? id;
+    selectedProblem != null ? id = selectedProblem?.id : null;
+    final orderRequest = OrderRequestModel(
+      problemId: id,
+      description: selectedSolution,
+      attachments: images,
+      lat: lat!,
+      long: long!,
+    );
+    final formData = FormData.fromMap({
+      if (id != null) 'problem_id': id,
+      'description': orderRequest.description,
+      'latitude': orderRequest.lat,
+      'longitude': orderRequest.long,
+      if (images.isNotEmpty) 'attachments[]': orderRequest.attachments,
+    });
+    final response = await ApiHelper.postOrder(formData);
+    if (response is ApiErrorResponseModel) {
+      var message = response.error?.error ?? response.error?.message;
+      message ??=
+          '${response.error?.attachment0}, ${response.error?.attachment1}';
+      emit(SendOrderError(message: message.toString()));
     } else {
       emit(
-        const SendOrderError(
-          message:
-              'Terjadi kesalahan pada aplikasi, pilih kembali kategori masalah di halaman home',
-        ),
+        OrderUploaded(message: response.message, order: response.order),
       );
     }
   }

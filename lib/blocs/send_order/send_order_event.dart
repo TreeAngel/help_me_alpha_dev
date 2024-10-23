@@ -45,6 +45,8 @@ class DeleteImage extends SendOrderEvent {
 
 class ProblemsPop extends SendOrderEvent {}
 
+class RestAddPage extends SendOrderEvent {}
+
 class CameraCapture extends SendOrderEvent {}
 
 class GalleryImagePicker extends SendOrderEvent {}

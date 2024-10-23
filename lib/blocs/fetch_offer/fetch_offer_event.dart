@@ -15,3 +15,5 @@ final class FetchOffer extends FetchOfferEvent {
   @override
   List<Object> get props => [orderId];
 }
+
+final class FetchIsIdle extends FetchOfferEvent {}

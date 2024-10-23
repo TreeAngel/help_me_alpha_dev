@@ -1,12 +1,18 @@
+import 'dart:developer';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:help_me_client_alpha_ver/blocs/manage_order/manage_order_bloc.dart';
+import 'package:midtrans_snap/models.dart';
 import 'package:timelines/timelines.dart';
 
 import '../../../configs/app_colors.dart';
 import '../../../cubits/detail_order/detail_order_cubit.dart';
+import '../../../cubits/home/home_cubit.dart';
 import '../../../models/order/detail_order_model.dart';
+import '../../../utils/manage_token.dart';
 import '../../../utils/show_dialog.dart';
 import '../../widgets/gradient_card.dart';
 
@@ -41,14 +47,11 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
           listener: (context, state) {
             if (state is DetailOrderLoading) {
               showDialog(
-                barrierDismissible: false,
                 context: context,
                 builder: (context) => const Center(
                   child: CircularProgressIndicator(),
                 ),
               );
-            } else {
-              null;
             }
             if (state is DetailOrderLoaded) {
               detailOrder = state.data;
@@ -94,84 +97,253 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
               context
                   .read<DetailOrderCubit>()
                   .fetchDetailOrder(orderId: widget.orderId!);
-            }
-            return RefreshIndicator(
-              onRefresh: () async => context
-                  .read<DetailOrderCubit>()
-                  .fetchDetailOrder(orderId: widget.orderId!),
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: GradientCard(
-                  width: screenWidht,
-                  height: screenHeight - (screenHeight / 8),
-                  cardColor: Colors.black,
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            _infoSection(textTheme),
-                            _imageSection(),
-                          ],
-                        ),
-                        const SizedBox(height: 40),
-                        Text(
-                          'Status Bantuan',
-                          style: textTheme.titleLarge?.copyWith(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Expanded(
-                          child: FixedTimeline.tileBuilder(
-                            theme: TimelineThemeData(
-                              color: AppColors.limeGreen,
-                            ),
-                            builder: TimelineTileBuilder.connectedFromStyle(
-                              itemCount: 5,
-                              contentsAlign: ContentsAlign.reverse,
-                              oppositeContentsBuilder: (context, index) =>
-                                  Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  'Order status\nTime',
-                                  style: textTheme.bodyLarge?.copyWith(
-                                    color: AppColors.darkTextColor,
-                                  ),
-                                ),
-                              ),
-                              firstConnectorStyle: ConnectorStyle.transparent,
-                              lastConnectorStyle: ConnectorStyle.transparent,
-                              connectorStyleBuilder: (context, index) =>
-                                  ConnectorStyle.solidLine,
-                              indicatorStyleBuilder: (context, index) =>
-                                  IndicatorStyle.dot,
-                            ),
-                          ),
-                        ),
-                        Align(
-                          alignment: Alignment.bottomCenter,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            } else {
+              return RefreshIndicator(
+                onRefresh: () async => context
+                    .read<DetailOrderCubit>()
+                    .fetchDetailOrder(orderId: widget.orderId!),
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: GradientCard(
+                    width: screenWidht,
+                    height: screenHeight - (screenHeight / 8),
+                    cardColor: Colors.black,
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              _callBtn(context, textTheme),
-                              const SizedBox(width: 10),
-                              _chatBtn(context, textTheme),
+                              _infoSection(textTheme),
+                              _imageSection(),
                             ],
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 40),
+                          Text(
+                            'Status Bantuan',
+                            style: textTheme.titleLarge?.copyWith(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          Expanded(
+                            child: !detailOrder!.orderStatus!
+                                    .trim()
+                                    .toLowerCase()
+                                    .contains('booked')
+                                ? _orderTimeLine(textTheme)
+                                : BlocConsumer<ManageOrderBloc,
+                                    ManageOrderState>(
+                                    listener: (context, state) async {
+                                      if (state is ManageOrderLoading) {
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) => const Center(
+                                            child: CircularProgressIndicator(),
+                                          ),
+                                        );
+                                      }
+                                      if (state is SnapTokenRequested) {
+                                        await _invokePayment(context);
+                                      }
+                                    },
+                                    builder: (context, state) {
+                                      return Column(
+                                        children: [
+                                          OutlinedButton(
+                                            onPressed: () async {
+                                              if (context
+                                                      .read<ManageOrderBloc>()
+                                                      .snapToken ==
+                                                  null) {
+                                                context
+                                                    .read<ManageOrderBloc>()
+                                                    .add(RequestSnapToken(
+                                                      orderId:
+                                                          detailOrder!.orderId!,
+                                                    ));
+                                              } else {
+                                                await _invokePayment(context);
+                                              }
+                                              context.mounted
+                                                  ? log(
+                                                      context
+                                                          .read<
+                                                              ManageOrderBloc>()
+                                                          .snapToken
+                                                          .toString(),
+                                                      name: 'Tes snap token')
+                                                  : null;
+                                            },
+                                            child: Text(
+                                              'Lanjutkan pembayaran',
+                                              style: textTheme.titleMedium
+                                                  ?.copyWith(
+                                                color: AppColors.darkTextColor,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  ),
+                          ),
+                          if (!detailOrder!.orderStatus!
+                              .trim()
+                              .toLowerCase()
+                              .contains('booked'))
+                            Align(
+                              alignment: Alignment.bottomCenter,
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  _callBtn(context, textTheme),
+                                  const SizedBox(width: 10),
+                                  _chatBtn(context, textTheme),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            );
+              );
+            }
           },
         ),
+      ),
+    );
+  }
+
+  Future<void> _invokePayment(BuildContext context) async {
+    final response = await context.pushNamed(
+      'payPage',
+      queryParameters: {
+        'token': context.read<ManageOrderBloc>().snapToken,
+      },
+    );
+    if (response is MidtransResponse && context.mounted) {
+      if (response.transactionStatus.trim().toLowerCase() == 'settlement' &&
+          response.statusCode == 200 &&
+          response.fraudStatus.trim().toLowerCase() == 'accept') {
+        ManageSnapToken.deleteToken();
+        context.read<ManageOrderBloc>().snapToken = null;
+        context.read<ManageOrderBloc>().add(CompletingPayment());
+        context.read<HomeCubit>().fetchHistory();
+        setState(() {
+          detailOrder?.orderStatus = 'payed';
+        });
+      } else if (response.statusCode == 201 &&
+          response.transactionStatus.trim().toLowerCase() == 'pending') {
+        context.read<ManageOrderBloc>().add(WaitingPayment());
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => ShowDialog.showAlertDialog(
+            context,
+            'Pembayaran Pending!',
+            response.statusMessage,
+            null,
+          ),
+        );
+      } else if (response.statusCode == 407) {
+        ManageSnapToken.deleteToken();
+        context.read<ManageOrderBloc>().snapToken = null;
+        context.read<ManageOrderBloc>().add(ManageOrderIsIdle());
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => ShowDialog.showAlertDialog(
+            context,
+            'Pembayaran Gagal!',
+            response.statusMessage,
+            null,
+          ),
+        );
+      } else {
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => ShowDialog.showAlertDialog(
+            context,
+            'tes',
+            'test',
+            null,
+          ),
+        );
+      }
+    } else if (response is String && context.mounted) {
+      if (response
+              .trim()
+              .toLowerCase()
+              .contains('transaction_status=settlement') &&
+          response.trim().toLowerCase().contains('status_code=200')) {
+        ManageSnapToken.deleteToken();
+        context.read<ManageOrderBloc>().snapToken = null;
+        context.read<ManageOrderBloc>().add(CompletingPayment());
+        context.read<HomeCubit>().fetchHistory();
+        setState(() {
+          detailOrder?.orderStatus = 'payed';
+        });
+      } else if (response.trim().toLowerCase().contains('status_code=201') &&
+          response.trim().toLowerCase().contains('pending')) {
+        context.read<ManageOrderBloc>().add(WaitingPayment());
+        ShowDialog.showAlertDialog(
+          context,
+          'Pembayaran Pending!',
+          'Harap selesaikan pembayaran dalam waktu yang ditentukan',
+          null,
+        );
+      } else if (response.trim().toLowerCase().contains('status_code=407') ||
+          response.trim().toLowerCase().contains('error')) {
+        ManageSnapToken.deleteToken();
+        context.read<ManageOrderBloc>().snapToken = null;
+        context.read<ManageOrderBloc>().add(ManageOrderIsIdle());
+        ShowDialog.showAlertDialog(
+          context,
+          'Pembayaran Gagal!',
+          'Terjadi kesalahan saat transaksi, coba lagi',
+          null,
+        );
+      } else {
+        ShowDialog.showAlertDialog(
+          context,
+          'tes',
+          'test',
+          null,
+        );
+      }
+    }
+    log(
+      response.toString(),
+      name: 'Tes response pembayaran',
+    );
+  }
+
+  FixedTimeline _orderTimeLine(TextTheme textTheme) {
+    return FixedTimeline.tileBuilder(
+      theme: TimelineThemeData(
+        color: AppColors.limeGreen,
+      ),
+      builder: TimelineTileBuilder.connectedFromStyle(
+        itemCount: 5,
+        contentsAlign: ContentsAlign.reverse,
+        oppositeContentsBuilder: (context, index) => Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            'Order status\nTime',
+            style: textTheme.bodyLarge?.copyWith(
+              color: AppColors.darkTextColor,
+            ),
+          ),
+        ),
+        firstConnectorStyle: ConnectorStyle.transparent,
+        lastConnectorStyle: ConnectorStyle.transparent,
+        connectorStyleBuilder: (context, index) => ConnectorStyle.solidLine,
+        indicatorStyleBuilder: (context, index) => IndicatorStyle.dot,
       ),
     );
   }

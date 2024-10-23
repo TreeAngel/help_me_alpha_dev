@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 
@@ -6,6 +7,7 @@ import '../../models/api_error_response/api_error_response_model.dart';
 import '../../models/offer/select_mitra_response_model/select_mitra_response_model.dart';
 import '../../models/order/history/order_history_model.dart';
 import '../../services/api/api_helper.dart';
+import '../../utils/manage_token.dart';
 
 part 'manage_order_event.dart';
 part 'manage_order_state.dart';
@@ -36,10 +38,10 @@ class ManageOrderBloc extends Bloc<ManageOrderEvent, ManageOrderState> {
       final message = response.error?.error ?? response.error?.message;
       emit(SnapTokenError(message: message.toString()));
     } else {
+      snapToken = response['snap_token'];
+      ManageSnapToken.writeToken(snapToken);
+      log(snapToken.toString(), name: 'Tes snap token');
       emit(SnapTokenRequested(code: response['snap_token']));
-      // log(response['snap_token']);
-      // snapToken = response['snap_token'];
-      // ManageSnapToken.writeToken(snapToken);
     }
   }
 

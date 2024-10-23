@@ -1,5 +1,8 @@
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 
 import '../configs/app_colors.dart';
 
@@ -10,16 +13,18 @@ class ImagePickerUtil {
     try {
       final XFile? pickedImage =
           await picker.pickImage(source: ImageSource.camera);
-      if (pickedImage != null) {
-        final CroppedFile? croppedImage = await cropImage(pickedImage);
-        if (croppedImage != null) {
-          return XFile(croppedImage.path, name: pickedImage.name);
-        } else {
-          return null;
-        }
-      } else {
+      if (pickedImage == null) {
         return null;
       }
+      final CroppedFile? croppedImage = await cropImage(pickedImage);
+      if (croppedImage == null) {
+        return null;
+      }
+      final compressedImage = await compressImage(croppedImage);
+      if (compressedImage == null) {
+        return null;
+      }
+      return XFile(compressedImage.path, name: compressedImage.name);
     } catch (e) {
       throw Exception(e.toString());
     }
@@ -29,16 +34,18 @@ class ImagePickerUtil {
     try {
       final XFile? pickedImage =
           await picker.pickImage(source: ImageSource.gallery);
-      if (pickedImage != null) {
-        final CroppedFile? croppedImage = await cropImage(pickedImage);
-        if (croppedImage != null) {
-          return XFile(croppedImage.path, name: pickedImage.name);
-        } else {
-          return null;
-        }
-      } else {
+      if (pickedImage == null) {
         return null;
       }
+      final CroppedFile? croppedImage = await cropImage(pickedImage);
+      if (croppedImage == null) {
+        return null;
+      }
+      final compressedImage = await compressImage(croppedImage);
+      if (compressedImage == null) {
+        return null;
+      }
+      return XFile(compressedImage.path, name: compressedImage.name);
     } catch (e) {
       throw Exception(e.toString());
     }
@@ -58,6 +65,19 @@ class ImagePickerUtil {
           cropGridColor: AppColors.grey,
         ),
       ],
+    );
+  }
+
+  Future<XFile?> compressImage(CroppedFile image) async {
+    final tempDirectory = await getApplicationCacheDirectory();
+    final targetPath = path.join(
+      tempDirectory.path,
+      '${path.basenameWithoutExtension(image.path)}_compress.jpg',
+    );
+    return await FlutterImageCompress.compressAndGetFile(
+      image.path,
+      targetPath,
+      quality: 80,
     );
   }
 }

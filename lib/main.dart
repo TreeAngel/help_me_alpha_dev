@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-import 'package:help_me_client_alpha_ver/firebase_options.dart';
-
 import 'blocs/auth/auth_bloc.dart';
 import 'blocs/fetch_offer/fetch_offer_bloc.dart';
 import 'blocs/manage_order/manage_order_bloc.dart';
@@ -14,6 +12,7 @@ import 'configs/app_route.dart';
 import 'configs/app_theme.dart';
 import 'cubits/detail_order/detail_order_cubit.dart';
 import 'cubits/home/home_cubit.dart';
+import 'firebase_options.dart';
 import 'utils/image_picker_util.dart';
 import 'utils/manage_token.dart';
 

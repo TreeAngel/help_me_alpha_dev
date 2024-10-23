@@ -48,6 +48,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
     questionChoices.clear();
     problemPictures.clear();
     questions = questionsBuilder(widget.problem!, questionChoices);
+    context.read<SendOrderBloc>().add(RestAddPage());
     getLocation();
   }
 
@@ -86,6 +87,10 @@ class _AddTaskPageState extends State<AddTaskPage> {
         borderRadius: BorderRadius.circular(10),
       ),
     );
+    if (lat != null && long != null) {
+      context.read<SendOrderBloc>().lat = lat;
+      context.read<SendOrderBloc>().long = long;
+    }
 
     return SafeArea(
       top: false,
@@ -274,11 +279,13 @@ class _AddTaskPageState extends State<AddTaskPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SvgPicture.asset(
-            'assets/icons/assistant_navigation.svg',
-            width: 28,
-            height: 28,
-          ),
+          lat == null && long == null
+              ? SvgPicture.asset(
+                  'assets/icons/assistant_navigation.svg',
+                  width: 28,
+                  height: 28,
+                )
+              : const Icon(Icons.done),
           const SizedBox(width: 10),
           Text(
             'Bagikan Lokasi Saya',
@@ -541,7 +548,6 @@ class _AddTaskPageState extends State<AddTaskPage> {
           BorderSide(color: Colors.black),
         ),
       ),
-      initialSelection: questionChoices.first,
       onSelected: (String? value) {
         setState(() {
           selectedChoice = value;

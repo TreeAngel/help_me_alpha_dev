@@ -40,7 +40,7 @@ class OrderHistoryModel extends Equatable {
           user: data['user'] as String?,
           userProfile: data['user_profile'] as String?,
           price: data['price'] as String?,
-          category: data['category'] as String?,
+          category: data['problem'] as String?,
           attachment: (data['attachment'] as List<dynamic>?));
 
   Map<String, dynamic> toMap() => {

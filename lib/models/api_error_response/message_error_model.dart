@@ -11,6 +11,8 @@ class MessageErrorModel {
   final List<dynamic>? role;
   final List<dynamic>? newPassword;
   final List<dynamic>? verificationCode;
+  final List<dynamic>? attachment0;
+  final List<dynamic>? attachment1;
 
   const MessageErrorModel({
     this.error,
@@ -22,11 +24,13 @@ class MessageErrorModel {
     this.role,
     this.newPassword,
     this.verificationCode,
+    this.attachment0,
+    this.attachment1,
   });
 
   @override
   String toString() {
-    return 'Error(error: $error, message: $message, fullname: $fullname, username: $username, phoneNumber: $phoneNumber, password: $password, role: $role, newPassword: $newPassword, verificationCode: $verificationCode';
+    return 'Error(error: $error, message: $message, fullname: $fullname, username: $username, phoneNumber: $phoneNumber, password: $password, role: $role, newPassword: $newPassword, verificationCode: $verificationCode, attachment: $attachment0 | $attachment1';
   }
 
   factory MessageErrorModel.fromMap(Map<String, dynamic> data) =>
@@ -40,5 +44,7 @@ class MessageErrorModel {
         role: data['role'] as List<dynamic>?,
         newPassword: data['new_password'] as List<dynamic>?,
         verificationCode: data['verification_code'] as List<dynamic>?,
+        attachment0: data['attachments.0'] as List<dynamic>?,
+        attachment1: data['attachments.1'] as List<dynamic>?,
       );
 }

@@ -9,7 +9,6 @@ import '../../../blocs/fetch_offer/fetch_offer_bloc.dart';
 import '../../../configs/app_colors.dart';
 import '../../../models/offer/offer_model.dart';
 import '../../../services/location_service.dart';
-import '../../../utils/manage_token.dart';
 import '../../../utils/show_dialog.dart';
 import '../../widgets/gradient_card.dart';
 
@@ -28,9 +27,6 @@ class SelectMitraPage extends StatefulWidget {
 }
 
 class _SelectMitraPageState extends State<SelectMitraPage> {
-  bool paymentDone = false;
-  String paymentMessage = 'Belum Bayar!';
-
   @override
   void initState() {
     super.initState();
@@ -87,6 +83,7 @@ class _SelectMitraPageState extends State<SelectMitraPage> {
                       state.message,
                       null,
                     );
+                    context.read<ManageOrderBloc>().add(ManageOrderIsIdle());
                     if (state.message
                             .trim()
                             .toLowerCase()
@@ -97,20 +94,10 @@ class _SelectMitraPageState extends State<SelectMitraPage> {
                           .add(RequestSnapToken(orderId: widget.orderId!));
                     }
                   } else if (state is SelectMitraSuccess) {
-                    context
-                        .read<ManageOrderBloc>()
-                        .add(RequestSnapToken(orderId: widget.orderId!));
-                  }
-                  if (state is SnapTokenRequested) {
-                    context.read<ManageOrderBloc>().add(WaitingPayment());
-                    ManageSnapToken.writeToken(state.code);
-                    context.read<ManageOrderBloc>().snapToken = state.code;
-                  }
-                  if (state is PaymentPending) {
                     context.replaceNamed(
-                      'payPage',
+                      'detailOrderPage',
                       queryParameters: {
-                        'token': context.read<ManageOrderBloc>().snapToken,
+                        'orderId': widget.orderId.toString(),
                       },
                     );
                   }
@@ -155,6 +142,7 @@ class _SelectMitraPageState extends State<SelectMitraPage> {
       listener: (context, state) {
         if (state is FetchOfferError) {
           _stateError(context, state.message);
+          context.read<FetchOfferBloc>().add(FetchIsIdle());
         } else if (state is FetchOfferLoaded) {
           context.read<FetchOfferBloc>().offerList =
               state.data.data ?? <OfferModel>[];
@@ -163,7 +151,9 @@ class _SelectMitraPageState extends State<SelectMitraPage> {
       builder: (context, state) {
         if (state is FetchOfferInitial) {
           if (widget.orderId != null) {
-            context.read<FetchOfferBloc>().add(FetchOffer(orderId: widget.orderId!));
+            context
+                .read<FetchOfferBloc>()
+                .add(FetchOffer(orderId: widget.orderId!));
           } else {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               ShowDialog.showAlertDialog(
