@@ -48,6 +48,9 @@ class BubbleChat extends StatelessWidget {
                     )
                   : CachedNetworkImage(
                       imageUrl: message.toString(),
+                      placeholder: (context, error) => const Center(
+                        child: CircularProgressIndicator(),
+                      ),
                       errorWidget: (context, url, error) =>
                           const Icon(Icons.error_outline),
                       fit: BoxFit.cover,
@@ -55,13 +58,15 @@ class BubbleChat extends StatelessWidget {
             ),
             Positioned(
               bottom: 3,
+              left: 3,
               right: 3,
               child: Text(
                 '${sendTime.hour}:${sendTime.minute}:${sendTime.second}',
                 style: textTheme.bodySmall?.copyWith(
-                    color: AppColors.darkTextColor,
-                    fontWeight: FontWeight.w500,
-                    backgroundColor: AppColors.lightTextColor),
+                  color: AppColors.darkTextColor,
+                  fontWeight: FontWeight.w500,
+                  backgroundColor: AppColors.lightTextColor.withOpacity(80),
+                ),
               ),
             ),
           ],

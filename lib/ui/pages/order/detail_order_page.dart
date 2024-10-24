@@ -4,10 +4,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:help_me_client_alpha_ver/blocs/manage_order/manage_order_bloc.dart';
 import 'package:midtrans_snap/models.dart';
 import 'package:timelines/timelines.dart';
 
+import '../../../blocs/manage_order/manage_order_bloc.dart';
 import '../../../configs/app_colors.dart';
 import '../../../cubits/detail_order/detail_order_cubit.dart';
 import '../../../cubits/home/home_cubit.dart';
@@ -15,6 +15,18 @@ import '../../../models/order/detail_order_model.dart';
 import '../../../utils/manage_token.dart';
 import '../../../utils/show_dialog.dart';
 import '../../widgets/gradient_card.dart';
+
+enum OrderStatus {
+  pending,
+  booked,
+  payed,
+  cancelled,
+  otw,
+  arrived,
+  inProgress,
+  complete,
+}
+// TODO: Implement rating order
 
 class DetailOrderPage extends StatefulWidget {
   final int? orderId;
@@ -31,6 +43,7 @@ class DetailOrderPage extends StatefulWidget {
 
 class _DetailOrderPageState extends State<DetailOrderPage> {
   DetailOrderModel? detailOrder;
+  OrderStatus orderStatus = OrderStatus.pending;
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +51,34 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
     final textTheme = appTheme.textTheme;
     final screenWidht = MediaQuery.sizeOf(context).width;
     final screenHeight = MediaQuery.sizeOf(context).height;
+
+    Widget widgetContent;
+    switch (orderStatus) {
+      case OrderStatus.pending:
+        widgetContent = Text(
+          'Anda belum memilh mitra!',
+          style: textTheme.bodyMedium?.copyWith(
+            color: AppColors.darkTextColor,
+            fontWeight: FontWeight.w500,
+          ),
+        );
+        break;
+      case OrderStatus.booked:
+        widgetContent = _paymentConsumer(textTheme);
+        break;
+      case OrderStatus.cancelled:
+        widgetContent = Text(
+          'Order dibatalkan!',
+          style: textTheme.bodyMedium?.copyWith(
+            color: AppColors.darkTextColor,
+            fontWeight: FontWeight.w500,
+          ),
+        );
+        break;
+      default:
+        widgetContent = _orderTimeLine(textTheme);
+        break;
+    }
 
     return SafeArea(
       child: Scaffold(
@@ -55,6 +96,48 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
             }
             if (state is DetailOrderLoaded) {
               detailOrder = state.data;
+              switch (detailOrder?.orderStatus) {
+                case 'pending':
+                  setState(() {
+                    orderStatus = OrderStatus.pending;
+                  });
+                  break;
+                case 'booked':
+                  setState(() {
+                    orderStatus = OrderStatus.booked;
+                  });
+                  break;
+                case 'payed':
+                  setState(() {
+                    orderStatus = OrderStatus.payed;
+                  });
+                  break;
+                case 'cancelled':
+                  setState(() {
+                    orderStatus = OrderStatus.cancelled;
+                  });
+                  break;
+                case 'otw':
+                  setState(() {
+                    orderStatus = OrderStatus.otw;
+                  });
+                  break;
+                case 'arrived':
+                  setState(() {
+                    orderStatus = OrderStatus.arrived;
+                  });
+                  break;
+                case 'inProgress':
+                  setState(() {
+                    orderStatus = OrderStatus.inProgress;
+                  });
+                  break;
+                case 'complete':
+                  setState(() {
+                    orderStatus = OrderStatus.complete;
+                  });
+                  break;
+              }
             }
             if (state is DetailOrderError) {
               ShowDialog.showAlertDialog(
@@ -85,7 +168,8 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
               context.pushNamed(
                 'chatPage',
                 queryParameters: {
-                  'chatId': context.read<DetailOrderCubit>().chatId.toString(),
+                  'chatId':
+                      context.read<DetailOrderCubit>().chatRoomCode.toString(),
                   'name': detailOrder?.mitra.toString(),
                   'img': detailOrder?.mitraProfile.toString(),
                 },
@@ -133,72 +217,16 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
                           ),
                           const SizedBox(height: 20),
                           Expanded(
-                            child: !detailOrder!.orderStatus!
-                                    .trim()
-                                    .toLowerCase()
-                                    .contains('booked')
-                                ? _orderTimeLine(textTheme)
-                                : BlocConsumer<ManageOrderBloc,
-                                    ManageOrderState>(
-                                    listener: (context, state) async {
-                                      if (state is ManageOrderLoading) {
-                                        showDialog(
-                                          context: context,
-                                          builder: (context) => const Center(
-                                            child: CircularProgressIndicator(),
-                                          ),
-                                        );
-                                      }
-                                      if (state is SnapTokenRequested) {
-                                        await _invokePayment(context);
-                                      }
-                                    },
-                                    builder: (context, state) {
-                                      return Column(
-                                        children: [
-                                          OutlinedButton(
-                                            onPressed: () async {
-                                              if (context
-                                                      .read<ManageOrderBloc>()
-                                                      .snapToken ==
-                                                  null) {
-                                                context
-                                                    .read<ManageOrderBloc>()
-                                                    .add(RequestSnapToken(
-                                                      orderId:
-                                                          detailOrder!.orderId!,
-                                                    ));
-                                              } else {
-                                                await _invokePayment(context);
-                                              }
-                                              context.mounted
-                                                  ? log(
-                                                      context
-                                                          .read<
-                                                              ManageOrderBloc>()
-                                                          .snapToken
-                                                          .toString(),
-                                                      name: 'Tes snap token')
-                                                  : null;
-                                            },
-                                            child: Text(
-                                              'Lanjutkan pembayaran',
-                                              style: textTheme.titleMedium
-                                                  ?.copyWith(
-                                                color: AppColors.darkTextColor,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  ),
+                            child: widgetContent,
+                            //  orderStatus != OrderStatus.pending &&
+                            //         orderStatus != OrderStatus.booked
+                            //     ? _orderTimeLine(textTheme)
+                            //     : _paymentConsumer(textTheme),
                           ),
-                          if (!detailOrder!.orderStatus!
-                              .trim()
-                              .toLowerCase()
-                              .contains('booked'))
+                          if (orderStatus != OrderStatus.pending &&
+                              orderStatus != OrderStatus.booked &&
+                              orderStatus != OrderStatus.complete &&
+                              orderStatus != OrderStatus.cancelled)
                             Align(
                               alignment: Alignment.bottomCenter,
                               child: Row(
@@ -221,6 +249,62 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
           },
         ),
       ),
+    );
+  }
+
+  BlocConsumer<ManageOrderBloc, ManageOrderState> _paymentConsumer(
+      TextTheme textTheme) {
+    return BlocConsumer<ManageOrderBloc, ManageOrderState>(
+      listener: (context, state) async {
+        // if (state is ManageOrderLoading) {
+        //   showDialog(
+        //     context: context,
+        //     builder: (context) => const Center(
+        //       child: CircularProgressIndicator(),
+        //     ),
+        //   );
+        // }
+        if (state is SnapTokenRequested) {
+          await _invokePayment(context);
+        }
+      },
+      builder: (context, state) {
+        if (state is ManageOrderLoading) {
+          return const Column(
+            children: [
+              Center(
+                child: CircularProgressIndicator(),
+              ),
+            ],
+          );
+        }
+        return Column(
+          children: [
+            OutlinedButton(
+              onPressed: () async {
+                if (context.read<ManageOrderBloc>().snapToken == null) {
+                  context.read<ManageOrderBloc>().add(RequestSnapToken(
+                        orderId: detailOrder!.orderId!,
+                      ));
+                } else {
+                  await _invokePayment(context);
+                }
+                context.mounted
+                    ? log(context.read<ManageOrderBloc>().snapToken.toString(),
+                        name: 'Tes snap token')
+                    : null;
+              },
+              child: Text(
+                'Lanjutkan pembayaran',
+                style: textTheme.titleMedium?.copyWith(
+                  color: AppColors.darkTextColor,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -262,15 +346,6 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
             context,
             'Pembayaran Gagal!',
             response.statusMessage,
-            null,
-          ),
-        );
-      } else {
-        WidgetsBinding.instance.addPostFrameCallback(
-          (_) => ShowDialog.showAlertDialog(
-            context,
-            'tes',
-            'test',
             null,
           ),
         );
@@ -323,23 +398,54 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
     );
   }
 
+  // TODO: Implementasi timeline berdasarkan status dari order
   FixedTimeline _orderTimeLine(TextTheme textTheme) {
     return FixedTimeline.tileBuilder(
       theme: TimelineThemeData(
         color: AppColors.limeGreen,
+        connectorTheme: const ConnectorThemeData(
+          space: 20,
+        ),
       ),
       builder: TimelineTileBuilder.connectedFromStyle(
-        itemCount: 5,
+        itemCount: switch (orderStatus) {
+          OrderStatus.pending => 0,
+          OrderStatus.booked => 0,
+          OrderStatus.payed => 1,
+          OrderStatus.cancelled => 0,
+          OrderStatus.otw => 2,
+          OrderStatus.arrived => 3,
+          OrderStatus.inProgress => 4,
+          OrderStatus.complete => 5,
+        },
         contentsAlign: ContentsAlign.reverse,
-        oppositeContentsBuilder: (context, index) => Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(
-            'Order status\nTime',
-            style: textTheme.bodyLarge?.copyWith(
-              color: AppColors.darkTextColor,
+        oppositeContentsBuilder: (context, index) {
+          String status = 'Status dari order';
+          if (index == 0) {
+            status = 'Uang Transport Dibayar';
+          }
+          if (index == 1) {
+            status = 'Abangnya OTW';
+          }
+          if (index == 2) {
+            status = 'Abangnya sudah sampai';
+          }
+          if (index == 3) {
+            status = 'Sedang dikerjakan';
+          }
+          if (index == 4) {
+            status = 'Pekerjaan selesai';
+          }
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              status,
+              style: textTheme.bodyLarge?.copyWith(
+                color: AppColors.darkTextColor,
+              ),
             ),
-          ),
-        ),
+          );
+        },
         firstConnectorStyle: ConnectorStyle.transparent,
         lastConnectorStyle: ConnectorStyle.transparent,
         connectorStyleBuilder: (context, index) => ConnectorStyle.solidLine,
@@ -376,7 +482,7 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
     return Expanded(
       child: ElevatedButton(
         onPressed: () {
-          if (context.read<DetailOrderCubit>().chatId == null) {
+          if (context.read<DetailOrderCubit>().chatRoomCode == null) {
             context
                 .read<DetailOrderCubit>()
                 .createChatRoom(orderId: detailOrder!.orderId!);
@@ -384,7 +490,8 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
             context.pushNamed(
               'chatPage',
               queryParameters: {
-                'chatId': context.read<DetailOrderCubit>().chatId.toString(),
+                'roomCode':
+                    context.read<DetailOrderCubit>().chatRoomCode.toString(),
                 'name': detailOrder?.mitra.toString(),
                 'img': detailOrder?.mitraProfile.toString(),
               },

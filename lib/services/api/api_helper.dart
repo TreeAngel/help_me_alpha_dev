@@ -2,20 +2,22 @@ import 'dart:developer';
 
 import 'package:dio/dio.dart';
 
+import '../../models/api_error_response/api_error_response_model.dart';
+import '../../models/api_error_response/message_error_model.dart';
+import '../../models/auth/auth_response_model.dart';
+import '../../models/auth/login_model.dart';
+import '../../models/auth/register_model.dart';
+import '../../models/auth/user_model.dart';
+import '../../models/category_problem/category_model.dart';
+import '../../models/category_problem/problem_model.dart';
 import '../../models/offer/offer_model.dart';
 import '../../models/offer/offer_response_model.dart';
 import '../../models/offer/select_mitra_response_model/select_mitra_response_model.dart';
+import '../../models/order/chat/chat_response_model.dart';
+import '../../models/order/chat/send_chat_message_response_model/send_chat_message_response_model.dart';
 import '../../models/order/detail_order_model.dart';
 import '../../models/order/history/order_history_model.dart';
 import '../../models/order/order_response_model/order_response_model.dart';
-import '../../models/category_problem/problem_model.dart';
-import '../../models/auth/user_model.dart';
-import '../../models/auth/auth_response_model.dart';
-import '../../models/category_problem/category_model.dart';
-import '../../models/auth/login_model.dart';
-import '../../models/auth/register_model.dart';
-import '../../models/api_error_response/api_error_response_model.dart';
-import '../../models/api_error_response/message_error_model.dart';
 import 'api_controller.dart';
 
 class ApiHelper {
@@ -244,7 +246,7 @@ class ApiHelper {
   }
 
   // Chat
-  static Future createChatRoom(int orderId) async {
+  static Future getChatRoomCode(int orderId) async {
     final response = await ApiController.postData(
       'users/chats',
       {'order_id': orderId},
@@ -253,6 +255,35 @@ class ApiHelper {
       return response;
     } else {
       return response['code_room'];
+    }
+  }
+
+  static Future sendChatMessage(FormData request) async {
+    final response = await ApiController.postData(
+      'users/chats/messages',
+      request,
+      Headers.multipartFormDataContentType,
+    );
+    if (response is ApiErrorResponseModel) {
+      return response;
+    } else {
+      return SendChatMessageResponseModel.fromMap(response);
+    }
+  }
+
+  static Future getChatMessagesHistory(String roomCode) async {
+    final response = await ApiController.getData(
+      'users/chats/$roomCode/messages',
+    );
+    if (response is ApiErrorResponseModel) {
+      return response;
+    } else {
+      List<ChatResponseModel> messages = [];
+      if (response is List<dynamic>) {
+        for (var value in response) {
+          messages.add(ChatResponseModel.fromMap(value));
+        }}
+      return messages;
     }
   }
 }

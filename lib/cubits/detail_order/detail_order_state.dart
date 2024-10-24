@@ -54,12 +54,12 @@ final class OpenWhatsAppError extends DetailOrderState {
 }
 
 final class CreateChatRoomSuccess extends DetailOrderState {
-  final int roomId;
+  final String roomCode;
 
-  const CreateChatRoomSuccess({required this.roomId});
+  const CreateChatRoomSuccess({required this.roomCode});
 
   @override
-  List<Object> get props => [roomId];
+  List<Object> get props => [roomCode];
 }
 
 final class ConnectedToChat extends DetailOrderState {}
@@ -95,4 +95,22 @@ final class ImageSelected extends DetailOrderState {
 
   @override
   List<Object> get props => [image];
+}
+
+final class MessagesLoaded extends DetailOrderState {
+  final List<ChatResponseModel> messages;
+
+  const MessagesLoaded({required this.messages});
+
+  @override
+  List<Object> get props => [messages];
+}
+
+final class SendMessageSuccess extends DetailOrderState {
+  final SendChatMessageResponseModel response;
+
+  const SendMessageSuccess({required this.response});
+
+  @override
+  List<Object> get props => [response];
 }

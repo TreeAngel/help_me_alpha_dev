@@ -216,12 +216,12 @@ class AppRoute {
         name: 'chatPage',
         builder: (context, state) {
           final userId = state.uri.queryParameters['id'].toString();
-          final chatId = state.uri.queryParameters['chatId'].toString();
+          final chatRoomCode = state.uri.queryParameters['roomCode'].toString();
           final mitraName = state.uri.queryParameters['name'].toString();
           final imgPath = state.uri.queryParameters['img'].toString();
           return ChatPage(
             userId: !userId.contains('null') ? int.parse(userId) : 0,
-            chatId: !chatId.contains('null') ? int.parse(chatId) : 0,
+            chatRoomCode: chatRoomCode,
             mitraName: mitraName,
             imgPath: imgPath,
           );

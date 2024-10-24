@@ -1,15 +1,15 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:help_me_client_alpha_ver/blocs/manage_order/manage_order_bloc.dart';
-import 'package:help_me_client_alpha_ver/cubits/home/home_cubit.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../blocs/manage_order/manage_order_bloc.dart';
 import '../../../blocs/send_order/send_order_bloc.dart';
 import '../../../configs/app_colors.dart';
+import '../../../cubits/home/home_cubit.dart';
 import '../../../data/menu_items_data.dart';
 import '../../../models/misc/menu_item_model.dart';
 import '../../../services/location_service.dart';
@@ -48,7 +48,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
     questionChoices.clear();
     problemPictures.clear();
     questions = questionsBuilder(widget.problem!, questionChoices);
-    context.read<SendOrderBloc>().add(RestAddPage());
+    context.read<SendOrderBloc>().add(ResetAddPage());
     getLocation();
   }
 
@@ -164,21 +164,29 @@ class _AddTaskPageState extends State<AddTaskPage> {
                         const SizedBox(height: 20),
                         _sendOrderBlocConsumer(textTheme),
                       ] else ...[
-                        ShowDialog.showAlertDialog(
-                          context,
-                          'Terjadi kesalahan!',
-                          'Ada masalah di aplikasinya\nkakak bisa coba buat kembali ke halaman sebelumnya\natau hubungin CS kami',
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              context.pop();
-                              context.pop();
-                            },
-                            label: const Text('Kembali'),
-                            icon: const Icon(Icons.arrow_forward_ios),
-                            iconAlignment: IconAlignment.end,
+                        Text(
+                          'Bantuan \nuntuk ${widget.problem.toString()}',
+                          style: textTheme.titleLarge?.copyWith(
+                            color: AppColors.lightTextColor,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(),
+                        Text(
+                          'Belum tersedia, mohon tunggu update berikutnya',
+                          style: textTheme.bodyLarge?.copyWith(
+                            color: AppColors.lightTextColor,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const Divider(
+                          thickness: 3,
+                          color: AppColors.lightTextColor,
+                        ),
+                        const SizedBox(height: 50),
+                        Image.asset(
+                          'assets/images/feature_not_available.png',
+                          fit: BoxFit.cover,
+                        ),
                       ],
                     ],
                   ),

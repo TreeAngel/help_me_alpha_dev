@@ -1,4 +1,7 @@
+import 'dart:developer';
+
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -19,11 +22,19 @@ import 'utils/manage_token.dart';
 FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  log(
+    '${message.data.keys}: ${message.data.values} || android: ${message.notification?.android}',
+    name: 'Background notification from firebase',
+  );
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   const AndroidInitializationSettings androidInitializationSettings =
       AndroidInitializationSettings('@mipmap/ic_launcher');
   const InitializationSettings initializationSettings = InitializationSettings(
@@ -40,6 +51,27 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final imagePicker = ImagePickerUtil();
     ManageAuthToken.readToken();
+
+    WidgetsBinding.instance.addPostFrameCallback(
+        (_) => FirebaseMessaging.onMessage.listen((event) {
+              RemoteNotification? notification = event.notification;
+              AndroidNotification? android = notification?.android;
+              if (notification != null && android != null) {
+                _flutterLocalNotificationsPlugin.show(
+                  notification.hashCode,
+                  notification.title,
+                  notification.body,
+                  const NotificationDetails(
+                    android: AndroidNotificationDetails(
+                      'your_channel_id',
+                      'your_channel_name',
+                      importance: Importance.defaultImportance,
+                      priority: Priority.defaultPriority,
+                    ),
+                  ),
+                );
+              }
+            }));
 
     return MultiBlocProvider(
       providers: [

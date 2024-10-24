@@ -5,8 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../../services/api/api_exception.dart';
 import '../../../configs/app_colors.dart';
 import '../../../blocs/auth/auth_bloc.dart';
-import '../../../services/firebase/firebase_api.dart';
-import '../../../services/location_service.dart';
 import '../../../utils/show_dialog.dart';
 
 class SignInPage extends StatelessWidget {
@@ -105,34 +103,6 @@ class SignInPage extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  void _requestPermission(BuildContext context) {
-    return WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final locationPermission = await LocationService.setPermission();
-      if (locationPermission is String && locationPermission.isNotEmpty) {
-        context.mounted
-            ? ShowDialog.showAlertDialog(
-                context,
-                'Peringatan!',
-                locationPermission,
-                null,
-              )
-            : null;
-      }
-      final notificationPermission = await FirebaseMessagingApi.setPermission();
-      if (notificationPermission is String &&
-          notificationPermission.isNotEmpty) {
-        context.mounted
-            ? ShowDialog.showAlertDialog(
-                context,
-                'Peringatan!',
-                notificationPermission,
-                null,
-              )
-            : null;
-      }
-    });
   }
 
   Widget _notHaveAccountSection(TextTheme textTheme, BuildContext context) {

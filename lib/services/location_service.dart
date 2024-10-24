@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:help_me_client_alpha_ver/utils/logging.dart';
 
+import '../utils/logging.dart';
 import '../utils/show_dialog.dart';
 
 class LocationService {

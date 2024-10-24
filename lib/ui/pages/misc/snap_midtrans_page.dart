@@ -21,11 +21,11 @@ class SnapMidtransPage extends StatelessWidget {
         if (result != null) {
           if (result is String && !result.startsWith('http')) {
             willPop = false;
-            didPop = false;
+            didPop = willPop;
             return;
           }
           willPop = true;
-          didPop = true;
+          didPop = willPop;
           didPop == true ? context.pop(result) : null;
         }
       },

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
+import 'package:help_me_client_alpha_ver/cubits/home/home_cubit.dart';
 
 import '../../../blocs/manage_order/manage_order_bloc.dart';
 import '../../../blocs/fetch_offer/fetch_offer_bloc.dart';
@@ -94,12 +95,8 @@ class _SelectMitraPageState extends State<SelectMitraPage> {
                           .add(RequestSnapToken(orderId: widget.orderId!));
                     }
                   } else if (state is SelectMitraSuccess) {
-                    context.replaceNamed(
-                      'detailOrderPage',
-                      queryParameters: {
-                        'orderId': widget.orderId.toString(),
-                      },
-                    );
+                    context.read<HomeCubit>().fetchHistory();
+                    context.pop();
                   }
                 },
                 builder: (context, state) {

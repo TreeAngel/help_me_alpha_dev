@@ -47,7 +47,7 @@ class SendOrderBloc extends Bloc<SendOrderEvent, SendOrderState> {
       emit(OrderInitial());
     });
 
-    on<RestAddPage>((event, emit) {
+    on<ResetAddPage>((event, emit) {
       problemPictures.clear();
       selectedSolution = null;
       emit(OrderIdle());

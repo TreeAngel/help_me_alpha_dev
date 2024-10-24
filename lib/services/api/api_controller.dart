@@ -6,7 +6,8 @@ import '../../utils/logging.dart';
 
 class ApiController {
   // TODO: Add base url untuk akses api saat sudah dihosting
-  static const baseUrl = 'https://45c5-2001-448a-3020-41bd-b806-439b-cfe1-1141.ngrok-free.app';
+  static const baseUrl =
+      'https://e1de7e962c2e7785a1d57905fcca1396.serveo.net';
   static const socketUrl =
       'https://4052e6c6b326ff24a43cf3bbb2c32181.serveo.net';
   static String? token;
@@ -16,9 +17,9 @@ class ApiController {
       baseUrl: '$baseUrl/api/v1/',
       contentType: Headers.jsonContentType,
       responseType: ResponseType.json,
-      connectTimeout: const Duration(seconds: 120),
-      receiveTimeout: const Duration(seconds: 120),
-      sendTimeout: const Duration(seconds: 120),
+      connectTimeout: const Duration(minutes: 1),
+      receiveTimeout: const Duration(minutes: 1),
+      sendTimeout: const Duration(minutes: 1),
     ),
   );
 

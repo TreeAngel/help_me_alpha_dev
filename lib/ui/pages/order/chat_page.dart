@@ -16,14 +16,14 @@ import '../../widgets/bubble_chat.dart';
 
 class ChatPage extends StatefulWidget {
   final int userId;
-  final int chatId;
+  final String chatRoomCode;
   final String mitraName;
   final String imgPath;
 
   const ChatPage({
     super.key,
     required this.userId,
-    required this.chatId,
+    required this.chatRoomCode,
     required this.mitraName,
     required this.imgPath,
   });
@@ -33,7 +33,7 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  List<ChatResponseModel> chats = [];
+  List<ChatResponseModel> chatMessages = [];
   final TextEditingController _chatInputController = TextEditingController();
 
   @override
@@ -42,7 +42,6 @@ class _ChatPageState extends State<ChatPage> {
     final textTheme = appTheme.textTheme;
     // final screenWidth = MediaQuery.sizeOf(context).width;
     final screenHeight = MediaQuery.sizeOf(context).height;
-    chats = context.watch<DetailOrderCubit>().chats;
 
     return SafeArea(
       child: Scaffold(
@@ -61,80 +60,102 @@ class _ChatPageState extends State<ChatPage> {
             if (state is ReceiveChat) {
               context.read<DetailOrderCubit>().isIdle();
             }
+            if (state is MessagesLoaded) {
+              chatMessages = state.messages;
+              context.read<DetailOrderCubit>().isIdle();
+            }
             if (state is ImageSelected) {
-              showDialog(
-                useSafeArea: true,
-                barrierDismissible: false,
-                context: context,
-                builder: (context) => Dialog.fullscreen(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      BackButton(
-                        onPressed: () => context.pop(),
-                      ),
-                      Image.file(
-                        File(state.image.path),
-                        fit: BoxFit.cover,
-                      ),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: IconButton(
-                          // TODO: Implement send chat message
-                          onPressed: () {},
-                          icon: const Icon(Icons.send_rounded),
-                          style: const ButtonStyle(
-                            iconColor: WidgetStatePropertyAll(
-                              AppColors.lightTextColor,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
+              _sendImageDialog(context, state);
             }
           },
           builder: (context, state) {
             context.read<DetailOrderCubit>().isIdle();
+            context
+                .read<DetailOrderCubit>()
+                .fetchChatMessagesHistory(roomCode: widget.chatRoomCode);
             if (context.read<DetailOrderCubit>().socket == null) {
               context.read<DetailOrderCubit>().listenToChat();
             }
             return Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                ListView.builder(
-                  itemCount: chats.length,
-                  padding: const EdgeInsets.only(
-                    left: 8,
-                    right: 8,
-                    top: 10,
-                  ),
-                  shrinkWrap: true,
-                  physics: const ClampingScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    final chat = chats[index];
-                    return _bubbleChat(
-                      chat.message,
-                      sendTime: chat.createdAt!,
-                      senderId: chat.senderId!,
-                      userId: widget.userId,
-                    );
-                  },
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(
-                    left: 8,
-                    right: 8,
-                    bottom: 8,
-                  ),
-                  child: _chatInputContainer(screenHeight, textTheme),
-                ),
+                _chatMessagesBuilder(),
+                _chatTextInput(screenHeight, textTheme),
               ],
             );
           },
+        ),
+      ),
+    );
+  }
+
+  Padding _chatTextInput(double screenHeight, TextTheme textTheme) {
+    return Padding(
+      padding: const EdgeInsets.only(
+        left: 8,
+        right: 8,
+        bottom: 8,
+      ),
+      child: _chatInputContainer(screenHeight, textTheme),
+    );
+  }
+
+  ListView _chatMessagesBuilder() {
+    return ListView.builder(
+      itemCount: chatMessages.length,
+      padding: const EdgeInsets.only(
+        left: 8,
+        right: 8,
+        top: 10,
+      ),
+      shrinkWrap: true,
+      physics: const ClampingScrollPhysics(),
+      itemBuilder: (context, index) {
+        final chat = chatMessages[index];
+        return _bubbleChat(
+          chat.message,
+          sendTime: chat.createdAt!,
+          senderId: chat.senderId!,
+          userId: widget.userId,
+        );
+      },
+    );
+  }
+
+  Future<dynamic> _sendImageDialog(BuildContext context, ImageSelected state) {
+    return showDialog(
+      useSafeArea: true,
+      barrierDismissible: false,
+      context: context,
+      builder: (context) => Dialog.fullscreen(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            BackButton(
+              onPressed: () => context.pop(),
+            ),
+            Image.file(
+              File(state.image.path),
+              fit: BoxFit.cover,
+            ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: IconButton(
+                onPressed: () => context.read<DetailOrderCubit>().sendMessage(
+                      roomCode: widget.chatRoomCode,
+                      textMessage: null,
+                      image: state.image,
+                    ),
+                icon: const Icon(Icons.send_rounded),
+                style: const ButtonStyle(
+                  iconColor: WidgetStatePropertyAll(
+                    AppColors.lightTextColor,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -201,8 +222,11 @@ class _ChatPageState extends State<ChatPage> {
           Expanded(
             flex: 2,
             child: IconButton(
-              // TODO: Implement send chat message
-              onPressed: () {},
+              onPressed: () => context.read<DetailOrderCubit>().sendMessage(
+                    roomCode: widget.chatRoomCode,
+                    textMessage: _chatInputController.text,
+                    image: null,
+                  ),
               icon: const Icon(Icons.send_rounded),
               style: const ButtonStyle(
                 iconColor: WidgetStatePropertyAll(
