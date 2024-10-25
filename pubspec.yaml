@@ -33,7 +33,6 @@ dependencies:
   path: ^1.9.0
   path_provider: ^2.1.4
   rxdart: ^0.28.0
-  socket_io_client: ^3.0.0
   timelines: ^0.1.0
   url_launcher: ^6.3.1
 

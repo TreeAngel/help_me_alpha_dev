@@ -1,19 +1,15 @@
-import 'dart:developer';
-
 import 'package:dio/dio.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mime/mime.dart';
-import 'package:socket_io_client/socket_io_client.dart' as io;
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../models/api_error_response/api_error_response_model.dart';
 import '../../models/order/chat/chat_response_model.dart';
 import '../../models/order/chat/send_chat_message_response_model/send_chat_message_response_model.dart';
 import '../../models/order/detail_order_model.dart';
-import '../../services/api/api_controller.dart';
 import '../../services/api/api_helper.dart';
 import '../../utils/image_picker_util.dart';
 
@@ -27,7 +23,6 @@ class DetailOrderCubit extends Cubit<DetailOrderState> {
 
   String? chatRoomCode;
   DetailOrderModel? order;
-  io.Socket? socket;
 
   List<ChatResponseModel> chatMessages = [];
 
@@ -117,66 +112,6 @@ class DetailOrderCubit extends Cubit<DetailOrderState> {
       emit(ErrorChat(message: message.toString()));
     } else {
       emit(MessagesLoaded(messages: response));
-    }
-  }
-
-  void disconnectChat() {
-    if (socket != null && socket!.active) {
-      socket!.dispose();
-      socket = null;
-    }
-  }
-
-  void listenToChat() async {
-    socket = io.io(
-      ApiController.socketUrl,
-      io.OptionBuilder()
-          .setTransports(['websocket'])
-          .enableAutoConnect()
-          .enableReconnection()
-          .setReconnectionAttempts(5)
-          .setReconnectionDelay(3000)
-          .build(),
-    );
-    if (socket != null && chatRoomCode != null) {
-      socket!
-        ..onConnect((response) {
-          log('Connected: ${response.toString()}', name: 'Connected to chat');
-          socket!.emit('join_chat', chatRoomCode);
-          emit(ConnectedToChat());
-        })
-        ..onConnectError((response) {
-          log('Error connect: ${response.toString()}',
-              name: 'Error connecting chat');
-          emit(ErrorChat(message: response.toString()));
-        })
-        ..onDisconnect((response) {
-          log('Disconnect: ${response.toString()}',
-              name: 'Disconnected from chat');
-          emit(DisconnectedFromChat());
-        })
-        ..onReconnectAttempt((response) {
-          log('Attempting reconnect: ${response.toString()}',
-              name: 'Reconnected to chat');
-          emit(ReconnectingToChat());
-        })
-        ..onReconnectError((response) {
-          log('Error reconnect: ${response.toString()}',
-              name: 'Error reconnecting to chat');
-          emit(ErrorChat(message: response.toString()));
-        })
-        ..onReconnectFailed((response) {
-          log('Failed to reconnect: ${response.toString()}',
-              name: 'Failed reconnect to chat');
-          emit(FailedReconnectToChat());
-        })
-        ..on('message', (response) {
-          log(response.toString(), name: 'Receiving message');
-          final message = ChatResponseModel.fromJson(response);
-          emit(ReceiveChat(response: message));
-        });
-    } else {
-      emit(const ErrorChat(message: 'Chat id is null'));
     }
   }
 

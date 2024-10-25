@@ -73,9 +73,6 @@ class _ChatPageState extends State<ChatPage> {
             context
                 .read<DetailOrderCubit>()
                 .fetchChatMessagesHistory(roomCode: widget.chatRoomCode);
-            if (context.read<DetailOrderCubit>().socket == null) {
-              context.read<DetailOrderCubit>().listenToChat();
-            }
             return Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

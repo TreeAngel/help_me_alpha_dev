@@ -12,7 +12,7 @@ class SnapMidtransPage extends StatelessWidget {
   Widget build(BuildContext context) {
     MidtransResponse? midtransResponse;
     String? urlResponse;
-    bool willPop = false;
+    bool willPop = true;
 
     return PopScope(
       canPop: willPop,
@@ -22,11 +22,7 @@ class SnapMidtransPage extends StatelessWidget {
           if (result is String && !result.startsWith('http')) {
             willPop = false;
             didPop = willPop;
-            return;
           }
-          willPop = true;
-          didPop = willPop;
-          didPop == true ? context.pop(result) : null;
         }
       },
       child: SafeArea(
@@ -39,10 +35,16 @@ class SnapMidtransPage extends StatelessWidget {
           midtransClientKey: 'SB-Mid-client-Dq1J9Sr45BhVF9WQ',
           onResponse: (result) {
             midtransResponse = result;
-            context.pop(midtransResponse);
+            if (midtransResponse != null) {
+              context.pop(midtransResponse);
+            }
           },
           onPageFinished: (url) {
             urlResponse = url;
+            if (urlResponse != null &&
+                urlResponse!.trim().toLowerCase().contains('status_code')) {
+              context.pop(urlResponse);
+            }
           },
         ),
       ),

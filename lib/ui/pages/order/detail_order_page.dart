@@ -107,7 +107,7 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
                     orderStatus = OrderStatus.booked;
                   });
                   break;
-                case 'payed':
+                case 'paid':
                   setState(() {
                     orderStatus = OrderStatus.payed;
                   });
@@ -127,7 +127,7 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
                     orderStatus = OrderStatus.arrived;
                   });
                   break;
-                case 'inProgress':
+                case 'in_progress':
                   setState(() {
                     orderStatus = OrderStatus.inProgress;
                   });
@@ -168,7 +168,7 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
               context.pushNamed(
                 'chatPage',
                 queryParameters: {
-                  'chatId':
+                  'roomCode':
                       context.read<DetailOrderCubit>().chatRoomCode.toString(),
                   'name': detailOrder?.mitra.toString(),
                   'img': detailOrder?.mitraProfile.toString(),
@@ -256,14 +256,14 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
       TextTheme textTheme) {
     return BlocConsumer<ManageOrderBloc, ManageOrderState>(
       listener: (context, state) async {
-        // if (state is ManageOrderLoading) {
-        //   showDialog(
-        //     context: context,
-        //     builder: (context) => const Center(
-        //       child: CircularProgressIndicator(),
-        //     ),
-        //   );
-        // }
+        if (state is SnapTokenError) {
+          ShowDialog.showAlertDialog(
+            context,
+            'Gagal Memproses Transaksi!',
+            state.message,
+            null,
+          );
+        }
         if (state is SnapTokenRequested) {
           await _invokePayment(context);
         }
@@ -323,32 +323,30 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
         context.read<ManageOrderBloc>().snapToken = null;
         context.read<ManageOrderBloc>().add(CompletingPayment());
         context.read<HomeCubit>().fetchHistory();
-        setState(() {
-          detailOrder?.orderStatus = 'payed';
-        });
+        context
+            .read<DetailOrderCubit>()
+            .fetchDetailOrder(orderId: widget.orderId!);
       } else if (response.statusCode == 201 &&
           response.transactionStatus.trim().toLowerCase() == 'pending') {
         context.read<ManageOrderBloc>().add(WaitingPayment());
-        WidgetsBinding.instance.addPostFrameCallback(
-          (_) => ShowDialog.showAlertDialog(
-            context,
-            'Pembayaran Pending!',
-            response.statusMessage,
-            null,
-          ),
+        ShowDialog.showAlertDialog(
+          context,
+          'Pembayaran Pending!',
+          'Harap selesaikan pembayaran dalam waktu yang ditentukan',
+          null,
         );
       } else if (response.statusCode == 407) {
         ManageSnapToken.deleteToken();
         context.read<ManageOrderBloc>().snapToken = null;
         context.read<ManageOrderBloc>().add(ManageOrderIsIdle());
-        WidgetsBinding.instance.addPostFrameCallback(
-          (_) => ShowDialog.showAlertDialog(
-            context,
-            'Pembayaran Gagal!',
-            response.statusMessage,
-            null,
-          ),
+        ShowDialog.showAlertDialog(
+          context,
+          'Pembayaran Gagal!',
+          'Transaksi kadaluwarsa, silahkan coba lagi',
+          null,
         );
+      } else {
+        _invokePayment(context);
       }
     } else if (response is String && context.mounted) {
       if (response
@@ -360,9 +358,9 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
         context.read<ManageOrderBloc>().snapToken = null;
         context.read<ManageOrderBloc>().add(CompletingPayment());
         context.read<HomeCubit>().fetchHistory();
-        setState(() {
-          detailOrder?.orderStatus = 'payed';
-        });
+        context
+            .read<DetailOrderCubit>()
+            .fetchDetailOrder(orderId: widget.orderId!);
       } else if (response.trim().toLowerCase().contains('status_code=201') &&
           response.trim().toLowerCase().contains('pending')) {
         context.read<ManageOrderBloc>().add(WaitingPayment());
@@ -380,16 +378,11 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
         ShowDialog.showAlertDialog(
           context,
           'Pembayaran Gagal!',
-          'Terjadi kesalahan saat transaksi, coba lagi',
+          'Transaksi kadaluwarsa, silahkan coba lagi',
           null,
         );
       } else {
-        ShowDialog.showAlertDialog(
-          context,
-          'tes',
-          'test',
-          null,
-        );
+        _invokePayment(context);
       }
     }
     log(
