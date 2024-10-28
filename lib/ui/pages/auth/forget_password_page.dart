@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../blocs/auth/auth_bloc.dart';
 import '../../../configs/app_colors.dart';
-import '../../../utils/show_dialog.dart';
+import '../../../utils/custom_dialog.dart';
 
 class ForgetPasswordPage extends StatelessWidget {
   const ForgetPasswordPage({super.key});
@@ -21,7 +21,7 @@ class ForgetPasswordPage extends StatelessWidget {
         body: BlocConsumer<AuthBloc, AuthState>(
           listener: (context, state) {
             if (state is ForgetPasswordError) {
-              ShowDialog.showAlertDialog(
+              CustomDialog.showAlertDialog(
                 context,
                 'Gagal!',
                 state.message,
@@ -37,7 +37,7 @@ class ForgetPasswordPage extends StatelessWidget {
               } else {
                 context.read<AuthBloc>().add(ResetAuthState());
               }
-              ShowDialog.showAlertDialog(
+              CustomDialog.showAlertDialog(
                 context,
                 'Permintaan terkirim!',
                 message,
@@ -115,7 +115,7 @@ class ForgetPasswordPage extends StatelessWidget {
       child: TextButton(
         style: ButtonStyle(
           backgroundColor: WidgetStateProperty.all(
-            state is AuthInitial == true ? AppColors.grey : AppColors.primary,
+            state is AuthInitial == true ? AppColors.gray : AppColors.primary,
           ),
           shape: WidgetStateProperty.all(
             RoundedRectangleBorder(

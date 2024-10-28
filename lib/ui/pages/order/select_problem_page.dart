@@ -6,7 +6,7 @@ import '../../../blocs/manage_order/manage_order_bloc.dart';
 import '../../../blocs/send_order/send_order_bloc.dart';
 import '../../../configs/app_colors.dart';
 import '../../../models/category_problem/problem_model.dart';
-import '../../../utils/show_dialog.dart';
+import '../../../utils/custom_dialog.dart';
 
 // enum ProblemCategory { serabutan, kendaraan, rumah, elektronik }
 
@@ -134,7 +134,7 @@ class _SelectProblemPageState extends State<SelectProblemPage> {
                   'problem': selectedProblem?.name.toString(),
                 },
               )
-            : ShowDialog.showAlertDialog(
+            : CustomDialog.showAlertDialog(
                 context,
                 'Apa Masalahmu?',
                 'Kasih tau masalah yang lagi kamu alamin sebelum nyari bantuan',
@@ -231,7 +231,7 @@ class _SelectProblemPageState extends State<SelectProblemPage> {
   }
 
   void _stateError(BuildContext context, OrderError state) {
-    ShowDialog.showAlertDialog(
+    CustomDialog.showAlertDialog(
       context,
       'Error fetching problems',
       state.errorMessage,
@@ -248,7 +248,7 @@ class _SelectProblemPageState extends State<SelectProblemPage> {
   }
 
   Widget _categoryIdNotFound(BuildContext context) {
-    return ShowDialog.showAlertDialog(
+    return CustomDialog.showAlertDialog(
       context,
       'Error',
       'Category tidak ada',

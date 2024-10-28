@@ -15,7 +15,7 @@ import '../../../models/misc/menu_item_model.dart';
 import '../../../services/location_service.dart';
 import '../../../utils/logging.dart';
 import '../../../utils/question_builder.dart';
-import '../../../utils/show_dialog.dart';
+import '../../../utils/custom_dialog.dart';
 
 class AddTaskPage extends StatefulWidget {
   const AddTaskPage({
@@ -204,7 +204,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
     return BlocConsumer<SendOrderBloc, SendOrderState>(
       listener: (context, state) {
         if (state is OrderError) {
-          ShowDialog.showAlertDialog(
+          CustomDialog.showAlertDialog(
             context,
             'Error upload order',
             state.errorMessage,
@@ -212,14 +212,14 @@ class _AddTaskPageState extends State<AddTaskPage> {
           );
           context.read<SendOrderBloc>().add(OrderIsIdle());
         } else if (state is SendOrderError) {
-          ShowDialog.showAlertDialog(
+          CustomDialog.showAlertDialog(
             context,
             'Gagal!',
             state.message,
             null,
           );
         } else if (state is OrderUploaded) {
-          ShowDialog.showAlertDialog(
+          CustomDialog.showAlertDialog(
             context,
             'Success',
             state.message,
@@ -582,9 +582,6 @@ class _AddTaskPageState extends State<AddTaskPage> {
           top: Radius.circular(25),
         ),
       ),
-      // leading: BackButton(
-      //   onPressed: () => context.goNamed('homePage'),
-      // ),
       centerTitle: true,
       backgroundColor: AppColors.surface,
       foregroundColor: AppColors.lightTextColor,

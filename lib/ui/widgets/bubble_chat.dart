@@ -37,7 +37,7 @@ class BubbleChat extends StatelessWidget {
                     senderId == userId ? AppColors.primary : AppColors.surface,
               ),
               width: screenWidth / 2,
-              child: message!.startsWith('http')
+              child: !message!.startsWith('http')
                   ? Text(
                       message.toString(),
                       softWrap: true,
@@ -58,15 +58,13 @@ class BubbleChat extends StatelessWidget {
             ),
             Positioned(
               bottom: 3,
-              left: 3,
               right: 3,
               child: Text(
                 '${sendTime.hour}:${sendTime.minute}:${sendTime.second}',
                 style: textTheme.bodySmall?.copyWith(
-                  color: AppColors.darkTextColor,
-                  fontWeight: FontWeight.w500,
-                  backgroundColor: AppColors.lightTextColor.withOpacity(80),
-                ),
+                    color: AppColors.lightTextColor,
+                    fontWeight: FontWeight.w500,
+                    backgroundColor: AppColors.lightGray),
               ),
             ),
           ],

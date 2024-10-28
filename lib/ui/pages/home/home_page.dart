@@ -18,7 +18,7 @@ import '../../../services/firebase/firebase_api.dart';
 import '../../../services/location_service.dart';
 import '../../../utils/logging.dart';
 import '../../../utils/manage_token.dart';
-import '../../../utils/show_dialog.dart';
+import '../../../utils/custom_dialog.dart';
 import '../../widgets/gradient_card.dart';
 
 class HomePage extends StatefulWidget {
@@ -75,7 +75,7 @@ class _HomePageState extends State<HomePage> {
               }
               if (state is SignOutLoaded) {
                 if (state.message.isNotEmpty) {
-                  ShowDialog.showAlertDialog(
+                  CustomDialog.showAlertDialog(
                     context,
                     'Signout',
                     state.message,
@@ -233,7 +233,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _onOrderHistoryError(BuildContext context, OrderHistoryError state) {
-    ShowDialog.showAlertDialog(
+    CustomDialog.showAlertDialog(
       context,
       'Error fetching order history',
       state.errorMessage,
@@ -262,7 +262,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _onSignOutError(BuildContext context, AuthError state) {
-    ShowDialog.showAlertDialog(
+    CustomDialog.showAlertDialog(
       context,
       'Error Sing Out',
       state.errorMessage.toString(),
@@ -325,7 +325,7 @@ class _HomePageState extends State<HomePage> {
       final locationPermission = await LocationService.setPermission();
       if (locationPermission is String && locationPermission.isNotEmpty) {
         context.mounted
-            ? ShowDialog.showAlertDialog(
+            ? CustomDialog.showAlertDialog(
                 context,
                 'Peringatan!',
                 locationPermission,
@@ -337,7 +337,7 @@ class _HomePageState extends State<HomePage> {
       if (notificationPermission is String &&
           notificationPermission.isNotEmpty) {
         context.mounted
-            ? ShowDialog.showAlertDialog(
+            ? CustomDialog.showAlertDialog(
                 context,
                 'Peringatan!',
                 notificationPermission,
@@ -349,7 +349,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _onProfileError(BuildContext context, ProfileError state) {
-    ShowDialog.showAlertDialog(
+    CustomDialog.showAlertDialog(
       context,
       'Error fetching profile',
       state.errorMessage,
@@ -434,7 +434,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _onCategoryError(BuildContext context, CategoryError state) {
-    ShowDialog.showAlertDialog(
+    CustomDialog.showAlertDialog(
       context,
       'Error fetching categories',
       state.errorMessage,
@@ -474,7 +474,7 @@ class _HomePageState extends State<HomePage> {
           final category = categories[index];
           final cardColor = index == 0 || index == 1
               ? CardsColor.categoryCardsColor[index]
-              : AppColors.grey;
+              : AppColors.gray;
           return GestureDetector(
             onTap: () {
               // TODO: Ubah index 0(serabutan) nanti saat database berubah, ya intinya itu
@@ -483,7 +483,7 @@ class _HomePageState extends State<HomePage> {
                       'categoryId': category.id.toString(),
                       'category': category.name,
                     })
-                  : ShowDialog.showAlertDialog(
+                  : CustomDialog.showAlertDialog(
                       context,
                       'Fitur masih dikembangin',
                       'Ditunggu ya kakak! Fiturnya bakal hadir nanti',
@@ -542,8 +542,11 @@ class _HomePageState extends State<HomePage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _orderCardHistoryInfoSection(history, textTheme,
-                  history?.orderStatus?.trim().toLowerCase() == 'complete'),
+              _orderCardHistoryInfoSection(
+                  history,
+                  textTheme,
+                  history?.orderStatus?.trim().toLowerCase() == 'complete' ||
+                      history?.orderStatus?.trim().toLowerCase() == 'rated'),
               _orderCardHistoryImageSection(history),
             ],
           ),
@@ -766,7 +769,7 @@ class _HomePageState extends State<HomePage> {
   SliverToBoxAdapter _searchTextField() {
     return SliverToBoxAdapter(
       child: GestureDetector(
-        onTap: () => ShowDialog.showAlertDialog(
+        onTap: () => CustomDialog.showAlertDialog(
           context,
           'Fitur dalam pengembangan',
           'Ditunggu ya kakak fitur ini bakal hadir pada update yang akan datang',
@@ -888,7 +891,7 @@ class _HomePageState extends State<HomePage> {
         context.pushNamed('profilePage');
         break;
       case MenuItems.itemSignOut:
-        ShowDialog.showAlertDialog(
+        CustomDialog.showAlertDialog(
           context,
           'Sign Out',
           'Are you sure want to sign out?',

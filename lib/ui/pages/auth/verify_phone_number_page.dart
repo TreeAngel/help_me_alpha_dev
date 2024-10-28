@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../blocs/profile/profile_bloc.dart';
 import '../../../configs/app_colors.dart';
 import '../../../services/api/api_controller.dart';
-import '../../../utils/show_dialog.dart';
+import '../../../utils/custom_dialog.dart';
 
 enum StatusOTP {
   waiting,
@@ -34,7 +34,7 @@ class VerifyPhoneNumberPage extends StatelessWidget {
               if (state is OTPRequested) {
                 context.read<ProfileBloc>().statusOTP = StatusOTP.requested;
                 message = state.message;
-                ShowDialog.showAlertDialog(
+                CustomDialog.showAlertDialog(
                   context,
                   'Berhasil!',
                   message,
@@ -42,7 +42,7 @@ class VerifyPhoneNumberPage extends StatelessWidget {
                 );
               } else if (state is OTPError) {
                 message = state.errorMessage;
-                ShowDialog.showAlertDialog(
+                CustomDialog.showAlertDialog(
                   context,
                   'Verifikasi Gagal!',
                   message,
@@ -55,7 +55,7 @@ class VerifyPhoneNumberPage extends StatelessWidget {
                 } else {
                   context.read<ProfileBloc>().statusOTP = StatusOTP.requested;
                 }
-                ShowDialog.showAlertDialog(
+                CustomDialog.showAlertDialog(
                   context,
                   'Verifikasi Terkirim!',
                   message,
@@ -147,7 +147,7 @@ class VerifyPhoneNumberPage extends StatelessWidget {
           backgroundColor: WidgetStateProperty.all(
             switch (currentStatus) {
               StatusOTP.requested || StatusOTP.waiting => AppColors.primary,
-              StatusOTP.done => AppColors.grey
+              StatusOTP.done => AppColors.gray
             },
           ),
           shape: WidgetStateProperty.all(

@@ -1,15 +1,13 @@
 import 'dart:convert';
 
 class Data {
-  String? codeRoom;
   int? senderId;
   String? message;
   DateTime? createdAt;
 
-  Data({this.codeRoom, this.senderId, this.message, this.createdAt});
+  Data({this.senderId, this.message, this.createdAt});
 
   factory Data.fromMap(Map<String, dynamic> data) => Data(
-        codeRoom: data['code_room'] as String?,
         senderId: data['sender_id'] as int?,
         message: data['message'] as String?,
         createdAt: data['created_at'] == null
@@ -18,7 +16,6 @@ class Data {
       );
 
   Map<String, dynamic> toMap() => {
-        'code_room': codeRoom,
         'sender_id': senderId,
         'message': message,
         'created_at': createdAt?.toIso8601String(),

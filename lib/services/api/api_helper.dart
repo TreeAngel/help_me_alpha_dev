@@ -17,6 +17,7 @@ import '../../models/order/chat/chat_response_model.dart';
 import '../../models/order/chat/send_chat_message_response_model/send_chat_message_response_model.dart';
 import '../../models/order/detail_order_model.dart';
 import '../../models/order/history/order_history_model.dart';
+import '../../models/order/order_rating_response_model/order_rating_response_model.dart';
 import '../../models/order/order_response_model/order_response_model.dart';
 import 'api_controller.dart';
 
@@ -24,8 +25,10 @@ class ApiHelper {
   // Auth
   static Future authLogin(LoginModel user) async {
     final userData = user.toJson();
-    final response =
-        await ApiController.postData('auth/login?app_type=client', userData);
+    final response = await ApiController.postData(
+      'auth/login?app_type=client',
+      userData,
+    );
     if (response is ApiErrorResponseModel) {
       return response;
     } else {
@@ -282,8 +285,30 @@ class ApiHelper {
       if (response is List<dynamic>) {
         for (var value in response) {
           messages.add(ChatResponseModel.fromMap(value));
-        }}
+        }
+      }
       return messages;
+    }
+  }
+
+  // Rating
+  static Future postRating({
+    required int orderId,
+    required int rating,
+    required String review,
+  }) async {
+    final response = await ApiController.postData(
+      'users/ratings',
+      {
+        'order_id': orderId,
+        'rating': rating,
+        'review': review,
+      },
+    );
+    if (response is ApiErrorResponseModel) {
+      return response;
+    } else {
+      return OrderRatingResponseModel.fromMap(response);
     }
   }
 }

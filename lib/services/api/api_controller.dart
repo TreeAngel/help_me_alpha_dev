@@ -6,8 +6,7 @@ import '../../utils/logging.dart';
 
 class ApiController {
   // TODO: Add base url untuk akses api saat sudah dihosting
-  static const baseUrl =
-      'https://ffb5a592066c00dbffe5977e4e7a7767.serveo.net';
+  static const baseUrl = 'https://6b8eb9c91d185e1fab3ca25ee9173a91.serveo.net';
   static String? token;
 
   static var dio = Dio(
@@ -31,14 +30,17 @@ class ApiController {
       final response = await dio.get(
         url,
         options: token != null
-            ? Options(headers: {'Authorization': 'Bearer $token'})
+            ? Options(
+                headers: {'Authorization': 'Bearer $token'},
+              )
             : null,
       );
       if (response.statusCode! >= 200 && response.statusCode! <= 299) {
         return response.data;
       } else {
         printWarning(
-            'Failed to fetch data: ${response.statusCode} | ${response.statusMessage}');
+          'Failed to fetch data: ${response.statusCode} | ${response.statusMessage}',
+        );
         throw Exception('Failed to load data');
       }
     } on DioException catch (e) {
@@ -61,16 +63,18 @@ class ApiController {
         url,
         data: data,
         options: token != null
-            ? Options(headers: {
-                'Authorization': 'Bearer $token',
-              }, contentType: extraHeaders ?? Headers.jsonContentType)
+            ? Options(
+                headers: {'Authorization': 'Bearer $token'},
+                contentType: extraHeaders ?? Headers.jsonContentType,
+              )
             : null,
       );
       if (response.statusCode! >= 200 && response.statusCode! <= 299) {
         return response.data;
       } else {
         printWarning(
-            'Failed to post data: ${response.statusCode} | ${response.statusMessage}');
+          'Failed to post data: ${response.statusCode} | ${response.statusMessage}',
+        );
         throw Exception('Failed to post data');
       }
     } on DioException catch (e) {

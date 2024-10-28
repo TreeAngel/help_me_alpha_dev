@@ -62,7 +62,7 @@ class ImagePickerUtil {
           initAspectRatio: CropAspectRatioPreset.original,
           showCropGrid: true,
           backgroundColor: AppColors.surface,
-          cropGridColor: AppColors.grey,
+          cropGridColor: AppColors.gray,
         ),
       ],
     );

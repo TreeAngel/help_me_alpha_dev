@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../services/api/api_exception.dart';
 import '../../../configs/app_colors.dart';
 import '../../../blocs/auth/auth_bloc.dart';
-import '../../../utils/show_dialog.dart';
+import '../../../utils/custom_dialog.dart';
 
 enum TextInputEvent {
   fullname,
@@ -170,7 +170,7 @@ class SignUpPage extends StatelessWidget {
 
   _stateError(BuildContext context, AuthError state) {
     final errorMessage = ApiException.errorMessageBuilder(state.errorMessage);
-    ShowDialog.showAlertDialog(
+    CustomDialog.showAlertDialog(
       context,
       'Peringatan!',
       errorMessage,
@@ -181,7 +181,7 @@ class SignUpPage extends StatelessWidget {
   }
 
   _stateLoaded(BuildContext context) {
-    ShowDialog.showAlertDialog(
+    CustomDialog.showAlertDialog(
       context,
       'Berhasil Sign Up!',
       null,

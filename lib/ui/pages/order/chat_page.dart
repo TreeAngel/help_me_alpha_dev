@@ -1,6 +1,8 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -10,8 +12,8 @@ import '../../../cubits/detail_order/detail_order_cubit.dart';
 import '../../../data/menu_items_data.dart';
 import '../../../models/misc/menu_item_model.dart';
 import '../../../models/order/chat/chat_response_model.dart';
+import '../../../utils/custom_dialog.dart';
 import '../../../utils/logging.dart';
-import '../../../utils/show_dialog.dart';
 import '../../widgets/bubble_chat.dart';
 
 class ChatPage extends StatefulWidget {
@@ -43,6 +45,34 @@ class _ChatPageState extends State<ChatPage> {
     // final screenWidth = MediaQuery.sizeOf(context).width;
     final screenHeight = MediaQuery.sizeOf(context).height;
 
+    FirebaseMessaging.onMessage.listen((message) {
+      RemoteNotification? notification = message.notification;
+      AndroidNotification? android = notification?.android;
+      if (notification == null && android == null) {
+        return;
+      }
+      final data = message.data;
+      if (notification!.title!.trim().toLowerCase().contains('chat') &&
+          notification.body!.trim().toLowerCase().contains('new message')) {
+        if (data.isNotEmpty) {
+          final receivedChat = ChatResponseModel(
+            senderId: int.parse(data['sender_id']),
+            message: data['message'],
+            createdAt: data['created_at'],
+          );
+          setState(() {
+            chatMessages.add(receivedChat);
+          });
+          log(chatMessages.join(' | '), name: 'Semua chat');
+        }
+      }
+    });
+
+    context.read<DetailOrderCubit>().isIdle();
+    context
+        .read<DetailOrderCubit>()
+        .fetchChatMessagesHistory(roomCode: widget.chatRoomCode);
+
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.black,
@@ -50,7 +80,7 @@ class _ChatPageState extends State<ChatPage> {
         body: BlocConsumer<DetailOrderCubit, DetailOrderState>(
           listener: (context, state) {
             if (state is ErrorChat) {
-              ShowDialog.showAlertDialog(
+              CustomDialog.showAlertDialog(
                 context,
                 'Peringatan!',
                 state.message,
@@ -67,18 +97,31 @@ class _ChatPageState extends State<ChatPage> {
             if (state is ImageSelected) {
               _sendImageDialog(context, state);
             }
+            if (state is SendMessageSuccess) {
+              setState(() {
+                chatMessages.add(
+                  ChatResponseModel(
+                    createdAt: state.response.data!.createdAt,
+                    message: state.response.data!.message,
+                    senderId: state.response.data!.senderId,
+                  ),
+                );
+              });
+            }
           },
           builder: (context, state) {
-            context.read<DetailOrderCubit>().isIdle();
-            context
-                .read<DetailOrderCubit>()
-                .fetchChatMessagesHistory(roomCode: widget.chatRoomCode);
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _chatMessagesBuilder(),
-                _chatTextInput(screenHeight, textTheme),
-              ],
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  if (state is ChatLoading)
+                    const Center(child: CircularProgressIndicator())
+                  else
+                    _chatMessagesBuilder(),
+                  _chatTextInput(screenHeight, textTheme),
+                ],
+              ),
             );
           },
         ),
@@ -100,20 +143,18 @@ class _ChatPageState extends State<ChatPage> {
   ListView _chatMessagesBuilder() {
     return ListView.builder(
       itemCount: chatMessages.length,
-      padding: const EdgeInsets.only(
-        left: 8,
-        right: 8,
-        top: 10,
-      ),
       shrinkWrap: true,
       physics: const ClampingScrollPhysics(),
       itemBuilder: (context, index) {
         final chat = chatMessages[index];
-        return _bubbleChat(
-          chat.message,
-          sendTime: chat.createdAt!,
-          senderId: chat.senderId!,
-          userId: widget.userId,
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2),
+          child: _bubbleChat(
+            chat.message,
+            sendTime: chat.createdAt!,
+            senderId: chat.senderId!,
+            userId: widget.userId,
+          ),
         );
       },
     );
@@ -165,29 +206,6 @@ class _ChatPageState extends State<ChatPage> {
         color: Colors.white,
         border: Border.all(color: AppColors.lightTextColor),
         borderRadius: BorderRadius.circular(10),
-        boxShadow: const [
-          BoxShadow(
-            offset: Offset(0, 2.5),
-            spreadRadius: 1,
-            color: AppColors.lightTextColor,
-            blurRadius: 1,
-            blurStyle: BlurStyle.inner,
-          ),
-          BoxShadow(
-            offset: Offset(1, 0),
-            spreadRadius: 1,
-            color: AppColors.lightTextColor,
-            blurRadius: 1,
-            blurStyle: BlurStyle.inner,
-          ),
-          BoxShadow(
-            offset: Offset(-1, 0),
-            spreadRadius: 1,
-            color: AppColors.lightTextColor,
-            blurRadius: 1,
-            blurStyle: BlurStyle.inner,
-          ),
-        ],
       ),
       child: Row(
         children: [

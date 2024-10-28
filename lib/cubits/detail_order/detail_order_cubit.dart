@@ -23,7 +23,6 @@ class DetailOrderCubit extends Cubit<DetailOrderState> {
 
   String? chatRoomCode;
   DetailOrderModel? order;
-
   List<ChatResponseModel> chatMessages = [];
 
   void isIdle() => emit(DetailOrderIdle());
@@ -105,7 +104,7 @@ class DetailOrderCubit extends Cubit<DetailOrderState> {
   }
 
   void fetchChatMessagesHistory({required String roomCode}) async {
-    emit(DetailOrderLoading());
+    emit(ChatLoading());
     final response = await ApiHelper.getChatMessagesHistory(roomCode);
     if (response is ApiErrorResponseModel) {
       var message = response.error?.error ?? response.error?.message;

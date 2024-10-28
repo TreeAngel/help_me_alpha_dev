@@ -114,3 +114,5 @@ final class SendMessageSuccess extends DetailOrderState {
   @override
   List<Object> get props => [response];
 }
+
+final class ChatLoading extends DetailOrderState {}

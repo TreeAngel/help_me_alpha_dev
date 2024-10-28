@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -13,18 +14,19 @@ import '../../../cubits/detail_order/detail_order_cubit.dart';
 import '../../../cubits/home/home_cubit.dart';
 import '../../../models/order/detail_order_model.dart';
 import '../../../utils/manage_token.dart';
-import '../../../utils/show_dialog.dart';
+import '../../../utils/custom_dialog.dart';
 import '../../widgets/gradient_card.dart';
 
 enum OrderStatus {
   pending,
   booked,
-  payed,
+  paid,
   cancelled,
   otw,
   arrived,
   inProgress,
   complete,
+  rated,
 }
 // TODO: Implement rating order
 
@@ -51,6 +53,22 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
     final textTheme = appTheme.textTheme;
     final screenWidht = MediaQuery.sizeOf(context).width;
     final screenHeight = MediaQuery.sizeOf(context).height;
+
+    FirebaseMessaging.onMessage.listen((message) {
+      RemoteNotification? notification = message.notification;
+      AndroidNotification? android = notification?.android;
+      if (notification == null && android == null) {
+        return;
+      }
+      if (notification!.title!.trim().toLowerCase().contains('order') &&
+          notification.body!.trim().toLowerCase().contains('status updated')) {
+        if (context.mounted) {
+          context
+              .read<DetailOrderCubit>()
+              .fetchDetailOrder(orderId: widget.orderId!);
+        }
+      }
+    });
 
     Widget widgetContent;
     switch (orderStatus) {
@@ -85,169 +103,199 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
         backgroundColor: Colors.black,
         appBar: _appBar(context, textTheme),
         body: BlocConsumer<DetailOrderCubit, DetailOrderState>(
-          listener: (context, state) {
-            if (state is DetailOrderLoading) {
-              showDialog(
-                context: context,
-                builder: (context) => const Center(
-                  child: CircularProgressIndicator(),
-                ),
-              );
+            listener: (context, state) {
+          // if (state is DetailOrderLoading) {
+          //   showDialog(
+          //     context: context,
+          //     builder: (context) => const Center(
+          //       child: CircularProgressIndicator(),
+          //     ),
+          //   );
+          if (state is DetailOrderLoaded) {
+            detailOrder = state.data;
+            switch (detailOrder?.orderStatus) {
+              case 'pending':
+                setState(() {
+                  orderStatus = OrderStatus.pending;
+                });
+                break;
+              case 'booked':
+                setState(() {
+                  orderStatus = OrderStatus.booked;
+                });
+                break;
+              case 'paid':
+                setState(() {
+                  orderStatus = OrderStatus.paid;
+                });
+                break;
+              case 'cancelled':
+                setState(() {
+                  orderStatus = OrderStatus.cancelled;
+                });
+                break;
+              case 'otw':
+                setState(() {
+                  orderStatus = OrderStatus.otw;
+                });
+                break;
+              case 'arrived':
+                setState(() {
+                  orderStatus = OrderStatus.arrived;
+                });
+                break;
+              case 'in_progress':
+                setState(() {
+                  orderStatus = OrderStatus.inProgress;
+                });
+                break;
+              case 'complete':
+                setState(() {
+                  orderStatus = OrderStatus.complete;
+                });
+                break;
+              case 'rated':
+                setState(() {
+                  orderStatus = OrderStatus.rated;
+                });
             }
-            if (state is DetailOrderLoaded) {
-              detailOrder = state.data;
-              switch (detailOrder?.orderStatus) {
-                case 'pending':
-                  setState(() {
-                    orderStatus = OrderStatus.pending;
-                  });
-                  break;
-                case 'booked':
-                  setState(() {
-                    orderStatus = OrderStatus.booked;
-                  });
-                  break;
-                case 'paid':
-                  setState(() {
-                    orderStatus = OrderStatus.payed;
-                  });
-                  break;
-                case 'cancelled':
-                  setState(() {
-                    orderStatus = OrderStatus.cancelled;
-                  });
-                  break;
-                case 'otw':
-                  setState(() {
-                    orderStatus = OrderStatus.otw;
-                  });
-                  break;
-                case 'arrived':
-                  setState(() {
-                    orderStatus = OrderStatus.arrived;
-                  });
-                  break;
-                case 'in_progress':
-                  setState(() {
-                    orderStatus = OrderStatus.inProgress;
-                  });
-                  break;
-                case 'complete':
-                  setState(() {
-                    orderStatus = OrderStatus.complete;
-                  });
-                  break;
-              }
-            }
-            if (state is DetailOrderError) {
-              ShowDialog.showAlertDialog(
-                context,
-                'Peringatan!',
-                state.message,
-                null,
-              );
-            }
-            if (state is ListeningOrderStatusError) {
-              ShowDialog.showAlertDialog(
-                context,
-                'Terjadi Kesalahan!',
-                state.message,
-                null,
-              );
-            }
-            if (state is OpenWhatsAppError) {
-              ShowDialog.showAlertDialog(
-                context,
-                'Gagal Membuka WhatsApp!',
-                state.message,
-                null,
-              );
-            }
-            if (state is CreateChatRoomSuccess) {
-              context.read<DetailOrderCubit>().isIdle();
-              context.pushNamed(
-                'chatPage',
-                queryParameters: {
-                  'roomCode':
-                      context.read<DetailOrderCubit>().chatRoomCode.toString(),
-                  'name': detailOrder?.mitra.toString(),
-                  'img': detailOrder?.mitraProfile.toString(),
-                },
-              );
-            }
-          },
-          builder: (context, state) {
-            if (detailOrder == null) {
-              context
-                  .read<DetailOrderCubit>()
-                  .fetchDetailOrder(orderId: widget.orderId!);
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            } else {
-              return RefreshIndicator(
-                onRefresh: () async => context
-                    .read<DetailOrderCubit>()
-                    .fetchDetailOrder(orderId: widget.orderId!),
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: GradientCard(
-                    width: screenWidht,
-                    height: screenHeight - (screenHeight / 8),
-                    cardColor: Colors.black,
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+          }
+          if (state is DetailOrderError) {
+            CustomDialog.showAlertDialog(
+              context,
+              'Peringatan!',
+              state.message,
+              null,
+            );
+          }
+          if (state is ListeningOrderStatusError) {
+            CustomDialog.showAlertDialog(
+              context,
+              'Terjadi Kesalahan!',
+              state.message,
+              null,
+            );
+          }
+          if (state is OpenWhatsAppError) {
+            CustomDialog.showAlertDialog(
+              context,
+              'Gagal Membuka WhatsApp!',
+              state.message,
+              null,
+            );
+          }
+          if (state is CreateChatRoomSuccess) {
+            context.read<DetailOrderCubit>().isIdle();
+            context.pushNamed(
+              'chatPage',
+              queryParameters: {
+                'roomCode':
+                    context.read<DetailOrderCubit>().chatRoomCode.toString(),
+                'name': detailOrder?.mitra.toString(),
+                'img': detailOrder?.mitraProfile.toString(),
+              },
+            );
+          }
+        }, builder: (context, state) {
+          if (detailOrder == null) {
+            context
+                .read<DetailOrderCubit>()
+                .fetchDetailOrder(orderId: widget.orderId!);
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+          if (state is DetailOrderLoading) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+          return RefreshIndicator(
+            onRefresh: () async => context
+                .read<DetailOrderCubit>()
+                .fetchDetailOrder(orderId: widget.orderId!),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: GradientCard(
+                width: screenWidht,
+                height: screenHeight - (screenHeight / 8),
+                cardColor: Colors.black,
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              _infoSection(textTheme),
-                              _imageSection(),
-                            ],
-                          ),
-                          const SizedBox(height: 40),
-                          Text(
-                            'Status Bantuan',
-                            style: textTheme.titleLarge?.copyWith(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          Expanded(
-                            child: widgetContent,
-                            //  orderStatus != OrderStatus.pending &&
-                            //         orderStatus != OrderStatus.booked
-                            //     ? _orderTimeLine(textTheme)
-                            //     : _paymentConsumer(textTheme),
-                          ),
-                          if (orderStatus != OrderStatus.pending &&
-                              orderStatus != OrderStatus.booked &&
-                              orderStatus != OrderStatus.complete &&
-                              orderStatus != OrderStatus.cancelled)
-                            Align(
-                              alignment: Alignment.bottomCenter,
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  _callBtn(context, textTheme),
-                                  const SizedBox(width: 10),
-                                  _chatBtn(context, textTheme),
-                                ],
-                              ),
-                            ),
+                          _infoSection(textTheme),
+                          _imageSection(),
                         ],
                       ),
-                    ),
+                      const SizedBox(height: 40),
+                      Text(
+                        'Status Bantuan',
+                        style: textTheme.titleLarge?.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Expanded(child: widgetContent),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      if (orderStatus == OrderStatus.complete &&
+                          detailOrder?.isRated == false) ...[
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () => CustomDialog.ratingDialog(
+                              context,
+                              textTheme: textTheme,
+                              orderId: widget.orderId!,
+                            ),
+                            style: ButtonStyle(
+                              backgroundColor: const WidgetStatePropertyAll(
+                                AppColors.goldenYellow,
+                              ),
+                              shape: WidgetStatePropertyAll(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(42),
+                                ),
+                              ),
+                            ),
+                            child: Text(
+                              'Rate Mitra',
+                              style: textTheme.bodyLarge
+                                  ?.copyWith(color: AppColors.lightTextColor),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                      ],
+                      if (orderStatus != OrderStatus.pending &&
+                          orderStatus != OrderStatus.booked &&
+                          orderStatus != OrderStatus.complete &&
+                          orderStatus != OrderStatus.rated &&
+                          orderStatus != OrderStatus.cancelled)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _callBtn(context, textTheme),
+                            const SizedBox(width: 10),
+                            _chatBtn(context, textTheme),
+                          ],
+                        ),
+                    ],
                   ),
                 ),
-              );
-            }
-          },
-        ),
+              ),
+            ),
+          );
+        }),
       ),
     );
   }
@@ -257,7 +305,7 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
     return BlocConsumer<ManageOrderBloc, ManageOrderState>(
       listener: (context, state) async {
         if (state is SnapTokenError) {
-          ShowDialog.showAlertDialog(
+          CustomDialog.showAlertDialog(
             context,
             'Gagal Memproses Transaksi!',
             state.message,
@@ -329,7 +377,7 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
       } else if (response.statusCode == 201 &&
           response.transactionStatus.trim().toLowerCase() == 'pending') {
         context.read<ManageOrderBloc>().add(WaitingPayment());
-        ShowDialog.showAlertDialog(
+        CustomDialog.showAlertDialog(
           context,
           'Pembayaran Pending!',
           'Harap selesaikan pembayaran dalam waktu yang ditentukan',
@@ -339,7 +387,7 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
         ManageSnapToken.deleteToken();
         context.read<ManageOrderBloc>().snapToken = null;
         context.read<ManageOrderBloc>().add(ManageOrderIsIdle());
-        ShowDialog.showAlertDialog(
+        CustomDialog.showAlertDialog(
           context,
           'Pembayaran Gagal!',
           'Transaksi kadaluwarsa, silahkan coba lagi',
@@ -364,7 +412,7 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
       } else if (response.trim().toLowerCase().contains('status_code=201') &&
           response.trim().toLowerCase().contains('pending')) {
         context.read<ManageOrderBloc>().add(WaitingPayment());
-        ShowDialog.showAlertDialog(
+        CustomDialog.showAlertDialog(
           context,
           'Pembayaran Pending!',
           'Harap selesaikan pembayaran dalam waktu yang ditentukan',
@@ -375,7 +423,7 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
         ManageSnapToken.deleteToken();
         context.read<ManageOrderBloc>().snapToken = null;
         context.read<ManageOrderBloc>().add(ManageOrderIsIdle());
-        ShowDialog.showAlertDialog(
+        CustomDialog.showAlertDialog(
           context,
           'Pembayaran Gagal!',
           'Transaksi kadaluwarsa, silahkan coba lagi',
@@ -404,15 +452,15 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
         itemCount: switch (orderStatus) {
           OrderStatus.pending => 0,
           OrderStatus.booked => 0,
-          OrderStatus.payed => 1,
+          OrderStatus.paid => 1,
           OrderStatus.cancelled => 0,
           OrderStatus.otw => 2,
           OrderStatus.arrived => 3,
           OrderStatus.inProgress => 4,
           OrderStatus.complete => 5,
+          OrderStatus.rated => 5,
         },
-        contentsAlign: ContentsAlign.reverse,
-        oppositeContentsBuilder: (context, index) {
+        contentsBuilder: (context, index) {
           String status = 'Status dari order';
           if (index == 0) {
             status = 'Uang Transport Dibayar';

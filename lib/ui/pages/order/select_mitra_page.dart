@@ -10,7 +10,7 @@ import '../../../blocs/fetch_offer/fetch_offer_bloc.dart';
 import '../../../configs/app_colors.dart';
 import '../../../models/offer/offer_model.dart';
 import '../../../services/location_service.dart';
-import '../../../utils/show_dialog.dart';
+import '../../../utils/custom_dialog.dart';
 import '../../widgets/gradient_card.dart';
 
 class SelectMitraPage extends StatefulWidget {
@@ -70,7 +70,7 @@ class _SelectMitraPageState extends State<SelectMitraPage> {
               child: BlocConsumer<ManageOrderBloc, ManageOrderState>(
                 listener: (context, state) {
                   if (state is SnapTokenError) {
-                    ShowDialog.showAlertDialog(
+                    CustomDialog.showAlertDialog(
                       context,
                       'Peringatan!',
                       state.message,
@@ -78,7 +78,7 @@ class _SelectMitraPageState extends State<SelectMitraPage> {
                     );
                     context.read<ManageOrderBloc>().add(WaitingPayment());
                   } else if (state is SelectMitraError) {
-                    ShowDialog.showAlertDialog(
+                    CustomDialog.showAlertDialog(
                       context,
                       'Peringatan!',
                       state.message,
@@ -153,7 +153,7 @@ class _SelectMitraPageState extends State<SelectMitraPage> {
                 .add(FetchOffer(orderId: widget.orderId!));
           } else {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              ShowDialog.showAlertDialog(
+              CustomDialog.showAlertDialog(
                 context,
                 'Peringatan!',
                 'Kamu tidak ada order yang aktif saat ini, jika kamu punya order aktif dan tetap mendapat pesan ini coba untuk refresh di home atau close aplikasi dan masuk lagi',
@@ -281,7 +281,7 @@ class _SelectMitraPageState extends State<SelectMitraPage> {
             if (offer != null) {
               _selectMitraConfirmation(offer, textTheme);
             } else {
-              ShowDialog.showAlertDialog(
+              CustomDialog.showAlertDialog(
                 context,
                 'Gagal!',
                 'Terdapat kesalahan, silahkan pilih penawaran lain atau coba lagi',
@@ -313,7 +313,7 @@ class _SelectMitraPageState extends State<SelectMitraPage> {
   }
 
   void _selectMitraConfirmation(OfferModel offer, TextTheme textTheme) {
-    ShowDialog.showAlertDialog(
+    CustomDialog.showAlertDialog(
       context,
       'Konfirmasi',
       'Panggil abang yang ini?',
@@ -345,7 +345,7 @@ class _SelectMitraPageState extends State<SelectMitraPage> {
 
   void _stateError(BuildContext context, String message) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ShowDialog.showAlertDialog(
+      CustomDialog.showAlertDialog(
         context,
         'Error!',
         message,

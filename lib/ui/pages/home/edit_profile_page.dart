@@ -14,7 +14,7 @@ import '../../../models/auth/user_model.dart';
 import '../../../models/misc/menu_item_model.dart';
 import '../../../utils/logging.dart';
 import '../../../utils/manage_token.dart';
-import '../../../utils/show_dialog.dart';
+import '../../../utils/custom_dialog.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -332,7 +332,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   }
 
   void _onProfileEdited(BuildContext context, ProfileEdited state) {
-    ShowDialog.showAlertDialog(
+    CustomDialog.showAlertDialog(
       context,
       'Berhasil!',
       state.message,
@@ -343,7 +343,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   }
 
   void _onStateError(BuildContext context, String message) {
-    ShowDialog.showAlertDialog(
+    CustomDialog.showAlertDialog(
       context,
       'Gagal!',
       message,

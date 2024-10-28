@@ -14,6 +14,7 @@ class DetailOrderModel {
   String? mitra;
   String? mitraProfile;
   String? phoneNumberMitra;
+  bool? isRated;
 
   DetailOrderModel({
     this.orderId,
@@ -29,6 +30,7 @@ class DetailOrderModel {
     this.mitra,
     this.mitraProfile,
     this.phoneNumberMitra,
+    this.isRated
   });
 
   factory DetailOrderModel.fromMap(Map<String, dynamic> data) {
@@ -46,6 +48,7 @@ class DetailOrderModel {
       mitra: data['mitra'] as String?,
       mitraProfile: data['mitra_profile'] as String?,
       phoneNumberMitra: data['phone_number_mitra'] as String?,
+      isRated: data['is_rated'] as bool?,
     );
   }
 
@@ -63,6 +66,7 @@ class DetailOrderModel {
         'mitra': mitra,
         'mitra_profile': mitraProfile,
         'phone_number_mitra': phoneNumberMitra,
+        'is_rated': isRated,
       };
 
   /// `dart:convert`

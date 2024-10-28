@@ -255,7 +255,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       } else {
         emit(
           const AuthError(
-              errorMessage: MessageErrorModel(error: 'Gagal memuat FCM token')),
+            errorMessage: MessageErrorModel(error: 'Gagal memuat FCM token'),
+          ),
         );
         return;
       }

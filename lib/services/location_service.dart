@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
 import '../utils/logging.dart';
-import '../utils/show_dialog.dart';
+import '../utils/custom_dialog.dart';
 
 class LocationService {
   static double? lat;
@@ -40,7 +40,7 @@ class LocationService {
       if (context.mounted) {
         printError(e.toString());
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          ShowDialog.showAlertDialog(
+          CustomDialog.showAlertDialog(
             context,
             'Gagal mengakses lokasi',
             'Pastikan location dan interenet handphone kamu nyala ya!',

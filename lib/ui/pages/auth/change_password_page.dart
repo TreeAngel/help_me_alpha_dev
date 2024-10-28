@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../blocs/profile/profile_bloc.dart';
 import '../../../configs/app_colors.dart';
-import '../../../utils/show_dialog.dart';
+import '../../../utils/custom_dialog.dart';
 
 class ChangePasswordPage extends StatelessWidget {
   const ChangePasswordPage({super.key});
@@ -101,7 +101,7 @@ class ChangePasswordPage extends StatelessWidget {
   }
 
   _stateError(BuildContext context, EditPasswordError state) {
-    ShowDialog.showAlertDialog(
+    CustomDialog.showAlertDialog(
       context,
       'Peringatan!',
       state.errorMessage,
@@ -111,7 +111,7 @@ class ChangePasswordPage extends StatelessWidget {
   }
 
   _stateLoaded(BuildContext context, EditPasswordLoaded state) {
-    ShowDialog.showAlertDialog(
+    CustomDialog.showAlertDialog(
       context,
       'Ubah Kata Sandi',
       state.message,

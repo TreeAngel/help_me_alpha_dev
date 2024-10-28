@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 class Rating {
-  String? rating;
+  int? rating;
   String? review;
   int? mitraId;
   int? userId;
@@ -22,7 +22,7 @@ class Rating {
   });
 
   factory Rating.fromMap(Map<String, dynamic> data) => Rating(
-        rating: data['rating'] as String?,
+        rating: data['rating'] as int?,
         review: data['review'] as String?,
         mitraId: data['mitra_id'] as int?,
         userId: data['user_id'] as int?,
