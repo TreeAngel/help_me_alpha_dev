@@ -27,6 +27,15 @@ class DetailOrderCubit extends Cubit<DetailOrderState> {
 
   void isIdle() => emit(DetailOrderIdle());
 
+  void receivingChat(ChatResponseModel message) => emit(ReceiveChat(response: message));
+
+  void clearDetailOrder() {
+    chatRoomCode = null;
+    order = null;
+    chatMessages.clear();
+    emit(DetailOrderInitial());
+  }
+
   // TODO: Untuk sekarang ini hanya support nomor region indonesia
   void openWhatsApp(String phoneNumber) async {
     final indonesiaFormatNumber = '+62${phoneNumber.substring(1)}';
@@ -75,12 +84,17 @@ class DetailOrderCubit extends Cubit<DetailOrderState> {
     XFile? image,
     required String roomCode,
   }) async {
-    emit(DetailOrderLoading());
+    emit(ChatLoading());
+    if (textMessage == null && image == null) {
+      emit(DetailOrderIdle());
+      return;
+    }
     if (textMessage != null && textMessage.isEmpty) {
+      emit(DetailOrderIdle());
       return;
     }
     MultipartFile? attachment;
-    image != null
+    image != null && textMessage == null
         ? attachment = await MultipartFile.fromFile(
             image.path,
             filename: image.name,
@@ -90,7 +104,7 @@ class DetailOrderCubit extends Cubit<DetailOrderState> {
           )
         : null;
     final formData = FormData.fromMap({
-      'chat_room': roomCode,
+      'code_room': roomCode,
       if (textMessage != null) 'message': textMessage,
       if (image != null) 'attachment': attachment,
     });

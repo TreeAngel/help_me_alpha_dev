@@ -13,7 +13,7 @@ class ChatResponseModel {
 
   @override
   String toString() =>
-      'ChatResponseModel(enderId: $senderId, message: $message, createdAt: $createdAt)';
+      'ChatResponseModel(senderId: $senderId, message: $message, createdAt: $createdAt)';
 
   factory ChatResponseModel.fromMap(Map<String, dynamic> data) {
     return ChatResponseModel(

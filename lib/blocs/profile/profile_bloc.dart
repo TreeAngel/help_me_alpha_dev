@@ -35,6 +35,22 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
     on<ProfileIsIdle>((event, emit) => emit(ProfileIdle()));
 
+    on<ProfileStart>((event, emit) => emit(ProfileInitial()));
+
+    on<ProfileDispose>((event, emit) {
+      profile = null;
+      oldPassword = null;
+      newPassword = null;
+      newConfirmPassword = null;
+      fullname = null;
+      username = null;
+      phoneNumber = null;
+      imageProfile = null;
+      codeOTP = null;
+      statusOTP = StatusOTP.waiting;
+      emit(ProfileDisposed());
+    });
+
     on<EditProfileSubmitted>(_onEditProfileSubmitted);
 
     on<EditPasswordSubmitted>(_onEditPasswordSubmitted);

@@ -106,7 +106,7 @@ class ProblemQuestions {
   ];
 
   static const List<String> masalahHP = [
-    'Kecemplung/Kehujanan', // Kemasukan air lebih sreg kalau menurutku
+    'Kecemplung/Kehujanan',
     'Layar pecah', 'Suara mati', 'Mati total', 'Lainnya',
   ];
 

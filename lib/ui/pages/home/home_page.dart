@@ -14,6 +14,7 @@ import '../../../data/menu_items_data.dart';
 import '../../../models/category_problem/category_model.dart';
 import '../../../models/misc/menu_item_model.dart';
 import '../../../models/order/history/order_history_model.dart';
+import '../../../services/api/api_controller.dart';
 import '../../../services/firebase/firebase_api.dart';
 import '../../../services/location_service.dart';
 import '../../../utils/logging.dart';
@@ -31,6 +32,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   bool showAllCategory = false;
   bool showAllHistory = false;
+  String username = 'Kamu!';
 
   @override
   Widget build(BuildContext context) {
@@ -77,10 +79,14 @@ class _HomePageState extends State<HomePage> {
                 if (state.message.isNotEmpty) {
                   CustomDialog.showAlertDialog(
                     context,
-                    'Signout',
+                    'Sign Out',
                     state.message,
                     TextButton(
-                      onPressed: () => context.goNamed('signInPage'),
+                      onPressed: () {
+                        context.read<HomeCubit>().disposeHome();
+                        context.read<ProfileBloc>().add(ProfileDispose());
+                        context.goNamed('signInPage');
+                      },
                       child: const Text('Lanjut'),
                     ),
                   );
@@ -100,15 +106,11 @@ class _HomePageState extends State<HomePage> {
                   context.read<HomeCubit>().fetchCategories();
                 },
                 child: CustomScrollView(
+                  physics: const ClampingScrollPhysics(),
                   slivers: <Widget>[
                     const SliverToBoxAdapter(child: SizedBox(height: 20)),
                     _appBarBlocConsumer(
-                      context
-                              .watch<ProfileBloc>()
-                              .profile
-                              ?.username
-                              .toString() ??
-                          'Kamu!',
+                      username,
                       textTheme,
                       colorScheme,
                     ),
@@ -265,8 +267,8 @@ class _HomePageState extends State<HomePage> {
     CustomDialog.showAlertDialog(
       context,
       'Error Sing Out',
-      state.errorMessage.toString(),
-      state.errorMessage.toString().toLowerCase().contains('unauthorized')
+      state.message.toString(),
+      state.message.toString().toLowerCase().contains('unauthorized')
           ? OutlinedButton.icon(
               onPressed: () {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -294,11 +296,17 @@ class _HomePageState extends State<HomePage> {
       listener: (context, state) {
         if (state is ProfileLoaded) {
           context.read<ProfileBloc>().profile = state.data.user;
+          if (state.data.user.username != null) {
+            username = state.data.user.username!;
+          }
         } else if (state is ProfileError) {
           _onProfileError(context, state);
         }
       },
       builder: (context, state) {
+        if (state is ProfileDisposed && ApiController.token != null) {
+          context.read<ProfileBloc>().add(ProfileStart());
+        }
         if (state is ProfileInitial) {
           context.read<ProfileBloc>().add(FetchProfile());
           context.read<HomeCubit>().fetchCategories();
@@ -391,16 +399,18 @@ class _HomePageState extends State<HomePage> {
           _onCategoryError(context, state);
         } else if (state is OrderHistoryLoaded) {
           context.read<HomeCubit>().orderHistory = state.history;
-          context.read<HomeCubit>().lastHistory = state.history.last;
-          if (state.history.any((history) =>
-              history.orderStatus?.trim().toLowerCase() == 'pending' ||
-              history.orderStatus?.trim().toLowerCase() == 'booked' ||
-              history.orderStatus?.trim().toLowerCase() == 'paid' ||
-              history.orderStatus?.trim().toLowerCase() == 'otw' ||
-              history.orderStatus?.trim().toLowerCase() == 'arrived')) {
-            context.read<ManageOrderBloc>().haveActiveOrder = true;
-          } else {
-            context.read<ManageOrderBloc>().haveActiveOrder = false;
+          if (state.history.isNotEmpty) {
+            context.read<HomeCubit>().lastHistory = state.history.last;
+            if (state.history.any((history) =>
+                history.orderStatus?.trim().toLowerCase() == 'pending' ||
+                history.orderStatus?.trim().toLowerCase() == 'booked' ||
+                history.orderStatus?.trim().toLowerCase() == 'paid' ||
+                history.orderStatus?.trim().toLowerCase() == 'otw' ||
+                history.orderStatus?.trim().toLowerCase() == 'arrived')) {
+              context.read<ManageOrderBloc>().haveActiveOrder = true;
+            } else {
+              context.read<ManageOrderBloc>().haveActiveOrder = false;
+            }
           }
         }
         if (state is OrderHistoryError) {
@@ -410,6 +420,9 @@ class _HomePageState extends State<HomePage> {
         }
       },
       builder: (context, state) {
+        if (state is HomeDisposed && ApiController.token != null) {
+          context.read<HomeCubit>().homeInit();
+        }
         if (state is HomeLoading) {
           return const SliverFillRemaining(
             child: Center(
@@ -477,7 +490,6 @@ class _HomePageState extends State<HomePage> {
               : AppColors.gray;
           return GestureDetector(
             onTap: () {
-              // TODO: Ubah index 0(serabutan) nanti saat database berubah, ya intinya itu
               index == 0 || index == 1
                   ? context.pushNamed('selectProblemPage', queryParameters: {
                       'categoryId': category.id.toString(),

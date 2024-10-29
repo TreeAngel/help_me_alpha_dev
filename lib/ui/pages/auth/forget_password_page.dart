@@ -29,7 +29,6 @@ class ForgetPasswordPage extends StatelessWidget {
               );
             } else if (state is ForgetPasswordLoaded) {
               final message = state.message;
-              // TODO: Ubah ini jika respon dari api berubah saat
               // nomor tidak terdaftar atau belum diverifikasi
               if (message.toLowerCase().trim().contains('belum') ||
                   message.toLowerCase().trim().contains('tidak')) {

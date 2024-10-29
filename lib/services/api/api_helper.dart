@@ -19,6 +19,7 @@ import '../../models/order/detail_order_model.dart';
 import '../../models/order/history/order_history_model.dart';
 import '../../models/order/order_rating_response_model/order_rating_response_model.dart';
 import '../../models/order/order_response_model/order_response_model.dart';
+import '../firebase/firebase_api.dart';
 import 'api_controller.dart';
 
 class ApiHelper {
@@ -46,12 +47,15 @@ class ApiHelper {
     }
   }
 
-  static Future<ApiErrorResponseModel> authLogout() async {
-    final response = await ApiController.postData('auth/logout');
+  static Future authLogout() async {
+    final response = await ApiController.postData(
+      'auth/logout',
+      {'fcm_token': FirebaseMessagingApi.fcmToken},
+    );
     if (response is ApiErrorResponseModel) {
       return response;
     } else {
-      return ApiErrorResponseModel(error: MessageErrorModel.fromMap(response));
+      return AuthResponseModel.fromMap(response);
     }
   }
 

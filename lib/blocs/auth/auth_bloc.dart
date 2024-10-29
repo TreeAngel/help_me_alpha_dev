@@ -1,10 +1,9 @@
 import 'dart:async';
-import 'dart:developer';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 import '../../models/api_error_response/api_error_response_model.dart';
-import '../../models/api_error_response/message_error_model.dart';
 import '../../models/auth/auth_response_model.dart';
 import '../../models/auth/login_model.dart';
 import '../../services/api/api_controller.dart';
@@ -102,31 +101,24 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(AuthLoading());
     final signOutResponse = await ApiHelper.authLogout();
-    if (signOutResponse.error != null) {
+    if (signOutResponse is ApiErrorResponseModel) {
       final message =
           signOutResponse.error?.message ?? signOutResponse.error?.error;
-      log('Signout: $message');
       if (message!.trim().toLowerCase().contains('unauthorized')) {
-        emit(AuthError(
-          errorMessage: MessageErrorModel(error: message),
-        ));
-      } else {
-        ApiController.token = null;
-        FirebaseMessagingApi.fcmToken = null;
-        ManageAuthToken.deleteToken();
-        ManageFCMToken.deleteToken();
-        emit(SignOutLoaded(
-          message: message.toString(),
-        ));
+        emit(
+          AuthError(message: message.toString()),
+        );
       }
     } else {
-      emit(
-        const AuthError(
-          errorMessage: MessageErrorModel(
-            message: 'Unknown error occured',
-          ),
-        ),
-      );
+      signOutResponse as AuthResponseModel;
+      ApiController.token = null;
+      FirebaseMessagingApi.fcmToken = null;
+      ManageAuthToken.deleteToken();
+      ManageFCMToken.deleteToken();
+      await DefaultCacheManager().emptyCache();
+      emit(SignOutLoaded(
+        message: signOutResponse.message ?? 'Failed to load message',
+      ));
     }
   }
 
@@ -137,17 +129,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     if (username.isEmpty) {
       emit(
         const AuthError(
-          errorMessage: MessageErrorModel(
-            message: 'Isi username',
-          ),
+          message: 'Isi username',
         ),
       );
     } else if (password.length < 8) {
       emit(
         const AuthError(
-          errorMessage: MessageErrorModel(
-            message: 'Password minimal 8 karakter',
-          ),
+          message: 'Password minimal 8 karakter',
         ),
       );
     } else {
@@ -183,18 +171,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           );
         }
       } else if (signInResponse is ApiErrorResponseModel) {
-        final error = signInResponse.error;
-        if (error != null) {
-          emit(AuthError(errorMessage: error));
-        } else {
-          emit(
-            const AuthError(
-              errorMessage: MessageErrorModel(
-                message: 'Unknown error occured',
-              ),
-            ),
-          );
-        }
+        final message =
+            signInResponse.error?.error ?? signInResponse.error?.message;
+        emit(AuthError(message: message.toString()));
       }
     }
   }
@@ -205,47 +184,31 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     if (fullName.isEmpty) {
       emit(
-        const AuthError(
-          errorMessage: MessageErrorModel(message: 'Isi nama lengkap'),
-        ),
+        const AuthError(message: 'Isi nama lengkap'),
       );
     } else if (phoneNumber.isEmpty) {
       emit(
-        const AuthError(
-          errorMessage: MessageErrorModel(message: 'Isi nomor telepon'),
-        ),
+        const AuthError(message: 'Isi nomor telepon'),
       );
     } else if (!phoneNumber.startsWith('08')) {
       emit(
-        const AuthError(
-          errorMessage:
-              MessageErrorModel(message: 'Isi dengan nomor telpon yang valid'),
-        ),
+        const AuthError(message: 'Isi dengan nomor telpon yang valid'),
       );
     } else if (username.isEmpty) {
       emit(
-        const AuthError(
-          errorMessage: MessageErrorModel(message: 'Isi username'),
-        ),
+        const AuthError(message: 'Isi username'),
       );
     } else if (password.isEmpty) {
       emit(
-        const AuthError(
-          errorMessage:
-              MessageErrorModel(message: 'Password minimal 8 karakter'),
-        ),
+        const AuthError(message: 'Password minimal 8 karakter'),
       );
     } else if (passwordConfirmation.isEmpty) {
       emit(
-        const AuthError(
-          errorMessage: MessageErrorModel(message: 'Isi konfirmasi password'),
-        ),
+        const AuthError(message: 'Isi konfirmasi password'),
       );
     } else if (passwordConfirmation != password) {
       emit(
-        const AuthError(
-          errorMessage: MessageErrorModel(message: 'Konfirmasi password salah'),
-        ),
+        const AuthError(message: 'Konfirmasi password salah'),
       );
     } else {
       emit(AuthLoading());
@@ -254,9 +217,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         fcmToken = await FirebaseMessagingApi.getFCMToken();
       } else {
         emit(
-          const AuthError(
-            errorMessage: MessageErrorModel(error: 'Gagal memuat FCM token'),
-          ),
+          const AuthError(message: 'Gagal memuat FCM token'),
         );
         return;
       }
@@ -284,16 +245,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           );
         }
       } else if (signUpResponse is ApiErrorResponseModel) {
-        final error = signUpResponse.error;
-        if (error != null) {
-          emit(AuthError(errorMessage: error));
-        } else {
-          emit(
-            const AuthError(
-              errorMessage: MessageErrorModel(message: 'Unknown error occured'),
-            ),
-          );
-        }
+        final message =
+            signUpResponse.error?.error ?? signUpResponse.error?.message;
+        emit(AuthError(message: message.toString()));
       }
     }
   }

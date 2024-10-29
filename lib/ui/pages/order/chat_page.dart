@@ -35,43 +35,62 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  List<ChatResponseModel> chatMessages = [];
-  final TextEditingController _chatInputController = TextEditingController();
+  final _chatInputController = TextEditingController();
+  final _chatScrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToBottom();
+    });
+  }
+
+  void _scrollToBottom() {
+    if (_chatScrollController.hasClients) {
+      _chatScrollController.animateTo(
+        _chatScrollController.position.maxScrollExtent,
+        duration: const Duration(seconds: 1),
+        curve: Curves.easeOut,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final appTheme = Theme.of(context);
     final textTheme = appTheme.textTheme;
-    // final screenWidth = MediaQuery.sizeOf(context).width;
     final screenHeight = MediaQuery.sizeOf(context).height;
+
+    if (context.read<DetailOrderCubit>().chatMessages.isEmpty) {
+      context.read<DetailOrderCubit>().isIdle();
+      context
+          .read<DetailOrderCubit>()
+          .fetchChatMessagesHistory(roomCode: widget.chatRoomCode);
+    }
 
     FirebaseMessaging.onMessage.listen((message) {
       RemoteNotification? notification = message.notification;
       AndroidNotification? android = notification?.android;
-      if (notification == null && android == null) {
-        return;
-      }
-      final data = message.data;
-      if (notification!.title!.trim().toLowerCase().contains('chat') &&
-          notification.body!.trim().toLowerCase().contains('new message')) {
-        if (data.isNotEmpty) {
-          final receivedChat = ChatResponseModel(
-            senderId: int.parse(data['sender_id']),
-            message: data['message'],
-            createdAt: data['created_at'],
-          );
-          setState(() {
-            chatMessages.add(receivedChat);
-          });
-          log(chatMessages.join(' | '), name: 'Semua chat');
+      if (notification != null && android != null) {
+        if (notification.title!.trim().toLowerCase().contains('chat') &&
+            notification.body!.trim().toLowerCase().contains('new message')) {
+          final data = message.data;
+          if (data.isNotEmpty && context.mounted) {
+            final receivedChat = ChatResponseModel(
+              senderId: int.parse(data['sender_id']),
+              message: data['message'],
+              createdAt: DateTime.parse(data['created_at']),
+            );
+            context.read<DetailOrderCubit>().receivingChat(receivedChat);
+            log(
+              context.read<DetailOrderCubit>().chatMessages.join(' | '),
+              name: 'Semua chat',
+            );
+          }
         }
       }
     });
-
-    context.read<DetailOrderCubit>().isIdle();
-    context
-        .read<DetailOrderCubit>()
-        .fetchChatMessagesHistory(roomCode: widget.chatRoomCode);
 
     return SafeArea(
       child: Scaffold(
@@ -88,38 +107,56 @@ class _ChatPageState extends State<ChatPage> {
               );
             }
             if (state is ReceiveChat) {
+              context.read<DetailOrderCubit>().chatMessages.add(state.response);
               context.read<DetailOrderCubit>().isIdle();
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _scrollToBottom();
+              });
             }
             if (state is MessagesLoaded) {
-              chatMessages = state.messages;
+              context.read<DetailOrderCubit>().chatMessages = state.messages;
               context.read<DetailOrderCubit>().isIdle();
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _scrollToBottom();
+              });
             }
             if (state is ImageSelected) {
               _sendImageDialog(context, state);
             }
             if (state is SendMessageSuccess) {
-              setState(() {
-                chatMessages.add(
-                  ChatResponseModel(
-                    createdAt: state.response.data!.createdAt,
-                    message: state.response.data!.message,
-                    senderId: state.response.data!.senderId,
-                  ),
-                );
+              context.read<DetailOrderCubit>().chatMessages.add(
+                    ChatResponseModel(
+                      createdAt: state.response.data!.createdAt,
+                      message: state.response.data!.message,
+                      senderId: state.response.data!.senderId,
+                    ),
+                  );
+              context.read<DetailOrderCubit>().isIdle();
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _scrollToBottom();
               });
             }
           },
           builder: (context, state) {
             return Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Stack(
                 children: [
                   if (state is ChatLoading)
-                    const Center(child: CircularProgressIndicator())
+                    const Center(
+                      child: CircularProgressIndicator(),
+                    )
                   else
-                    _chatMessagesBuilder(),
-                  _chatTextInput(screenHeight, textTheme),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 68),
+                      child: _chatMessagesBuilder(),
+                    ),
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: _chatTextInput(screenHeight, textTheme),
+                  ),
                 ],
               ),
             );
@@ -132,8 +169,6 @@ class _ChatPageState extends State<ChatPage> {
   Padding _chatTextInput(double screenHeight, TextTheme textTheme) {
     return Padding(
       padding: const EdgeInsets.only(
-        left: 8,
-        right: 8,
         bottom: 8,
       ),
       child: _chatInputContainer(screenHeight, textTheme),
@@ -142,13 +177,13 @@ class _ChatPageState extends State<ChatPage> {
 
   ListView _chatMessagesBuilder() {
     return ListView.builder(
-      itemCount: chatMessages.length,
-      shrinkWrap: true,
+      controller: _chatScrollController,
+      itemCount: context.watch<DetailOrderCubit>().chatMessages.length,
       physics: const ClampingScrollPhysics(),
       itemBuilder: (context, index) {
-        final chat = chatMessages[index];
+        final chat = context.read<DetailOrderCubit>().chatMessages[index];
         return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 2),
+          padding: const EdgeInsets.symmetric(vertical: 8),
           child: _bubbleChat(
             chat.message,
             sendTime: chat.createdAt!,
@@ -166,34 +201,39 @@ class _ChatPageState extends State<ChatPage> {
       barrierDismissible: false,
       context: context,
       builder: (context) => Dialog.fullscreen(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            BackButton(
-              onPressed: () => context.pop(),
-            ),
-            Image.file(
-              File(state.image.path),
-              fit: BoxFit.cover,
-            ),
-            Align(
-              alignment: Alignment.centerRight,
-              child: IconButton(
-                onPressed: () => context.read<DetailOrderCubit>().sendMessage(
-                      roomCode: widget.chatRoomCode,
-                      textMessage: null,
-                      image: state.image,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              BackButton(
+                onPressed: () => context.pop(),
+              ),
+              Image.file(
+                File(state.image.path),
+                fit: BoxFit.cover,
+              ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: IconButton(
+                  onPressed: () {
+                    context.read<DetailOrderCubit>().sendMessage(
+                          roomCode: widget.chatRoomCode,
+                          textMessage: null,
+                          image: state.image,
+                        );
+                    context.pop();
+                  },
+                  icon: const Icon(Icons.send_rounded),
+                  style: const ButtonStyle(
+                    iconColor: WidgetStatePropertyAll(
+                      AppColors.lightTextColor,
                     ),
-                icon: const Icon(Icons.send_rounded),
-                style: const ButtonStyle(
-                  iconColor: WidgetStatePropertyAll(
-                    AppColors.lightTextColor,
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -201,7 +241,6 @@ class _ChatPageState extends State<ChatPage> {
 
   Container _chatInputContainer(double screenHeight, TextTheme textTheme) {
     return Container(
-      // height: 60,
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(color: AppColors.lightTextColor),
@@ -237,11 +276,14 @@ class _ChatPageState extends State<ChatPage> {
           Expanded(
             flex: 2,
             child: IconButton(
-              onPressed: () => context.read<DetailOrderCubit>().sendMessage(
-                    roomCode: widget.chatRoomCode,
-                    textMessage: _chatInputController.text,
-                    image: null,
-                  ),
+              onPressed: () {
+                context.read<DetailOrderCubit>().sendMessage(
+                      roomCode: widget.chatRoomCode,
+                      textMessage: _chatInputController.text,
+                      image: null,
+                    );
+                _chatInputController.text = '';
+              },
               icon: const Icon(Icons.send_rounded),
               style: const ButtonStyle(
                 iconColor: WidgetStatePropertyAll(

@@ -13,6 +13,8 @@ final class ProfileLoading extends ProfileState {}
 
 final class ProfileIdle extends ProfileState {}
 
+final class ProfileDisposed extends ProfileState {}
+
 final class ProfileLoaded extends ProfileState {
   final DataUser data;
 

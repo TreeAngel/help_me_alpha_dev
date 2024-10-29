@@ -8,8 +8,6 @@ import '../../../configs/app_colors.dart';
 import '../../../models/category_problem/problem_model.dart';
 import '../../../utils/custom_dialog.dart';
 
-// enum ProblemCategory { serabutan, kendaraan, rumah, elektronik }
-
 class SelectProblemPage extends StatefulWidget {
   const SelectProblemPage({
     super.key,

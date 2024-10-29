@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../services/api/api_exception.dart';
 import '../../../configs/app_colors.dart';
 import '../../../blocs/auth/auth_bloc.dart';
 import '../../../utils/custom_dialog.dart';
@@ -169,11 +168,10 @@ class SignUpPage extends StatelessWidget {
   }
 
   _stateError(BuildContext context, AuthError state) {
-    final errorMessage = ApiException.errorMessageBuilder(state.errorMessage);
     CustomDialog.showAlertDialog(
       context,
       'Peringatan!',
-      errorMessage,
+      state.message,
       null,
     );
     context.read<AuthBloc>().add(AuthIsIdle());
@@ -280,12 +278,6 @@ class SignUpPage extends StatelessWidget {
       onChanged: (phoneNumber) =>
           context.read<AuthBloc>().add(PhoneNumberChanged(phoneNumber)),
       decoration: InputDecoration(
-        // prefixText: '+62 | ',
-        // prefixStyle: textTheme.bodyLarge?.copyWith(
-        //   color: AppColors.lightTextColor,
-        //   fontWeight: FontWeight.normal,
-        // ),
-        // floatingLabelBehavior: FloatingLabelBehavior.always,
         filled: true,
         fillColor: Colors.white,
         hintText: '08xxxxxxxxxx',

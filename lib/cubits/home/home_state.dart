@@ -11,6 +11,8 @@ final class HomeInitial extends HomeState {}
 
 final class HomeLoading extends HomeState {}
 
+final class HomeDisposed extends HomeState {}
+
 final class CategoryLoaded extends HomeState {
   final List<CategoryModel> categories;
 

@@ -39,7 +39,6 @@ class AppRoute {
           : null;
       context.read<ManageOrderBloc>().activeOrder = activeOrder;
 
-      // TODO: Add other guarded route later
       if (isAuthenticated == false && state.matchedLocation == '/home') {
         return '/signIn';
       }

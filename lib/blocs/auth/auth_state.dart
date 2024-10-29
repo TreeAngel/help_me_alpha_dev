@@ -18,12 +18,12 @@ final class PasswordToggled extends AuthState {}
 final class RememberMeToggled extends AuthState {}
 
 final class AuthError extends AuthState {
-  final MessageErrorModel errorMessage;
+  final String message;
 
-  const AuthError({required this.errorMessage});
+  const AuthError({required this.message});
 
   @override
-  List<Object> get props => [errorMessage];
+  List<Object> get props => [message];
 }
 
 // Sign In states

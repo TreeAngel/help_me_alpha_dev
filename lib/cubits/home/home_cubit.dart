@@ -43,15 +43,15 @@ class HomeCubit extends Cubit<HomeState> {
     }
   }
 
-  void homeIdle() {
-    emit(HomeIdle());
-  }
+  void homeIdle() => emit(HomeIdle());
+
+  void homeInit() => emit(HomeInitial());
 
   void disposeHome() {
     allCategories = [];
     fourCategories = [];
     orderHistory = [];
     lastHistory = null;
-    emit(HomeInitial());
+    emit(HomeDisposed());
   }
 }

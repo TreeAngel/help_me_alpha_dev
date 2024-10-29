@@ -18,7 +18,6 @@ class FetchOfferBloc extends Bloc<FetchOfferEvent, FetchOfferState> {
     on<FetchIsIdle>((event, emit) => emit(FetchOfferIdle()));
   }
 
-  // TODO: Ganti ini jadi socket nanti
   Future<void> _onFetchOffer(event, emit) async {
     emit(FetchOfferLoading());
     await emit.forEach(

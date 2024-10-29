@@ -22,14 +22,17 @@ class ApiException {
               'Failed to validate certificate, try again after a few seconds',
         };
       case DioExceptionType.badResponse:
-        if (dioException.response?.statusCode == 400) {
-          final message = dioException.response?.data as Map<String, dynamic>;
-          return message;
-        } else if (dioException.response?.statusCode == 401) {
-          return {
-            'error': 'Unauthorized',
-          };
-        } else if (dioException.response?.statusCode == 422) {
+        if (dioException.response?.statusCode == 400 ||
+            dioException.response?.statusCode == 401 ||
+            dioException.response?.statusCode == 403 ||
+            dioException.response?.statusCode == 404 ||
+            dioException.response?.statusCode == 405 ||
+            dioException.response?.statusCode == 406 ||
+            dioException.response?.statusCode == 408 ||
+            dioException.response?.statusCode == 411 ||
+            dioException.response?.statusCode == 415 ||
+            dioException.response?.statusCode == 416 ||
+            dioException.response?.statusCode == 422) {
           final message = dioException.response?.data as Map<String, dynamic>;
           return message;
         } else {
@@ -83,9 +86,6 @@ class ApiException {
       errorMessage += '${errorModel.verificationCode}\n';
     }
     errorMessage = errorMessage.trim();
-    // errorMessage = errorMessage.endsWith(',')
-    //     ? errorMessage.substring(0, errorMessage.length - 1)
-    //     : errorMessage;
     return errorMessage;
   }
 }

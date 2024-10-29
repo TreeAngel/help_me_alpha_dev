@@ -249,7 +249,7 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Text(
           'Verifikasi',
           style: textTheme.labelLarge?.copyWith(
-            fontSize: 11,
+            fontSize: 10,
             color: AppColors.primary,
             fontWeight: FontWeight.w100,
           ),

@@ -37,10 +37,5 @@ class ApiErrorResponseModel {
         error: MessageErrorModel(error: 'Unknown error'),
       );
     }
-    // return ApiErrorResponseModel(
-    //   error: data['error'] == null
-    //       ? null
-    //       : MessageErrorModel.fromMap(data['error'] as Map<String, dynamic>),
-    // );
   }
 }

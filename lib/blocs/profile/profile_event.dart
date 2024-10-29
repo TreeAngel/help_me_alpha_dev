@@ -9,6 +9,10 @@ sealed class ProfileEvent extends Equatable {
 
 class FetchProfile extends ProfileEvent {}
 
+class ProfileDispose extends ProfileEvent {}
+
+class ProfileStart extends ProfileEvent {}
+
 class NewFullnameChanged extends ProfileEvent {
   final String fullname;
 
