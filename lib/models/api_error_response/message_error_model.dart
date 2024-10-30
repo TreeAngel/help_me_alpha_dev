@@ -88,4 +88,12 @@ class MessageErrorModel {
       role: role ?? this.role,
     );
   }
+
+  static MessageErrorModel fromError(dynamic error) {
+    String errorMessage = error.toString();
+    return MessageErrorModel(
+      message: errorMessage,
+      // add other fields based on your requirements
+    );
+  }
 }

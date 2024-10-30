@@ -68,6 +68,14 @@ class ApiController {
     }
   }
 
+   Future<Map<String, dynamic>> getOrder() async {
+    try {
+      return await getData('orders/44'); // Memanggil getData() untuk mendapatkan order dengan ID 44
+    } catch (e) {
+      throw Exception('Failed to load order');
+    }
+  }
+
   static Future postData(
     String url, [
     dynamic data,

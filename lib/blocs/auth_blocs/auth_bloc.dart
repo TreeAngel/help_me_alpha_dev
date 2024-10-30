@@ -82,6 +82,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(state.copyWith(mitraType: event.mitraType));
     });
 
+    on<GetOrderEvent>((event, emit) async {
+      emit(AuthLoading());
+      try {
+        final order = await apiController.getOrder();
+        emit(OrderLoaded(order));
+      } catch (e) {
+        final errorMessage = MessageErrorModel.fromError(e);
+        emit(AuthError(errorMessage: errorMessage));
+      }
+    });
 
     on<SignInSubmitted>(_onSignInSubmitted);
 

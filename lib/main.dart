@@ -1,8 +1,11 @@
 import 'package:firebase_core/firebase_core.dart';
-// import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:help_me_mitra_alpha_ver/blocs/fetch_order/fetch_order_bloc.dart';
 import 'package:help_me_mitra_alpha_ver/services/firebase/firebase_api.dart';
+import 'package:help_me_mitra_alpha_ver/services/firebase/firebase_messaging_service.dart';
 
 import 'blocs/home_blocs/home_bloc.dart';
 import 'blocs/auth_blocs/auth_bloc.dart';
@@ -12,16 +15,43 @@ import 'utils/manage_auth_token.dart';
 import 'configs/app_route.dart';
 import 'firebase_options.dart';
 
+final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // Ini akan menangani pesan background
+  print('Handling a background message: ${message.messageId}');
+}
+
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(            // Inisialisasi Firebase
-    options: DefaultFirebaseOptions.currentPlatform, // Menggunakan opsi Firebase sesuai platform
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
   );
   await FirebaseApi().initNotification();
-  // FirebaseMessaging messaging = FirebaseMessaging.instance;
+  
+  // Setup background handler
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  // Setup notifications
+  const AndroidInitializationSettings initializationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+
+  final InitializationSettings initializationSettings =
+      InitializationSettings(android: initializationSettingsAndroid);
+
+  await _flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
+  // Buat instance FetchOrderBloc
+  final fetchOrderBloc = FetchOrderBloc();
+
+  // Inisialisasi FirebaseMessagingService dengan FetchOrderBloc
+  FirebaseMessagingService(fetchOrderBloc: fetchOrderBloc);
 
   runApp(const MainApp());
 }
+
+
 
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
@@ -39,13 +69,12 @@ class MainApp extends StatelessWidget {
         BlocProvider(
           create: (context) => AuthBloc(apiController: apiController),
         ),
+        BlocProvider.value(value: FetchOrderBloc()),
         // TODO: Add other blocs here
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
-        // title: 'HelpMe | Mitra',
         theme: AppTheme.appTheme,
-        // home: OrderPop(),
         routerConfig: AppRoute.appRoute,
       ),
     );

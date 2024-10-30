@@ -2,7 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:help_me_mitra_alpha_ver/ui/pages/forgot_password_page.dart';
 import 'package:help_me_mitra_alpha_ver/ui/pages/form_data_mitra.dart';
 import 'package:help_me_mitra_alpha_ver/ui/pages/launch_page.dart';
-import 'package:help_me_mitra_alpha_ver/ui/pages/order_popup.dart';
+import 'package:help_me_mitra_alpha_ver/ui/pages/order_screen.dart';
 import 'package:help_me_mitra_alpha_ver/ui/pages/selected_popup.dart';
 // import 'package:help_me_mitra_alpha_ver/ui/pages/track_maps_page.dart';
 
@@ -62,11 +62,11 @@ class AppRoute {
         name: 'forgotPasswordPage',
         builder: (context, state) => ForgotPasswordPage(),
       ),
-      GoRoute(
-        path: '/getpostorder',
-        name: 'orderPop',
-        builder: (context, state) => OrderPage(),
-      ),
+      // GoRoute(
+      //   path: '/order_page',
+      //   name: 'orderPage',
+      //   builder: (context, state) =>  OrderScreen(),
+      // ),
       GoRoute(
         path: '/getselectedorder',
         name: 'selectedPop',

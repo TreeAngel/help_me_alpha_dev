@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:help_me_mitra_alpha_ver/blocs/fetch_order/fetch_order_bloc.dart';
+import 'package:help_me_mitra_alpha_ver/blocs/fetch_order/fetch_order_event.dart';
+import 'package:help_me_mitra_alpha_ver/blocs/fetch_order/fetch_order_state.dart';
 import 'package:help_me_mitra_alpha_ver/blocs/home_blocs/home_bloc.dart';
 import 'package:help_me_mitra_alpha_ver/data/menu_items_data.dart';
-import 'package:help_me_mitra_alpha_ver/ui/pages/order_popup.dart';
+import 'package:help_me_mitra_alpha_ver/ui/pages/form_data_mitra.dart';
+import 'package:help_me_mitra_alpha_ver/ui/pages/order_screen.dart';
 import 'package:help_me_mitra_alpha_ver/ui/pages/selected_popup.dart';
 
 import '../../blocs/auth_blocs/auth_bloc.dart';
@@ -218,39 +222,69 @@ class HomePage extends StatelessWidget {
           top: 130, left: 25, right: 25),
       child: Column(
         children: [
-          Container(
-            margin: const EdgeInsets.only(top: 300),
-            width: screenWidth,
-            height: screenHeight / 5.4,
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: AppColors.mitraGreen,
-                width: 1,
-              ),
-              borderRadius: BorderRadius.circular(25),
-            ),
-            child: Center(
-              child: Text('Tunggu orderan ya!',
-              style: GoogleFonts.poppins(
-                fontSize: 15
-              ),),
-            ),
+          // Menggunakan BlocBuilder untuk mendapatkan data orders dari API
+          BlocBuilder<FetchOrderBloc, FetchOrderState>(
+            builder: (context, state) {
+              if (state is FetchOrderLoadingState) {
+                // Jika loading, tampilkan loading indicator
+                return Center(child: CircularProgressIndicator());
+              } else if (state is FetchOrderLoadedState) {
+                // Jika data berhasil di-load, tampilkan dalam list
+                return Column(
+                  children: state.orders.map((order) {
+                    return Container(
+                      margin: const EdgeInsets.only(top: 20),
+                      width: screenWidth,
+                      height: screenHeight / 5.4,
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: AppColors.mitraGreen,
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                      child: ListTile(
+                        title: Text(order.problem ?? 'Problem', style: GoogleFonts.poppins(fontSize: 15)),
+                        subtitle: Text(order.latitude ?? 'latitude', style: GoogleFonts.poppins(fontSize: 12)),
+                        onTap: () {
+                          // Arahkan ke halaman detail order
+                          context.read<FetchOrderBloc>().add(FetchOrderDetailEvent(order.orderId ?? 44));
+                          Navigator.pushNamed(context, '/order_page', arguments: order.orderId);
+                        },
+                      ),
+                    );
+                  }).toList(),
+                );
+              } else if (state is FetchOrderErrorState) {
+                // Jika ada error, tampilkan pesan error
+                return Center(child: Text('Error: ${state.error}', style: GoogleFonts.poppins(fontSize: 15)));
+              } else {
+                // Jika tidak ada data, tampilkan pesan kosong
+                return Center(
+                  child: Text(
+                    'Tunggu orderan ya!',
+                    style: GoogleFonts.poppins(fontSize: 15),
+                  ),
+                );
+              }
+            },
           ),
-          // ICON BUTTON UNTUK JALAN PINTAS KE ORDERAN (dev mode selama belum menyambung ke client)
+          
+          // ICON BUTTON UNTUK JALAN PINTAS KE ORDERAN (dev mode)
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               IconButton(
                 icon: const Icon(Icons.arrow_forward),
                 iconSize: 30,
-                color: const Color.fromARGB(255, 200, 119, 53),
+                color: Colors.red,
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => OrderPage()));
+                  // Navigator ke OrderScreen atau halaman lain (dev mode)
                 },
               ),
               IconButton(
                 icon: const Icon(Icons.arrow_forward),
-                iconSize: 30, 
+                iconSize: 30,
                 color: Colors.black,
                 onPressed: () {
                   Navigator.push(context, MaterialPageRoute(builder: (context) => SelectedPop()));

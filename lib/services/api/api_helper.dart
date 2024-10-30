@@ -1,4 +1,9 @@
+import 'dart:developer';
+
+import 'package:help_me_mitra_alpha_ver/models/order_response_model.dart';
+
 import 'api_controller.dart';
+import '../../models/order_model.dart';
 import '../../models/user_model.dart';
 import '../../models/auth_response_model.dart';
 import '../../models/category_model.dart';
@@ -65,6 +70,53 @@ class ApiHelper {
       return ApiErrorResponseModel(error: MessageErrorModel.fromMap(response));
     }
   }
+
+  static Future<List<OrderModel>> getOrders() async {
+    final response = await ApiController.getData('users/orders');
+    
+    if (response is ApiErrorResponseModel) {
+      throw Exception(response.message);
+    }
+    
+    final List<dynamic> data = response;
+    return data.map((orderJson) => OrderModel.fromJson(orderJson)).toList();
+  }
+
+  static Future<OrderModel> getOrderDetail(int orderId) async {
+    final response = await ApiController.getData('users/orders/$orderId');
+    
+    if (response is ApiErrorResponseModel) {
+      throw Exception(response.message);
+    }
+    
+    return OrderModel.fromJson(response);
+  }
+
+  // static Stream getOrderFromClient(int orderId) async* {
+  //   yield* Stream.periodic(const Duration(seconds: 10)).asyncMap((_) async {
+  //     final response = await ApiController.getData('users/orders/$orderId');
+  //     log(response.toString());
+  //     if (response is ApiErrorResponseModel) {
+  //       return response;
+  //     } else {
+  //       if (response['message'] != null) {
+  //         return OrderResponseModel(data: <OrderModel>[]);
+  //       } else {
+  //         return OrderResponseModel.fromMap(response);
+  //       }
+  //     }
+  //   });
+  // }
+
+  // Future<Map<String, dynamic>> fetchOrder(int orderId) async {
+  //   final response = await http.get(Uri.parse('$baseUrl/orders/$orderId'));
+
+  //   if (response.statusCode == 200) {
+  //     return jsonDecode(response.body);
+  //   } else {
+  //     throw Exception('Failed to load order');
+  //   }
+  // }
 
 
   static Future getUseProfile() async {

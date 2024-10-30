@@ -1,195 +1,382 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:help_me_mitra_alpha_ver/configs/app_colors.dart';
-import 'package:google_fonts/google_fonts.dart';
-// import 'package:help_me_mitra_alpha_ver/ui/pages/home_page.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:help_me_mitra_alpha_ver/blocs/fetch_order/fetch_order_bloc.dart';
+import 'package:help_me_mitra_alpha_ver/models/order_model.dart';
+import '../../blocs/fetch_order/fetch_order_bloc.dart';
+import '../../blocs/fetch_order/fetch_order_state.dart';
 
-class OrderPage extends StatefulWidget {
-  @override
-  _OrderPageState createState() => _OrderPageState();
-}
+class OrderScreen extends StatelessWidget {
+  final OrderModel order;
 
-class _OrderPageState extends State<OrderPage> {
-  FirebaseMessaging messaging = FirebaseMessaging.instance;
-
-  // State untuk data API
-  String? imageUrl;
-  String? distance;
-  String? serviceType;
-  String? serviceCategory;
-
-  bool isLoading = false;
-
-  //fetch data dari API
-  Future<void> fetchData() async {
-    setState(() {
-      isLoading = true;
-    });
-
-    try {
-      await Future.delayed(Duration(seconds: 2));
-
-      // Simulasi data dari API (ganti dengan API call yang sebenarnya)
-      setState(() {
-        imageUrl = "../../../assets/images/ban-kempes.jpg";
-        distance = "2.4 km";
-        serviceType = "Kempes/Bocor";
-        serviceCategory = "Ban tubeless";
-        isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    // Mendapatkan token FCM
-    _getToken();
-    // Mendengarkan pesan ketika aplikasi berjalan di foreground
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('Pesan diterima di foreground: ${message.notification?.title} - ${message.notification?.body}');
-      // Lakukan sesuatu saat pesan diterima
-    });
-
-    // Mengatur behavior jika aplikasi di background atau terminated
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('Pesan diterima saat aplikasi di background/terminated');
-    });
-    fetchData();
-  }
-
-   // Mendapatkan token FCM dari perangkat
-  void _getToken() async {
-    String? token = await messaging.getToken();
-    print('FCM Token: $token');
-  }
+  OrderScreen({required this.order});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-      backgroundColor: AppColors.mitraGreen,
-      appBar: AppBar(
-        backgroundColor: AppColors.mitraGreen,
-        elevation: 0,
-        leading: IconButton(
-          padding: const EdgeInsets.only(left: 25.0),
-          icon: const Icon(Icons.close, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context);
+    return Scaffold(
+      backgroundColor: Colors.grey[200],
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: BlocBuilder<FetchOrderBloc, FetchOrderState>(
+          builder: (context, state) {
+            if (state is FetchOrderLoadedState) {
+              final List<String> attachments = state.orders.attachments;
+
+              return Column(
+                children: [
+                  _buildHeader(context),
+                  const SizedBox(height: 20),
+                  _buildOrderDetail(order),
+                  const SizedBox(height: 20),
+                  _buildForm(),
+                ],
+              );
+            } else {
+              return Center(child: CircularProgressIndicator());
+            }
           },
         ),
-        title: Text(
+      ),
+    );
+  }
+
+
+  Widget _buildHeader(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        const Text(
           'Orderan',
-          style: GoogleFonts.poppins(
-            color: Colors.black,
-            fontSize: 28,
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        ),
+        CircleAvatar(
+          backgroundImage: NetworkImage(userProfile ?? 'assets/images/'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOrderDetail(OrderModel order) {
+    return Column(
+      children: [
+        SizedBox(
+          height: 100,
+          child: _buildAttachmentSlider(attachments),
+        ),
+        SizedBox(height: 10), // Spasi antara gambar dan teks
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.location_on, color: Colors.black),
+            Text(
+              order.latitude, // Menampilkan jarak (misal: 2.3 km)
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 5), // Spasi antara jarak dan problem
+        Text(
+          order.problem, // Menampilkan problem (misal: Kemps/Bocor)
+          style: TextStyle(
+            fontSize: 18,
             fontWeight: FontWeight.bold,
+            color: Colors.black,
           ),
         ),
-        centerTitle: true,
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 25.0),
-            child: CircleAvatar(
-              radius: 18,
-              backgroundColor: Colors.white,
-              child: Icon(
-                Icons.person,
-                color: Colors.pink,
+        SizedBox(height: 5),
+        Text(
+          order.description, // Menampilkan deskripsi (misal: Ban tubeless)
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.normal,
+            color: Colors.black,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAttachmentSlider(List<String> attachments) {
+  if (attachments.isEmpty) {
+    // Jika tidak ada attachment, tampilkan gambar default
+    return const CircleAvatar(
+      radius: 50,
+      backgroundImage: NetworkImage(
+        'https://example.com/default_image.jpeg', // Ganti dengan URL gambar default
+      ),
+    );
+  } else if (attachments.length == 1) {
+    // Jika hanya ada satu attachment
+    return CircleAvatar(
+      radius: 50,
+      backgroundImage: NetworkImage(attachments[0]),
+    );
+  } else if (attachments.length > 1) {
+    // Jika ada dua atau lebih gambar, tampilkan dalam bentuk slider
+    return PageView.builder(
+      itemCount: attachments.length,
+      itemBuilder: (context, index) {
+        return CircleAvatar(
+          radius: 50,
+          backgroundImage: NetworkImage(attachments[index]),
+        );
+      },
+    );
+  }
+  return SizedBox.shrink(); // Placeholder jika tidak ada attachment sama sekali
+}
+
+  Widget _buildForm() {
+    return Expanded(
+      child: Column(
+        children: [
+          _buildInputField('Berapa biayanya?', 'Rp. 7.000'),
+          _buildInputField('Berapa biaya jasanya?', 'Isi biaya jasa di sini'),
+          _buildInputField('Perkiraan datang?', 'Perkiraan waktu'),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () {
+              // Handle submit action
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black,
+              padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
               ),
+            ),
+            child: const Text(
+              'Tawarkan',
+              style: TextStyle(color: Colors.white),
             ),
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Placeholder Image or Actual Image from API
-              CircleAvatar(
-                radius: 60,
-                backgroundImage: imageUrl != null
-                    ? NetworkImage(imageUrl!)
-                    : null,
-                child: imageUrl == null
-                    ? Icon(Icons.image, size: 60)
-                    : null,
-              ),
-              SizedBox(height: 16),
-              
-              // Placeholder for Distance or Actual Distance
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.location_on, size: 20),
-                  SizedBox(width: 4),
-                  Text(
-                    distance != null ? distance! : 'Jarak',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ],
-              ),
-              SizedBox(height: 16),
+    );
+  }
 
-              // Service Type
-              Text(
-                serviceType != null ? serviceType! : 'Layanan',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 8),
-
-              // Service Category
-              Text(
-                serviceCategory != null
-                    ? serviceCategory!
-                    : 'Kategori layanan',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
-              ),
-              SizedBox(height: 32),
-
-              //post data
-              TextField(
-                decoration: InputDecoration(
-                  labelText: 'Berapa transportnya?',
-                ),
-              ),
-              SizedBox(height: 16),
-              TextField(
-                decoration: InputDecoration(
-                  labelText: 'Berapa harga per lubangnya?',
-                ),
-              ),
-              SizedBox(height: 16),
-              TextField(
-                decoration: InputDecoration(
-                  labelText: 'Perkiraan datang?',
-                ),
-              ),
-              SizedBox(height: 32),
-
-              isLoading
-                ? CircularProgressIndicator()
-                : ElevatedButton(
-                    onPressed: () {
-                      // Implementasi fungsi postData di sini
-                    },
-                    child: Text('Tawarkan'),
-                  ),
-            ],
+  Widget _buildInputField(String label, String hintText) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label),
+        const SizedBox(height: 5),
+        TextField(
+          decoration: InputDecoration(
+            hintText: hintText,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
         ),
-      ),
-      ),
+        const SizedBox(height: 20),
+      ],
     );
   }
 }
+
+
+// import 'package:flutter/material.dart';
+// import 'package:firebase_messaging/firebase_messaging.dart';
+// import 'package:help_me_mitra_alpha_ver/configs/app_colors.dart';
+// import 'package:google_fonts/google_fonts.dart';
+// // import 'package:help_me_mitra_alpha_ver/ui/pages/home_page.dart';
+
+// class OrderPage extends StatefulWidget {
+//   @override
+//   _OrderPageState createState() => _OrderPageState();
+// }
+
+// class _OrderPageState extends State<OrderPage> {
+//   FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+//   // State untuk data API
+//   String? imageUrl;
+//   String? distance;
+//   String? serviceType;
+//   String? serviceCategory;
+
+//   bool isLoading = false;
+
+//   //fetch data dari API
+//   Future<void> fetchData() async {
+//     setState(() {
+//       isLoading = true;
+//     });
+
+//     try {
+//       await Future.delayed(Duration(seconds: 2));
+
+//       // Simulasi data dari API (ganti dengan API call yang sebenarnya)
+//       setState(() {
+//         imageUrl = "../../../assets/images/ban-kempes.jpg";
+//         distance = "2.4 km";
+//         serviceType = "Kempes/Bocor";
+//         serviceCategory = "Ban tubeless";
+//         isLoading = false;
+//       });
+//     } catch (e) {
+//       setState(() {
+//         isLoading = false;
+//       });
+//     }
+//   }
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     // Mendapatkan token FCM
+//     _getToken();
+//     // Mendengarkan pesan ketika aplikasi berjalan di foreground
+//     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+//       print('Pesan diterima di foreground: ${message.notification?.title} - ${message.notification?.body}');
+//       // Lakukan sesuatu saat pesan diterima
+//     });
+
+//     // Mengatur behavior jika aplikasi di background atau terminated
+//     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+//       print('Pesan diterima saat aplikasi di background/terminated');
+//     });
+//     fetchData();
+//   }
+
+//    // Mendapatkan token FCM dari perangkat
+//   void _getToken() async {
+//     String? token = await messaging.getToken();
+//     print('FCM Token: $token');
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       home: Scaffold(
+//       backgroundColor: AppColors.mitraGreen,
+//       appBar: AppBar(
+//         backgroundColor: AppColors.mitraGreen,
+//         elevation: 0,
+//         leading: IconButton(
+//           padding: const EdgeInsets.only(left: 25.0),
+//           icon: const Icon(Icons.close, color: Colors.black),
+//           onPressed: () {
+//             Navigator.pop(context);
+//           },
+//         ),
+//         title: Text(
+//           'Orderan',
+//           style: GoogleFonts.poppins(
+//             color: Colors.black,
+//             fontSize: 28,
+//             fontWeight: FontWeight.bold,
+//           ),
+//         ),
+//         centerTitle: true,
+//         actions: const [
+//           Padding(
+//             padding: EdgeInsets.only(right: 25.0),
+//             child: CircleAvatar(
+//               radius: 18,
+//               backgroundColor: Colors.white,
+//               child: Icon(
+//                 Icons.person,
+//                 color: Colors.pink,
+//               ),
+//             ),
+//           ),
+//         ],
+//       ),
+//       body: SingleChildScrollView(
+//         child: Padding(
+//           padding: const EdgeInsets.all(16.0),
+//           child: Column(
+//             crossAxisAlignment: CrossAxisAlignment.center,
+//             children: [
+//               // Placeholder Image or Actual Image from API
+//               CircleAvatar(
+//                 radius: 60,
+//                 backgroundImage: imageUrl != null
+//                     ? NetworkImage(imageUrl!)
+//                     : null,
+//                 child: imageUrl == null
+//                     ? Icon(Icons.image, size: 60)
+//                     : null,
+//               ),
+//               SizedBox(height: 16),
+              
+//               // Placeholder for Distance or Actual Distance
+//               Row(
+//                 mainAxisAlignment: MainAxisAlignment.center,
+//                 children: [
+//                   Icon(Icons.location_on, size: 20),
+//                   SizedBox(width: 4),
+//                   Text(
+//                     distance != null ? distance! : 'Jarak',
+//                     style: TextStyle(fontSize: 16),
+//                   ),
+//                 ],
+//               ),
+//               SizedBox(height: 16),
+
+//               // Service Type
+//               Text(
+//                 serviceType != null ? serviceType! : 'Layanan',
+//                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+//               ),
+//               SizedBox(height: 8),
+
+//               // Service Category
+//               Text(
+//                 serviceCategory != null
+//                     ? serviceCategory!
+//                     : 'Kategori layanan',
+//                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
+//               ),
+//               SizedBox(height: 32),
+
+//               //post data
+//               TextField(
+//                 decoration: InputDecoration(
+//                   labelText: 'Berapa transportnya?',
+//                 ),
+//               ),
+//               SizedBox(height: 16),
+//               TextField(
+//                 decoration: InputDecoration(
+//                   labelText: 'Berapa harga per lubangnya?',
+//                 ),
+//               ),
+//               SizedBox(height: 16),
+//               TextField(
+//                 decoration: InputDecoration(
+//                   labelText: 'Perkiraan datang?',
+//                 ),
+//               ),
+//               SizedBox(height: 32),
+
+//               isLoading
+//                 ? CircularProgressIndicator()
+//                 : ElevatedButton(
+//                     onPressed: () {
+//                       // Implementasi fungsi postData di sini
+//                     },
+//                     child: Text('Tawarkan'),
+//                   ),
+//             ],
+//           ),
+//         ),
+//       ),
+//       ),
+//     );
+//   }
+// }
 
 
 

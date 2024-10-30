@@ -70,25 +70,12 @@ class MitraTypeChanged extends AuthEvent {
   List<Object> get props => [mitraType];
 }
 
+class GetOrderEvent extends AuthEvent {
+  const GetOrderEvent();
 
-
-// class ForgotPasswordSubmitted extends AuthEvent {
-//   final String email;
-
-//   const ForgotPasswordSubmitted({required this.email});
-
-//   @override
-//   List<Object> get props => [email];
-// }
-
-// class SendResetPasswordEmail extends AuthEvent {
-//   final String email;
-
-//   SendResetPasswordEmail(this.email);
-// }
-
-// class StartPasswordChangePolling extends AuthEvent {}
-
+  @override
+  List<Object> get props => [];
+}
 
 class TogglePasswordVisibility extends AuthEvent {}
 

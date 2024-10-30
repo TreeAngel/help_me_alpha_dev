@@ -116,17 +116,30 @@ final class SignOutLoaded extends AuthState {
   List<Object> get props => [message];
 }
 
+// State ketika data order berhasil di-load
+class OrderLoaded extends AuthState {
+  final Map<String, dynamic> order;
 
-// class ForgotPasswordLoaded extends AuthState {
-//   final String message;
+  OrderLoaded(this.order);
 
-//   const ForgotPasswordLoaded({required this.message});
+  @override
+  List<Object> get props => [order];
+}
 
-//   @override
-//   List<Object?> get props => [message];
-// }
+// State ketika data user berhasil di-load (contoh untuk form data user)
+class UserDataLoaded extends AuthState {
+  final String fullName;
+  final String username;
+  final String phoneNumber;
 
+  UserDataLoaded({
+    required this.fullName,
+    required this.username,
+    required this.phoneNumber,
+  });
 
+  @override
+  List<Object> get props => [fullName, username, phoneNumber];
+}
 
-// class EmailSentSuccess extends AuthState {}
 
