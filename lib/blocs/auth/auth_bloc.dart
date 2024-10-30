@@ -198,7 +198,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(
         const AuthError(message: 'Isi username'),
       );
-    } else if (password.isEmpty) {
+    } else if (password.isEmpty || password.length < 8) {
       emit(
         const AuthError(message: 'Password minimal 8 karakter'),
       );
@@ -245,8 +245,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           );
         }
       } else if (signUpResponse is ApiErrorResponseModel) {
-        final message =
+        String? message =
             signUpResponse.error?.error ?? signUpResponse.error?.message;
+            if (message == null || message.isEmpty) {
+              message = signUpResponse.toString();
+            }
         emit(AuthError(message: message.toString()));
       }
     }

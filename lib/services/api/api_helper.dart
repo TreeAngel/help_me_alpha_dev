@@ -48,6 +48,7 @@ class ApiHelper {
   }
 
   static Future authLogout() async {
+    log(FirebaseMessagingApi.fcmToken.toString(), name: 'FCM token for logout');
     final response = await ApiController.postData(
       'auth/logout',
       {'fcm_token': FirebaseMessagingApi.fcmToken},

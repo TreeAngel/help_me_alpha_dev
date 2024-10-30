@@ -23,7 +23,6 @@ class ApiException {
         };
       case DioExceptionType.badResponse:
         if (dioException.response?.statusCode == 400 ||
-            dioException.response?.statusCode == 401 ||
             dioException.response?.statusCode == 403 ||
             dioException.response?.statusCode == 404 ||
             dioException.response?.statusCode == 405 ||
@@ -35,6 +34,8 @@ class ApiException {
             dioException.response?.statusCode == 422) {
           final message = dioException.response?.data as Map<String, dynamic>;
           return message;
+        } else if (dioException.response?.statusCode == 401) {
+          return {'error': 'Unauthorized'};
         } else {
           return {
             'error': 'Failed to process data, try again after a few seconds',

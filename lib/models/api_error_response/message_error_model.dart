@@ -30,7 +30,41 @@ class MessageErrorModel {
 
   @override
   String toString() {
-    return 'Error(error: $error, message: $message, fullname: $fullname, username: $username, phoneNumber: $phoneNumber, password: $password, role: $role, newPassword: $newPassword, verificationCode: $verificationCode, attachment: $attachment0 | $attachment1';
+    String str = '';
+    if (error != null) {
+      str += '$error\n';
+    }
+    if (message != null) {
+      str += '$message\n';
+    }
+    if (fullname != null) {
+      str += '$fullname\n';
+    }
+    if (username != null) {
+      str += '$username\n';
+    }
+    if (phoneNumber != null) {
+      str += '$phoneNumber\n';
+    }
+    if (password != null) {
+      str += '$password\n';
+    }
+    if (role != null) {
+      str += '$role\n';
+    }
+    if (newPassword != null) {
+      str += '$newPassword\n';
+    }
+    if (verificationCode != null) {
+      str += '$verificationCode\n';
+    }
+    if (attachment0 != null) {
+      str += '$attachment0\n';
+    }
+    if (attachment1 != null) {
+      str += '$attachment1\n';
+    }
+    return str.trim();
   }
 
   factory MessageErrorModel.fromMap(Map<String, dynamic> data) =>

@@ -31,7 +31,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   bool showAllCategory = false;
-  bool showAllHistory = false;
   String username = 'Kamu!';
 
   @override
@@ -49,9 +48,7 @@ class _HomePageState extends State<HomePage> {
       },
       child: SafeArea(
         child: Scaffold(
-          body: showAllHistory == true
-              ? _allHistoryConsumer(textTheme)
-              : _homeStackBody(screenWidth, textTheme, colorScheme),
+          body: _homeStackBody(screenWidth, textTheme, colorScheme),
         ),
       ),
     );
@@ -132,86 +129,6 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ],
-    );
-  }
-
-  BlocConsumer<HomeCubit, HomeState> _allHistoryConsumer(TextTheme textTheme) {
-    return BlocConsumer<HomeCubit, HomeState>(
-      listener: (context, state) {
-        if (state is OrderHistoryLoaded) {
-          context.read<HomeCubit>().orderHistory = state.history;
-          context.read<HomeCubit>().lastHistory = state.history.last;
-          if (state.history.any((history) =>
-              history.orderStatus?.trim().toLowerCase() == 'pending' ||
-              history.orderStatus?.trim().toLowerCase() == 'booked' ||
-              history.orderStatus?.trim().toLowerCase() == 'paid' ||
-              history.orderStatus?.trim().toLowerCase() == 'otw' ||
-              history.orderStatus?.trim().toLowerCase() == 'arrived')) {
-            context.read<ManageOrderBloc>().haveActiveOrder = true;
-          } else {
-            context.read<ManageOrderBloc>().haveActiveOrder = false;
-          }
-        }
-        if (state is OrderHistoryError) {
-          _onOrderHistoryError(context, state);
-        } else {
-          return;
-        }
-      },
-      builder: (context, state) {
-        if (state is HomeLoading) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-        return RefreshIndicator(
-          onRefresh: () async {
-            context.read<HomeCubit>().fetchHistory();
-          },
-          child: CustomScrollView(
-            slivers: <Widget>[
-              _historySliverAppBar(context, textTheme),
-              const SliverToBoxAdapter(child: SizedBox(height: 20)),
-              _allHistoryHeader(textTheme),
-              const SliverToBoxAdapter(child: SizedBox(height: 10)),
-              _allHistoryBuilder(textTheme, context),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  SliverList _allHistoryBuilder(TextTheme textTheme, BuildContext context) {
-    return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          final history = context.read<HomeCubit>().orderHistory[index];
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: _orderHistoryCard(
-              history,
-              textTheme,
-            ),
-          );
-        },
-        childCount: context.read<HomeCubit>().orderHistory.length,
-      ),
-    );
-  }
-
-  SliverToBoxAdapter _allHistoryHeader(TextTheme textTheme) {
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 25),
-        child: Text(
-          'Riwayat Masalah',
-          style: textTheme.titleLarge?.copyWith(
-            color: AppColors.lightTextColor,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ),
     );
   }
 
@@ -692,9 +609,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             GestureDetector(
-              onTap: () => setState(() {
-                showAllHistory = true;
-              }),
+              onTap: () => context.pushNamed('historyPage'),
               child: Text(
                 'Lihat Semua',
                 style: textTheme.titleMedium?.copyWith(
@@ -920,25 +835,5 @@ class _HomePageState extends State<HomePage> {
         printError('What are you tapping? $item');
         break;
     }
-  }
-
-  SliverAppBar _historySliverAppBar(BuildContext context, TextTheme textTheme) {
-    return SliverAppBar(
-      backgroundColor: Colors.black,
-      foregroundColor: AppColors.darkTextColor,
-      leading: IconButton(
-        onPressed: () => setState(() {
-          showAllHistory = false;
-        }),
-        icon: const BackButtonIcon(),
-      ),
-      title: Text(
-        'Help Me!',
-        style: textTheme.titleLarge?.copyWith(
-          color: AppColors.darkTextColor,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
   }
 }

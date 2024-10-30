@@ -35,6 +35,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final imagePicker = ImagePickerUtil();
     ManageAuthToken.readToken();
+    ManageFCMToken.readToken();
 
     FirebaseMessaging.onMessage.listen((message) {
       RemoteNotification? notification = message.notification;

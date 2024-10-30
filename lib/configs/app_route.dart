@@ -11,6 +11,7 @@ import '../ui/pages/auth/sign_in_page.dart';
 import '../ui/pages/auth/sign_up_page.dart';
 import '../ui/pages/auth/verify_phone_number_page.dart';
 import '../ui/pages/home/edit_profile_page.dart';
+import '../ui/pages/home/history_page.dart';
 import '../ui/pages/home/home_page.dart';
 import '../ui/pages/home/profile_page.dart';
 import '../ui/pages/misc/image_zoom_page.dart';
@@ -226,6 +227,10 @@ class AppRoute {
           );
         },
       ),
+      GoRoute(
+          path: '/history',
+          name: 'historyPage',
+          builder: (context, state) => const HistoryPage()),
     ];
   }
 }

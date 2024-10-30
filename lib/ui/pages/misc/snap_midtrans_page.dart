@@ -6,7 +6,10 @@ import 'package:midtrans_snap/models.dart';
 
 class SnapMidtransPage extends StatelessWidget {
   final String token;
-  const SnapMidtransPage({super.key, required this.token});
+  const SnapMidtransPage({
+    super.key,
+    required this.token,
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -9,7 +9,7 @@ class ApiErrorResponseModel {
   const ApiErrorResponseModel({this.error});
 
   @override
-  String toString() => 'AuthErrorResponse(error: $error)';
+  String toString() => '$error';
 
   factory ApiErrorResponseModel.fromMap(Map<String, dynamic> data) {
     if (data.containsKey('error')) {

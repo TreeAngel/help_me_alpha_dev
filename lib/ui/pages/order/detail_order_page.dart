@@ -13,6 +13,7 @@ import '../../../blocs/profile/profile_bloc.dart';
 import '../../../configs/app_colors.dart';
 import '../../../cubits/detail_order/detail_order_cubit.dart';
 import '../../../cubits/home/home_cubit.dart';
+import '../../../cubits/rate_mitra/rate_mitra_cubit.dart';
 import '../../../models/order/detail_order_model.dart';
 import '../../../utils/custom_dialog.dart';
 import '../../../utils/manage_token.dart';
@@ -107,195 +108,211 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
         child: Scaffold(
           backgroundColor: Colors.black,
           appBar: _appBar(context, textTheme),
-          body: BlocConsumer<DetailOrderCubit, DetailOrderState>(
+          body: BlocProvider(
+            create: (context) => RateMitraCubit(),
+            child: BlocListener<RateMitraCubit, RateMitraState>(
               listener: (context, state) {
-            if (state is DetailOrderLoaded) {
-              detailOrder = state.data;
-              switch (detailOrder?.orderStatus) {
-                case 'pending':
-                  setState(() {
-                    orderStatus = OrderStatus.pending;
-                  });
-                  break;
-                case 'booked':
-                  setState(() {
-                    orderStatus = OrderStatus.booked;
-                  });
-                  break;
-                case 'paid':
-                  setState(() {
-                    orderStatus = OrderStatus.paid;
-                  });
-                  break;
-                case 'cancelled':
-                  setState(() {
-                    orderStatus = OrderStatus.cancelled;
-                  });
-                  break;
-                case 'otw':
-                  setState(() {
-                    orderStatus = OrderStatus.otw;
-                  });
-                  break;
-                case 'arrived':
-                  setState(() {
-                    orderStatus = OrderStatus.arrived;
-                  });
-                  break;
-                case 'in_progress':
-                  setState(() {
-                    orderStatus = OrderStatus.inProgress;
-                  });
-                  break;
-                case 'complete':
-                  setState(() {
-                    orderStatus = OrderStatus.complete;
-                  });
-                  break;
-                case 'rated':
-                  setState(() {
-                    orderStatus = OrderStatus.rated;
-                  });
-              }
-            }
-            if (state is DetailOrderError) {
-              CustomDialog.showAlertDialog(
-                context,
-                'Peringatan!',
-                state.message,
-                null,
-              );
-            }
-            if (state is ListeningOrderStatusError) {
-              CustomDialog.showAlertDialog(
-                context,
-                'Terjadi Kesalahan!',
-                state.message,
-                null,
-              );
-            }
-            if (state is OpenWhatsAppError) {
-              CustomDialog.showAlertDialog(
-                context,
-                'Gagal Membuka WhatsApp!',
-                state.message,
-                null,
-              );
-            }
-            if (state is CreateChatRoomSuccess) {
-              context.read<DetailOrderCubit>().isIdle();
-              context.pushNamed(
-                'chatPage',
-                queryParameters: {
-                  'id':
-                      (context.read<ProfileBloc>().profile?.id ?? 0).toString(),
-                  'roomCode':
-                      context.read<DetailOrderCubit>().chatRoomCode.toString(),
-                  'name': detailOrder?.mitra.toString(),
-                  'img': detailOrder?.mitraProfile.toString(),
-                },
-              );
-            }
-          }, builder: (context, state) {
-            if (detailOrder == null) {
-              context
-                  .read<DetailOrderCubit>()
-                  .fetchDetailOrder(orderId: widget.orderId!);
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-            if (state is DetailOrderLoading) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-            return RefreshIndicator(
-              onRefresh: () async => context
-                  .read<DetailOrderCubit>()
-                  .fetchDetailOrder(orderId: widget.orderId!),
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: GradientCard(
-                  width: screenWidht,
-                  height: screenHeight - (screenHeight / 8),
-                  cardColor: Colors.black,
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                if (state is RateMitraSuccess) {
+                  context
+                      .read<DetailOrderCubit>()
+                      .fetchDetailOrder(orderId: widget.orderId!);
+                }
+              },
+              child: BlocConsumer<DetailOrderCubit, DetailOrderState>(
+                  listener: (context, state) {
+                if (state is DetailOrderLoaded) {
+                  detailOrder = state.data;
+                  switch (detailOrder?.orderStatus) {
+                    case 'pending':
+                      setState(() {
+                        orderStatus = OrderStatus.pending;
+                      });
+                      break;
+                    case 'booked':
+                      setState(() {
+                        orderStatus = OrderStatus.booked;
+                      });
+                      break;
+                    case 'paid':
+                      setState(() {
+                        orderStatus = OrderStatus.paid;
+                      });
+                      break;
+                    case 'cancelled':
+                      setState(() {
+                        orderStatus = OrderStatus.cancelled;
+                      });
+                      break;
+                    case 'otw':
+                      setState(() {
+                        orderStatus = OrderStatus.otw;
+                      });
+                      break;
+                    case 'arrived':
+                      setState(() {
+                        orderStatus = OrderStatus.arrived;
+                      });
+                      break;
+                    case 'in_progress':
+                      setState(() {
+                        orderStatus = OrderStatus.inProgress;
+                      });
+                      break;
+                    case 'complete':
+                      setState(() {
+                        orderStatus = OrderStatus.complete;
+                      });
+                      break;
+                    case 'rated':
+                      setState(() {
+                        orderStatus = OrderStatus.rated;
+                      });
+                  }
+                }
+                if (state is DetailOrderError) {
+                  CustomDialog.showAlertDialog(
+                    context,
+                    'Peringatan!',
+                    state.message,
+                    null,
+                  );
+                }
+                if (state is ListeningOrderStatusError) {
+                  CustomDialog.showAlertDialog(
+                    context,
+                    'Terjadi Kesalahan!',
+                    state.message,
+                    null,
+                  );
+                }
+                if (state is OpenWhatsAppError) {
+                  CustomDialog.showAlertDialog(
+                    context,
+                    'Gagal Membuka WhatsApp!',
+                    state.message,
+                    null,
+                  );
+                }
+                if (state is CreateChatRoomSuccess) {
+                  context.read<DetailOrderCubit>().isIdle();
+                  context.pushNamed(
+                    'chatPage',
+                    queryParameters: {
+                      'id': (context.read<ProfileBloc>().profile?.id ?? 0)
+                          .toString(),
+                      'roomCode': context
+                          .read<DetailOrderCubit>()
+                          .chatRoomCode
+                          .toString(),
+                      'name': detailOrder?.mitra.toString(),
+                      'img': detailOrder?.mitraProfile.toString(),
+                    },
+                  );
+                }
+              }, builder: (context, state) {
+                if (detailOrder == null) {
+                  context
+                      .read<DetailOrderCubit>()
+                      .fetchDetailOrder(orderId: widget.orderId!);
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+                if (state is DetailOrderLoading) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+                return RefreshIndicator(
+                  onRefresh: () async => context
+                      .read<DetailOrderCubit>()
+                      .fetchDetailOrder(orderId: widget.orderId!),
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: GradientCard(
+                      width: screenWidht,
+                      height: screenHeight - (screenHeight / 8),
+                      cardColor: Colors.black,
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _infoSection(textTheme),
-                            _imageSection(),
-                          ],
-                        ),
-                        const SizedBox(height: 40),
-                        Text(
-                          'Status Bantuan',
-                          style: textTheme.titleLarge?.copyWith(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Expanded(child: widgetContent),
-                        const SizedBox(
-                          height: 20,
-                        ),
-                        if (orderStatus == OrderStatus.complete &&
-                            detailOrder?.isRated == false) ...[
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: () => CustomDialog.ratingDialog(
-                                context,
-                                textTheme: textTheme,
-                                orderId: widget.orderId!,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                _infoSection(textTheme),
+                                _imageSection(),
+                              ],
+                            ),
+                            const SizedBox(height: 40),
+                            Text(
+                              'Status Bantuan',
+                              style: textTheme.titleLarge?.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.bold,
                               ),
-                              style: ButtonStyle(
-                                backgroundColor: const WidgetStatePropertyAll(
-                                  AppColors.goldenYellow,
-                                ),
-                                shape: WidgetStatePropertyAll(
-                                  RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(42),
+                            ),
+                            const SizedBox(height: 20),
+                            Expanded(child: widgetContent),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            if (orderStatus == OrderStatus.complete &&
+                                detailOrder?.isRated == false) ...[
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: () => CustomDialog.ratingDialog(
+                                    context,
+                                    textTheme: textTheme,
+                                    orderId: widget.orderId!,
+                                  ),
+                                  style: ButtonStyle(
+                                    backgroundColor:
+                                        const WidgetStatePropertyAll(
+                                      AppColors.goldenYellow,
+                                    ),
+                                    shape: WidgetStatePropertyAll(
+                                      RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(42),
+                                      ),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'Rate Mitra',
+                                    style: textTheme.bodyLarge?.copyWith(
+                                        color: AppColors.lightTextColor),
                                   ),
                                 ),
                               ),
-                              child: Text(
-                                'Rate Mitra',
-                                style: textTheme.bodyLarge
-                                    ?.copyWith(color: AppColors.lightTextColor),
+                              const SizedBox(
+                                height: 10,
                               ),
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                        ],
-                        if (orderStatus != OrderStatus.pending &&
-                            orderStatus != OrderStatus.booked &&
-                            orderStatus != OrderStatus.complete &&
-                            orderStatus != OrderStatus.rated &&
-                            orderStatus != OrderStatus.cancelled)
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              _callBtn(context, textTheme),
-                              const SizedBox(width: 10),
-                              _chatBtn(context, textTheme),
                             ],
-                          ),
-                      ],
+                            if (orderStatus != OrderStatus.pending &&
+                                orderStatus != OrderStatus.booked &&
+                                orderStatus != OrderStatus.complete &&
+                                orderStatus != OrderStatus.rated &&
+                                orderStatus != OrderStatus.cancelled)
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  _callBtn(context, textTheme),
+                                  const SizedBox(width: 10),
+                                  _chatBtn(context, textTheme),
+                                ],
+                              ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-            );
-          }),
+                );
+              }),
+            ),
+          ),
         ),
       ),
     );
