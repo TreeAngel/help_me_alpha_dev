@@ -5,7 +5,7 @@ import '../../services/api/api_exception.dart';
 
 class ApiController {
   // TODO: Add base url untuk akses api saat sudah dihosting
-  static const baseUrl = 'https://9be6-139-195-36-118.ngrok-free.app';
+  static const baseUrl = 'https://b0af-139-195-36-118.ngrok-free.app';
   static String? token;
 
   static var dio = Dio(

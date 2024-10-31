@@ -9,7 +9,6 @@ import 'package:image_picker/image_picker.dart';
 import '../../../blocs/manage_order/manage_order_bloc.dart';
 import '../../../blocs/send_order/send_order_bloc.dart';
 import '../../../configs/app_colors.dart';
-import '../../../cubits/home/home_cubit.dart';
 import '../../../data/menu_items_data.dart';
 import '../../../models/misc/menu_item_model.dart';
 import '../../../services/location_service.dart';
@@ -218,19 +217,9 @@ class _AddTaskPageState extends State<AddTaskPage> {
             null,
           );
         } else if (state is OrderUploaded) {
-          CustomDialog.showAlertDialog(
-            context,
-            'Success',
-            state.message,
-            OutlinedButton(
-              onPressed: () {
-                context.read<ManageOrderBloc>().haveActiveOrder = true;
-                context.read<HomeCubit>().fetchHistory();
-                Navigator.popUntil(context, (route) => route.isFirst);
-              },
-              child: const Text('Lanjut'),
-            ),
-          );
+          context.read<ManageOrderBloc>().haveActiveOrder = true;
+          context.pop();
+          context.pop();
         }
       },
       builder: (context, state) {
