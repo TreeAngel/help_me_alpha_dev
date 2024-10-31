@@ -30,12 +30,14 @@ class AppRoute {
     redirect: (context, state) {
       final isAuthenticated = ApiController.token != null ? true : false;
       final haveOrder = context.read<ManageOrderBloc>().haveActiveOrder;
-      final activeOrder = (haveOrder == true)
+      final activeOrder = (haveOrder == true &&
+              context.read<HomeCubit>().orderHistory.isNotEmpty)
           ? context.read<HomeCubit>().orderHistory.firstWhere((history) =>
               history.orderStatus?.trim().toLowerCase() == 'pending' ||
               history.orderStatus?.trim().toLowerCase() == 'booked' ||
               history.orderStatus?.trim().toLowerCase() == 'paid' ||
               history.orderStatus?.trim().toLowerCase() == 'otw' ||
+              history.orderStatus?.trim().toLowerCase() == 'in_progress' ||
               history.orderStatus?.trim().toLowerCase() == 'arrived')
           : null;
       context.read<ManageOrderBloc>().activeOrder = activeOrder;
@@ -67,26 +69,37 @@ class AppRoute {
       if (haveOrder == true && state.matchedLocation == '/addTask') {
         return '/selectMitra?orderId=${activeOrder?.orderId}&status=${activeOrder?.orderStatus}';
       }
-      if (haveOrder == true &&
-          activeOrder!.orderStatus!.trim().toLowerCase().contains('pending') &&
-          state.uri.query.contains('orderId=${activeOrder.orderId}') &&
-          state.matchedLocation == '/detailOrder') {
-        return '/selectMitra?orderId=${activeOrder.orderId}&status=${activeOrder.orderStatus}';
-      }
-      if (haveOrder == true &&
-          !activeOrder!.orderStatus!.trim().toLowerCase().contains('pending') &&
-          state.matchedLocation == '/selectProblem') {
-        return '/detailOrder?orderId=${context.read<ManageOrderBloc>().activeOrder?.orderId}';
-      }
-      if (haveOrder == true &&
-          !activeOrder!.orderStatus!.trim().toLowerCase().contains('pending') &&
-          state.matchedLocation == '/selectTask') {
-        return '/detailOrder?orderId=${context.read<ManageOrderBloc>().activeOrder?.orderId}';
-      }
-      if (haveOrder == true &&
-          !activeOrder!.orderStatus!.trim().toLowerCase().contains('pending') &&
-          state.matchedLocation == '/selectMitra') {
-        return '/detailOrder?orderId=${context.read<ManageOrderBloc>().activeOrder?.orderId}';
+      if (activeOrder != null) {
+        if (haveOrder == true &&
+            activeOrder.orderStatus!.trim().toLowerCase().contains('pending') &&
+            state.uri.query.contains('orderId=${activeOrder.orderId}') &&
+            state.matchedLocation == '/detailOrder') {
+          return '/selectMitra?orderId=${activeOrder.orderId}&status=${activeOrder.orderStatus}';
+        }
+        if (haveOrder == true &&
+            !activeOrder.orderStatus!
+                .trim()
+                .toLowerCase()
+                .contains('pending') &&
+            state.matchedLocation == '/selectProblem') {
+          return '/detailOrder?orderId=${context.read<ManageOrderBloc>().activeOrder?.orderId}';
+        }
+        if (haveOrder == true &&
+            !activeOrder.orderStatus!
+                .trim()
+                .toLowerCase()
+                .contains('pending') &&
+            state.matchedLocation == '/selectTask') {
+          return '/detailOrder?orderId=${context.read<ManageOrderBloc>().activeOrder?.orderId}';
+        }
+        if (haveOrder == true &&
+            !activeOrder.orderStatus!
+                .trim()
+                .toLowerCase()
+                .contains('pending') &&
+            state.matchedLocation == '/selectMitra') {
+          return '/detailOrder?orderId=${context.read<ManageOrderBloc>().activeOrder?.orderId}';
+        }
       }
       return null;
     },
@@ -147,7 +160,8 @@ class AppRoute {
           final id = state.uri.queryParameters['categoryId'].toString();
           final category = state.uri.queryParameters['category'];
           return SelectProblemPage(
-            categoryId: !id.contains('null') ? int.parse(id) : null,
+            categoryId:
+                !id.contains('null') && id.isNotEmpty ? int.parse(id) : null,
             category: category.toString(),
           );
         },
@@ -159,7 +173,8 @@ class AppRoute {
           final id = state.uri.queryParameters['problemId'].toString();
           final problem = state.uri.queryParameters['problem'];
           return AddTaskPage(
-            problemId: !id.contains('null') ? int.parse(id) : null,
+            problemId:
+                !id.contains('null') && id.isNotEmpty ? int.parse(id) : null,
             problem: problem.toString(),
           );
         },
@@ -171,7 +186,8 @@ class AppRoute {
           String id = state.uri.queryParameters['orderId'].toString();
           String status = state.uri.queryParameters['status'].toString();
           return SelectMitraPage(
-            orderId: !id.contains('null') ? int.parse(id) : null,
+            orderId:
+                !id.contains('null') && id.isNotEmpty ? int.parse(id) : null,
             orderStatus: status,
           );
         },
@@ -205,9 +221,12 @@ class AppRoute {
           final orderId = state.uri.queryParameters['orderId'].toString();
           final distance = state.uri.queryParameters['distance'].toString();
           return DetailOrderPage(
-            orderId: !orderId.contains('null') ? int.parse(orderId) : null,
-            distanceInKm:
-                !distance.contains('null') ? double.parse(distance) : null,
+            orderId: !orderId.contains('null') && orderId.isNotEmpty
+                ? int.parse(orderId)
+                : null,
+            distanceInKm: !distance.contains('null') && distance.isNotEmpty
+                ? double.parse(distance)
+                : null,
           );
         },
       ),
@@ -220,7 +239,9 @@ class AppRoute {
           final mitraName = state.uri.queryParameters['name'].toString();
           final imgPath = state.uri.queryParameters['img'].toString();
           return ChatPage(
-            userId: !userId.contains('null') ? int.parse(userId) : 0,
+            userId: !userId.contains('null') && userId.isNotEmpty
+                ? int.parse(userId)
+                : 0,
             chatRoomCode: chatRoomCode,
             mitraName: mitraName,
             imgPath: imgPath,

@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +13,7 @@ import '../../../cubits/detail_order/detail_order_cubit.dart';
 import '../../../cubits/home/home_cubit.dart';
 import '../../../cubits/rate_mitra/rate_mitra_cubit.dart';
 import '../../../models/order/detail_order_model.dart';
-import '../../../utils/custom_dialog.dart';
+import '../../widgets/custom_dialog.dart';
 import '../../../utils/manage_token.dart';
 import '../../widgets/gradient_card.dart';
 
@@ -355,10 +353,6 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
                 } else {
                   await _invokePayment(context);
                 }
-                context.mounted
-                    ? log(context.read<ManageOrderBloc>().snapToken.toString(),
-                        name: 'Tes snap token')
-                    : null;
               },
               child: Text(
                 'Lanjutkan pembayaran',
@@ -451,10 +445,6 @@ class _DetailOrderPageState extends State<DetailOrderPage> {
         _invokePayment(context);
       }
     }
-    log(
-      response.toString(),
-      name: 'Tes response pembayaran',
-    );
   }
 
   FixedTimeline _orderTimeLine(TextTheme textTheme) {

@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../configs/app_colors.dart';
 import '../../../blocs/auth/auth_bloc.dart';
-import '../../../utils/custom_dialog.dart';
+import '../../widgets/custom_dialog.dart';
 
 enum TextInputEvent {
   fullname,

@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:dio/dio.dart';
 
 import '../../models/api_error_response/api_error_response_model.dart';
@@ -48,7 +46,6 @@ class ApiHelper {
   }
 
   static Future authLogout() async {
-    log(FirebaseMessagingApi.fcmToken.toString(), name: 'FCM token for logout');
     final response = await ApiController.postData(
       'auth/logout',
       {'fcm_token': FirebaseMessagingApi.fcmToken},
@@ -207,7 +204,6 @@ class ApiHelper {
   static Stream getOfferFromMitra(int orderId) async* {
     yield* Stream.periodic(const Duration(seconds: 10)).asyncMap((_) async {
       final response = await ApiController.getData('users/offers/$orderId');
-      log(response.toString());
       if (response is ApiErrorResponseModel) {
         return response;
       } else {

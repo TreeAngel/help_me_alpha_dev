@@ -13,9 +13,8 @@ import '../../../cubits/home/home_cubit.dart';
 import '../../../data/menu_items_data.dart';
 import '../../../models/misc/menu_item_model.dart';
 import '../../../services/location_service.dart';
-import '../../../utils/logging.dart';
 import '../../../utils/question_builder.dart';
-import '../../../utils/custom_dialog.dart';
+import '../../widgets/custom_dialog.dart';
 
 class AddTaskPage extends StatefulWidget {
   const AddTaskPage({
@@ -509,9 +508,6 @@ class _AddTaskPageState extends State<AddTaskPage> {
         break;
       case MenuItems.itemFromGallery:
         context.read<SendOrderBloc>().add(GalleryImagePicker());
-        break;
-      default:
-        printError('What are you tapping? $item');
         break;
     }
   }

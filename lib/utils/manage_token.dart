@@ -1,5 +1,4 @@
 import '../services/firebase/firebase_api.dart';
-import 'logging.dart';
 import 'secure_storage.dart';
 import '../services/api/api_controller.dart';
 
@@ -16,7 +15,7 @@ class ManageAuthToken {
             'authToken',
             ApiController.token!,
           )
-        : printError('Fail to write authToken');
+        : null;
   }
 
   static void deleteToken() async {
@@ -37,7 +36,7 @@ class ManageSnapToken {
             'snapToken',
             snapToken,
           )
-        : printError('Fail to write snapToken');
+        : null;
   }
 
   static void deleteToken() async {
@@ -61,7 +60,7 @@ class ManageFCMToken {
             'fcmToken',
             fcmToken,
           )
-        : printError('Fail to write fcmToken');
+        : null;
   }
 
   static void deleteToken() async {

@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -12,8 +11,7 @@ import '../../../cubits/detail_order/detail_order_cubit.dart';
 import '../../../data/menu_items_data.dart';
 import '../../../models/misc/menu_item_model.dart';
 import '../../../models/order/chat/chat_response_model.dart';
-import '../../../utils/custom_dialog.dart';
-import '../../../utils/logging.dart';
+import '../../widgets/custom_dialog.dart';
 import '../../widgets/bubble_chat.dart';
 
 class ChatPage extends StatefulWidget {
@@ -83,10 +81,6 @@ class _ChatPageState extends State<ChatPage> {
               createdAt: DateTime.parse(data['created_at']),
             );
             context.read<DetailOrderCubit>().receivingChat(receivedChat);
-            log(
-              context.read<DetailOrderCubit>().chatMessages.join(' | '),
-              name: 'Semua chat',
-            );
           }
         }
       }
@@ -342,9 +336,6 @@ class _ChatPageState extends State<ChatPage> {
         break;
       case MenuItems.itemFromGallery:
         context.read<DetailOrderCubit>().galleryImagePicker();
-        break;
-      default:
-        printError('What are you tapping? $item');
         break;
     }
   }

@@ -2,11 +2,10 @@ import 'package:dio/dio.dart';
 
 import '../../models/api_error_response/api_error_response_model.dart';
 import '../../services/api/api_exception.dart';
-import '../../utils/logging.dart';
 
 class ApiController {
   // TODO: Add base url untuk akses api saat sudah dihosting
-  static const baseUrl = 'https://78fb-139-194-137-239.ngrok-free.app';
+  static const baseUrl = 'https://9be6-139-195-36-118.ngrok-free.app';
   static String? token;
 
   static var dio = Dio(
@@ -38,17 +37,12 @@ class ApiController {
       if (response.statusCode! >= 200 && response.statusCode! <= 299) {
         return response.data;
       } else {
-        printWarning(
-          'Failed to fetch data: ${response.statusCode} | ${response.statusMessage}',
-        );
         throw Exception('Failed to load data');
       }
     } on DioException catch (e) {
       final error = checkException(e);
-      printError(e.toString());
       return ApiErrorResponseModel.fromMap(error);
     } catch (e) {
-      printError(e.toString());
       throw Exception(e);
     }
   }
@@ -72,17 +66,12 @@ class ApiController {
       if (response.statusCode! >= 200 && response.statusCode! <= 299) {
         return response.data;
       } else {
-        printWarning(
-          'Failed to post data: ${response.statusCode} | ${response.statusMessage}',
-        );
         throw Exception('Failed to post data');
       }
     } on DioException catch (e) {
       final error = checkException(e);
-      printError(e.toString());
       return ApiErrorResponseModel.fromMap(error);
     } catch (e) {
-      printError(e.toString());
       throw Exception(e);
     }
   }

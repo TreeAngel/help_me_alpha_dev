@@ -48,9 +48,9 @@ class HomeCubit extends Cubit<HomeState> {
   void homeInit() => emit(HomeInitial());
 
   void disposeHome() {
-    allCategories = [];
-    fourCategories = [];
-    orderHistory = [];
+    allCategories.clear();
+    fourCategories.clear();
+    orderHistory.clear();
     lastHistory = null;
     emit(HomeDisposed());
   }

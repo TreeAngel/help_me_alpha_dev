@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../blocs/auth/auth_bloc.dart';
 import '../../../blocs/manage_order/manage_order_bloc.dart';
 import '../../../blocs/profile/profile_bloc.dart';
+import '../../../blocs/send_order/send_order_bloc.dart';
 import '../../../configs/app_colors.dart';
 import '../../../cubits/home/home_cubit.dart';
 import '../../../data/cards_color.dart';
@@ -17,9 +18,8 @@ import '../../../models/order/history/order_history_model.dart';
 import '../../../services/api/api_controller.dart';
 import '../../../services/firebase/firebase_api.dart';
 import '../../../services/location_service.dart';
-import '../../../utils/logging.dart';
 import '../../../utils/manage_token.dart';
-import '../../../utils/custom_dialog.dart';
+import '../../widgets/custom_dialog.dart';
 import '../../widgets/gradient_card.dart';
 
 class HomePage extends StatefulWidget {
@@ -48,7 +48,62 @@ class _HomePageState extends State<HomePage> {
       },
       child: SafeArea(
         child: Scaffold(
-          body: _homeStackBody(screenWidth, textTheme, colorScheme),
+          body: MultiBlocListener(
+            listeners: [
+              BlocListener<ManageOrderBloc, ManageOrderState>(
+                listener: (context, state) {
+                  if (state is SelectMitraSuccess) {
+                    context
+                        .read<HomeCubit>()
+                        .fetchCategories()
+                        .whenComplete(() {
+                      Future.delayed(const Duration(seconds: 3), () {
+                        if (context.mounted) {
+                          final activeOrder =
+                              context.read<ManageOrderBloc>().activeOrder;
+                          context
+                              .read<ManageOrderBloc>()
+                              .add(ManageOrderIsIdle());
+                          context.pushNamed(
+                            'detailOrderPage',
+                            queryParameters: {
+                              'orderId': activeOrder?.orderId.toString(),
+                            },
+                          );
+                        }
+                      });
+                    });
+                  }
+                },
+              ),
+              BlocListener<SendOrderBloc, SendOrderState>(
+                listener: (context, state) {
+                  if (state is OrderUploaded) {
+                    context
+                        .read<HomeCubit>()
+                        .fetchCategories()
+                        .whenComplete(() {
+                      Future.delayed(const Duration(seconds: 3), () {
+                        if (context.mounted) {
+                          final activeOrder =
+                              context.read<ManageOrderBloc>().activeOrder;
+                          context.read<SendOrderBloc>().add(OrderIsIdle());
+                          context.pushNamed(
+                            'selectMitraPage',
+                            queryParameters: {
+                              'orderId': activeOrder?.orderId.toString(),
+                              'status': activeOrder?.orderStatus.toString(),
+                            },
+                          );
+                        }
+                      });
+                    });
+                  }
+                },
+              ),
+            ],
+            child: _homeStackBody(screenWidth, textTheme, colorScheme),
+          ),
         ),
       ),
     );
@@ -323,6 +378,7 @@ class _HomePageState extends State<HomePage> {
                 history.orderStatus?.trim().toLowerCase() == 'booked' ||
                 history.orderStatus?.trim().toLowerCase() == 'paid' ||
                 history.orderStatus?.trim().toLowerCase() == 'otw' ||
+                history.orderStatus?.trim().toLowerCase() == 'in_progress' ||
                 history.orderStatus?.trim().toLowerCase() == 'arrived')) {
               context.read<ManageOrderBloc>().haveActiveOrder = true;
             } else {
@@ -433,29 +489,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  GradientCard _orderHistoryCard(
-    OrderHistoryModel? history,
-    TextTheme textTheme,
-  ) {
-    return GradientCard(
-      width: 400,
-      height: 240,
-      cardColor: Colors.black,
-      child: Padding(
-        padding: const EdgeInsets.only(right: 20, left: 20),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            _orderCardHistoryInfoSection(history, textTheme,
-                history?.orderStatus?.trim().toLowerCase() == 'complete'),
-            _orderCardHistoryImageSection(history),
-          ],
-        ),
-      ),
-    );
-  }
-
   SliverToBoxAdapter _sliverOrderHistoryCard(
     OrderHistoryModel? history,
     TextTheme textTheme,
@@ -561,7 +594,9 @@ class _HomePageState extends State<HomePage> {
               onPressed: () {
                 context.pushNamed(
                   'detailOrderPage',
-                  queryParameters: {'orderId': history?.orderId.toString()},
+                  queryParameters: {
+                    'orderId': history?.orderId.toString(),
+                  },
                 );
               },
               style: ButtonStyle(
@@ -830,9 +865,6 @@ class _HomePageState extends State<HomePage> {
             child: const Text('Sign out'),
           ),
         );
-        break;
-      default:
-        printError('What are you tapping? $item');
         break;
     }
   }

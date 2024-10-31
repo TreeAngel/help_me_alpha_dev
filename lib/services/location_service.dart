@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
-import '../utils/logging.dart';
-import '../utils/custom_dialog.dart';
+import '../ui/widgets/custom_dialog.dart';
 
 class LocationService {
   static double? lat;
@@ -38,7 +37,6 @@ class LocationService {
       long = location.longitude;
     } catch (e) {
       if (context.mounted) {
-        printError(e.toString());
         WidgetsBinding.instance.addPostFrameCallback((_) {
           CustomDialog.showAlertDialog(
             context,

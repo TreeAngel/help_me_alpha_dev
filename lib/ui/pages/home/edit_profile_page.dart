@@ -12,9 +12,8 @@ import '../../../configs/app_colors.dart';
 import '../../../data/menu_items_data.dart';
 import '../../../models/auth/user_model.dart';
 import '../../../models/misc/menu_item_model.dart';
-import '../../../utils/logging.dart';
 import '../../../utils/manage_token.dart';
-import '../../../utils/custom_dialog.dart';
+import '../../widgets/custom_dialog.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -182,9 +181,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
         break;
       case MenuItems.itemFromGallery:
         context.read<ProfileBloc>().add(GalleryImagePicker());
-        break;
-      default:
-        printError('What are you tapping? $item');
         break;
     }
   }

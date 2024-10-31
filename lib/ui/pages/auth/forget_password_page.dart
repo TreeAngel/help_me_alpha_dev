@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../blocs/auth/auth_bloc.dart';
 import '../../../configs/app_colors.dart';
-import '../../../utils/custom_dialog.dart';
+import '../../widgets/custom_dialog.dart';
 
 class ForgetPasswordPage extends StatelessWidget {
   const ForgetPasswordPage({super.key});

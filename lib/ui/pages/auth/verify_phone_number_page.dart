@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../blocs/profile/profile_bloc.dart';
 import '../../../configs/app_colors.dart';
 import '../../../services/api/api_controller.dart';
-import '../../../utils/custom_dialog.dart';
+import '../../widgets/custom_dialog.dart';
 
 enum StatusOTP {
   waiting,

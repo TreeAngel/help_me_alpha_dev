@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:go_router/go_router.dart';
 
-import '../configs/app_colors.dart';
-import '../cubits/rate_mitra/rate_mitra_cubit.dart';
+import '../../configs/app_colors.dart';
+import '../../cubits/rate_mitra/rate_mitra_cubit.dart';
 
 class CustomDialog {
   static showAlertDialog(
@@ -170,16 +170,23 @@ class CustomDialog {
                                           )
                                       : null;
                                 },
-                                style: const ButtonStyle(
-                                  backgroundColor: WidgetStatePropertyAll(
-                                    AppColors.primary,
-                                  ),
+                                style: ButtonStyle(
+                                  backgroundColor: state is! RateMitraSuccess
+                                      ? const WidgetStatePropertyAll(
+                                          AppColors.gray,
+                                        )
+                                      : const WidgetStatePropertyAll(
+                                          AppColors.primary,
+                                        ),
                                 ),
                                 child: Text(
                                   'Kirim Rating',
                                   style: textTheme.bodyLarge?.copyWith(
                                     color: AppColors.lightTextColor,
                                     fontWeight: FontWeight.bold,
+                                    fontStyle: state is! RateMitraSuccess
+                                          ? FontStyle.italic
+                                          : FontStyle.normal,
                                   ),
                                 ),
                               ),

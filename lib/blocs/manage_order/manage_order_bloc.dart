@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 
@@ -40,7 +39,6 @@ class ManageOrderBloc extends Bloc<ManageOrderEvent, ManageOrderState> {
     } else {
       snapToken = response['snap_token'];
       ManageSnapToken.writeToken(snapToken);
-      log(snapToken.toString(), name: 'Tes snap token');
       emit(SnapTokenRequested(code: response['snap_token']));
     }
   }

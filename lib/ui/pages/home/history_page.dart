@@ -8,7 +8,7 @@ import '../../../blocs/manage_order/manage_order_bloc.dart';
 import '../../../configs/app_colors.dart';
 import '../../../cubits/home/home_cubit.dart';
 import '../../../models/order/history/order_history_model.dart';
-import '../../../utils/custom_dialog.dart';
+import '../../widgets/custom_dialog.dart';
 import '../../../utils/manage_token.dart';
 import '../../widgets/gradient_card.dart';
 
@@ -37,6 +37,7 @@ class _HistoryPageState extends State<HistoryPage> {
                   history.orderStatus?.trim().toLowerCase() == 'booked' ||
                   history.orderStatus?.trim().toLowerCase() == 'paid' ||
                   history.orderStatus?.trim().toLowerCase() == 'otw' ||
+                  history.orderStatus?.trim().toLowerCase() == 'is_progress' ||
                   history.orderStatus?.trim().toLowerCase() == 'arrived')) {
                 context.read<ManageOrderBloc>().haveActiveOrder = true;
               } else {

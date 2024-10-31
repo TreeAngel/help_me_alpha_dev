@@ -24,7 +24,6 @@ class ApiException {
       case DioExceptionType.badResponse:
         if (dioException.response?.statusCode == 400 ||
             dioException.response?.statusCode == 403 ||
-            dioException.response?.statusCode == 404 ||
             dioException.response?.statusCode == 405 ||
             dioException.response?.statusCode == 406 ||
             dioException.response?.statusCode == 408 ||

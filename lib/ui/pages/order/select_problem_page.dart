@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../blocs/manage_order/manage_order_bloc.dart';
 import '../../../blocs/send_order/send_order_bloc.dart';
 import '../../../configs/app_colors.dart';
 import '../../../models/category_problem/problem_model.dart';
-import '../../../utils/custom_dialog.dart';
+import '../../widgets/custom_dialog.dart';
 
 class SelectProblemPage extends StatefulWidget {
   const SelectProblemPage({
@@ -42,59 +41,44 @@ class _SelectProblemPageState extends State<SelectProblemPage> {
     return SafeArea(
       child: Scaffold(
         appBar: _appBar(context, textTheme),
-        body: BlocListener<ManageOrderBloc, ManageOrderState>(
-          listener: (context, state) {
-            if (context.read<ManageOrderBloc>().haveActiveOrder == true) {
-              context.replaceNamed(
-                'selectMitraPage',
-                queryParameters: {
-                  'orderId':
-                      context.read<ManageOrderBloc>().activeOrder?.orderId,
-                  'status':
-                      context.read<ManageOrderBloc>().activeOrder?.orderStatus,
-                },
-              );
-            }
-          },
-          child: Stack(
-            children: [
-              Positioned(
-                top: 0,
-                width: screenWidth,
-                height: screenHeight / 5,
-                child: Container(
-                  color: Colors.black,
-                  child: _detailHeadline(textTheme),
+        body: Stack(
+          children: [
+            Positioned(
+              top: 0,
+              width: screenWidth,
+              height: screenHeight / 5,
+              child: Container(
+                color: Colors.black,
+                child: _detailHeadline(textTheme),
+              ),
+            ),
+            Positioned(
+              bottom: 100,
+              width: screenWidth,
+              height: screenHeight - (screenHeight / 2.45),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: _problemBlocConsumer(context, textTheme),
+              ),
+            ),
+            Positioned(
+              bottom: 0,
+              width: screenWidth,
+              height: screenHeight / 8,
+              child: Container(
+                color: AppColors.surface,
+                child: BlocBuilder<SendOrderBloc, SendOrderState>(
+                  builder: (context, state) {
+                    if (state is OrderLoading || state is OrderError) {
+                      return const SizedBox.shrink();
+                    } else {
+                      return _navigateSection(context, textTheme);
+                    }
+                  },
                 ),
               ),
-              Positioned(
-                bottom: 100,
-                width: screenWidth,
-                height: screenHeight - (screenHeight / 2.45),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  child: _problemBlocConsumer(context, textTheme),
-                ),
-              ),
-              Positioned(
-                bottom: 0,
-                width: screenWidth,
-                height: screenHeight / 8,
-                child: Container(
-                  color: AppColors.surface,
-                  child: BlocBuilder<SendOrderBloc, SendOrderState>(
-                    builder: (context, state) {
-                      if (state is OrderLoading || state is OrderError) {
-                        return const SizedBox.shrink();
-                      } else {
-                        return _navigateSection(context, textTheme);
-                      }
-                    },
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

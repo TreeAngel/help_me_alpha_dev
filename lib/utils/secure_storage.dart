@@ -1,7 +1,5 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-import '../utils/logging.dart';
-
 class SecureStorage {
   final AndroidOptions _androidOptions = const AndroidOptions(
     encryptedSharedPreferences: true,
@@ -13,7 +11,6 @@ class SecureStorage {
       await secureStorage.write(
           key: key, value: value, aOptions: _androidOptions);
     } catch (e) {
-      printError(e.toString());
       throw Exception(e);
     }
   }
@@ -22,7 +19,6 @@ class SecureStorage {
     try {
       return await secureStorage.read(key: key, aOptions: _androidOptions);
     } catch (e) {
-      printError(e.toString());
       throw Exception(e);
     }
   }
@@ -31,7 +27,6 @@ class SecureStorage {
     try {
       await secureStorage.delete(key: key, aOptions: _androidOptions);
     } catch (e) {
-      printError(e.toString());
       throw Exception(e);
     }
   }
