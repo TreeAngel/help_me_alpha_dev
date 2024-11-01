@@ -1,3 +1,3 @@
-# HelpMe! Early Alpha Development Version
+# HelpMe! Mitra Early Alpha Development Version
 
-Skeleton app for project HelpMe!
+Mitra version for Help Me!

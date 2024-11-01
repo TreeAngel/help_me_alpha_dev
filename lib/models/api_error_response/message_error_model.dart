@@ -1,16 +1,18 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 
 @immutable
 class MessageErrorModel {
   final String? error;
   final String? message;
-  final List<String>? fullname;
-  final List<String>? username;
-  final List<String>? phoneNumber;
-  final List<String>? password;
-  final List<String>? role;
+  final List<dynamic>? fullname;
+  final List<dynamic>? username;
+  final List<dynamic>? phoneNumber;
+  final List<dynamic>? password;
+  final List<dynamic>? role;
+  final List<dynamic>? newPassword;
+  final List<dynamic>? verificationCode;
+  final List<dynamic>? attachment0;
+  final List<dynamic>? attachment1;
 
   const MessageErrorModel({
     this.error,
@@ -20,80 +22,63 @@ class MessageErrorModel {
     this.phoneNumber,
     this.password,
     this.role,
+    this.newPassword,
+    this.verificationCode,
+    this.attachment0,
+    this.attachment1,
   });
 
   @override
   String toString() {
-    return 'Error(error: $error, message: $message, fullname: $fullname, username: $username, phoneNumber: $phoneNumber, password: $password, role: $role';
+    String str = '';
+    if (error != null) {
+      str += '$error\n';
+    }
+    if (message != null) {
+      str += '$message\n';
+    }
+    if (fullname != null) {
+      str += '$fullname\n';
+    }
+    if (username != null) {
+      str += '$username\n';
+    }
+    if (phoneNumber != null) {
+      str += '$phoneNumber\n';
+    }
+    if (password != null) {
+      str += '$password\n';
+    }
+    if (role != null) {
+      str += '$role\n';
+    }
+    if (newPassword != null) {
+      str += '$newPassword\n';
+    }
+    if (verificationCode != null) {
+      str += '$verificationCode\n';
+    }
+    if (attachment0 != null) {
+      str += '$attachment0\n';
+    }
+    if (attachment1 != null) {
+      str += '$attachment1\n';
+    }
+    return str.trim();
   }
 
   factory MessageErrorModel.fromMap(Map<String, dynamic> data) =>
       MessageErrorModel(
         error: data['error'] as String?,
         message: data['message'] as String?,
-        fullname: (data['fullname'] as List<dynamic>?)?.map((e) => e.toString()).toList(),
-        username: (data['username'] as List<dynamic>?)?.map((e) => e.toString()).toList(),
-        phoneNumber: (data['phone_number'] as List<dynamic>?)?.map((e) => e.toString()).toList(),
-        password: (data['password'] as List<dynamic>?)?.map((e) => e.toString()).toList(),
-        role: (data['role'] as List<dynamic>?)?.map((e) => e.toString()).toList(),
+        fullname: data['full_name'] as List<dynamic>?,
+        username: data['username'] as List<dynamic>?,
+        phoneNumber: data['phone_number'] as List<dynamic>?,
+        password: data['password'] as List<dynamic>?,
+        role: data['role'] as List<dynamic>?,
+        newPassword: data['new_password'] as List<dynamic>?,
+        verificationCode: data['verification_code'] as List<dynamic>?,
+        attachment0: data['attachments.0'] as List<dynamic>?,
+        attachment1: data['attachments.1'] as List<dynamic>?,
       );
-      // MessageErrorModel(
-      //   error: data['error'] as String?,
-      //   message: data['message'] as String?,
-      //   fullname: data['fullname'] as List<String>?,
-      //   username: data['username'] as List<String>?,
-      //   phoneNumber: data['phone_number'] as List<String>?,
-      //   password: data['password'] as List<String>?,
-      //   role: data['role'] as List<String>?,
-      // );
-
-  Map<String, dynamic> toMap() => {
-        'error': error,
-        'message': message,
-        'fullname': fullname,
-        'username': username,
-        'phone_number': phoneNumber,
-        'password': password,
-        'role': role,
-      };
-
-  /// `dart:convert`
-  ///
-  /// Parses the string and returns the resulting Json object as [MessageErrorModel].
-  factory MessageErrorModel.fromJson(String data) {
-    return MessageErrorModel.fromMap(json.decode(data) as Map<String, dynamic>);
-  }
-
-  /// `dart:convert`
-  ///
-  /// Converts [MessageErrorModel] to a JSON string.
-  String toJson() => json.encode(toMap());
-
-  MessageErrorModel copyWith({
-    String? error,
-    String? message,
-    List<String>? fullname,
-    List<String>? username,
-    List<String>? phoneNumber,
-    List<String>? password,
-    List<String>? role,
-  }) {
-    return MessageErrorModel(
-      error: error ?? this.error,
-      message: message ?? this.message,
-      fullname: fullname ?? this.fullname,
-      username: username ?? this.username,
-      phoneNumber: phoneNumber ?? this.phoneNumber,
-      password: password ?? this.password,
-      role: role ?? this.role,
-    );
-  }
-
-  static MessageErrorModel fromError(dynamic error) {
-    String errorMessage = error.toString();
-    return MessageErrorModel(
-      message: errorMessage,
-      // add other fields based on your requirements
-    );
-  }
 }

@@ -1,38 +1,24 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 
-class FirebaseApi {
-  final _firebaseMessaging = FirebaseMessaging.instance;
+class FirebaseMessagingApi {
+  static String? fcmToken;
+  static FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
 
-  Future<String?> initNotification() async {
-    await _firebaseMessaging.requestPermission();
+  static Future setPermission() async {
+    NotificationSettings setting =
+        await firebaseMessaging.getNotificationSettings();
+    if (setting.authorizationStatus == AuthorizationStatus.notDetermined ||
+        setting.authorizationStatus == AuthorizationStatus.denied) {
+      await firebaseMessaging.requestPermission();
+      setting = await firebaseMessaging.getNotificationSettings();
+      if (setting.authorizationStatus == AuthorizationStatus.denied) {
+        return 'Izin notifikasi dibutuhkan, berikan izin secara manual di setting atau restart aplikasi';
+      }
+    }
+  }
 
-    final fcmToken = await _firebaseMessaging.getToken();
-
-    print('FCM Token : $fcmToken');
-    return fcmToken;
+  static Future<String?> getFCMToken() async {
+    final token = await firebaseMessaging.getToken();
+    return token;
   }
 }
-
-
-// class FirebaseMessagingApi {
-//   static String? fcmToken;
-//   static FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
-
-//   static Future setPermission() async {
-//     NotificationSettings setting =
-//         await firebaseMessaging.getNotificationSettings();
-//     if (setting.authorizationStatus == AuthorizationStatus.notDetermined ||
-//         setting.authorizationStatus == AuthorizationStatus.denied) {
-//       await firebaseMessaging.requestPermission();
-//       setting = await firebaseMessaging.getNotificationSettings();
-//       if (setting.authorizationStatus == AuthorizationStatus.denied) {
-//         return 'Izin notifikasi dibutuhkan, berikan izin secara manual di setting atau restart aplikasi';
-//       }
-//     }
-//   }
-
-//   static Future<String?> getFCMToken() async {
-//     final token = await firebaseMessaging.getToken();
-//     return token;
-//   }
-// }

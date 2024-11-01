@@ -22,16 +22,19 @@ class ApiException {
               'Failed to validate certificate, try again after a few seconds',
         };
       case DioExceptionType.badResponse:
-        if (dioException.response?.statusCode == 400) {
+        if (dioException.response?.statusCode == 400 ||
+            dioException.response?.statusCode == 403 ||
+            dioException.response?.statusCode == 405 ||
+            dioException.response?.statusCode == 406 ||
+            dioException.response?.statusCode == 408 ||
+            dioException.response?.statusCode == 411 ||
+            dioException.response?.statusCode == 415 ||
+            dioException.response?.statusCode == 416 ||
+            dioException.response?.statusCode == 422) {
           final message = dioException.response?.data as Map<String, dynamic>;
           return message;
         } else if (dioException.response?.statusCode == 401) {
-          return {
-            'error': 'Unauthorized',
-          };
-        } else if (dioException.response?.statusCode == 422) {
-          final message = dioException.response?.data as Map<String, dynamic>;
-          return message;
+          return {'error': 'Unauthorized'};
         } else {
           return {
             'error': 'Failed to process data, try again after a few seconds',
@@ -54,7 +57,7 @@ class ApiException {
   }
 
   static String errorMessageBuilder(MessageErrorModel errorModel) {
-    String errorMessage = '';
+    String errorMessage = ' ';
     if (errorModel.error != null) {
       errorMessage += '${errorModel.error}\n';
     }
@@ -76,11 +79,13 @@ class ApiException {
     if (errorModel.role != null) {
       errorMessage += '${errorModel.role}\n';
     }
+    if (errorModel.newPassword != null) {
+      errorMessage += '${errorModel.newPassword}\n';
+    }
+    if (errorModel.verificationCode != null) {
+      errorMessage += '${errorModel.verificationCode}\n';
+    }
     errorMessage = errorMessage.trim();
-    // errorMessage = errorMessage.endsWith(',')
-    //     ? errorMessage.substring(
-    //         errorMessage.length - errorMessage.length, errorMessage.length)
-    //     : errorMessage;
     return errorMessage;
   }
 }

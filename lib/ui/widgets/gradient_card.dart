@@ -6,13 +6,15 @@ class GradientCard extends StatelessWidget {
     required this.width,
     required this.height,
     required this.cardColor,
+    this.decoration,
     required this.child,
   });
 
-  final double? width;
-  final double? height;
+  final double width;
+  final double height;
   final Color cardColor;
   final Widget child;
+  final BoxDecoration? decoration;
 
   @override
   Widget build(BuildContext context) {
@@ -33,17 +35,18 @@ class GradientCard extends StatelessWidget {
     return Container(
       width: width,
       height: height,
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            offset: Offset(0, 5),
-            blurRadius: 10,
+      decoration: decoration ??
+          BoxDecoration(
+            color: cardColor,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black12,
+                offset: Offset(0, 5),
+                blurRadius: 10,
+              ),
+            ],
           ),
-        ],
-      ),
       child: Center(
         child: child,
       ),
