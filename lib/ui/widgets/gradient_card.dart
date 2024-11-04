@@ -22,9 +22,9 @@ class GradientCard extends StatelessWidget {
       child: Center(
         child: Stack(
           children: [
-            _cardContainer(),
             _cardGradient(65, 60),
             _cardGradient(35, 80),
+            _cardContainer(),
           ],
         ),
       ),

@@ -32,6 +32,8 @@ class ProfileCubit extends Cubit<ProfileState> {
   String? codeOTP;
   StatusOTP statusOTP = StatusOTP.waiting;
 
+  void profileInit() => emit(ProfileInitial());
+
   void profileIsIdle() => emit(ProfileIdle());
 
   void profileDisposed() => emit(ProfileDisposed());

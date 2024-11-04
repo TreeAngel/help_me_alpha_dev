@@ -93,7 +93,8 @@ class VerifyPhoneNumberPage extends StatelessWidget {
                   const SizedBox(height: 10),
                   _phoneNumberInput(
                     currentStatus,
-                    context.read<ProfileCubit>().phoneNumber,
+                    context.read<ProfileCubit>().profile?.phoneNumber ??
+                        context.read<ProfileCubit>().phoneNumber,
                     context,
                     textTheme,
                   ),

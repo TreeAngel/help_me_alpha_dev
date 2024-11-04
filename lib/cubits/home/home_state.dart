@@ -1,4 +1,4 @@
-part of 'home_bloc.dart';
+part of 'home_cubit.dart';
 
 sealed class HomeState extends Equatable {
   const HomeState();
@@ -8,6 +8,10 @@ sealed class HomeState extends Equatable {
 }
 
 final class HomeInitial extends HomeState {}
+
+final class HomeIdle extends HomeState {}
+
+final class HomeDispose extends HomeState {}
 
 final class HomeLoading extends HomeState {}
 
@@ -29,20 +33,20 @@ final class CategoryError extends HomeState {
   List<Object> get props => [errorMessage];
 }
 
-final class ProfileLoaded extends HomeState {
-  final DataUser user;
+final class OrderHistoryLoaded extends HomeState {
+  final List<OrderHistoryModel> histories;
 
-  const ProfileLoaded({required this.user});
+  const OrderHistoryLoaded({required this.histories});
 
   @override
-  List<Object> get props => [user];
+  List<Object> get props => [histories];
 }
 
-final class ProfileError extends HomeState {
-  final String errorMessage;
+final class OrderHistoryError extends HomeState {
+  final String message;
 
-  const ProfileError({required this.errorMessage});
+  const OrderHistoryError({required this.message});
 
   @override
-  List<Object> get props => [errorMessage];
+  List<Object> get props => [message];
 }

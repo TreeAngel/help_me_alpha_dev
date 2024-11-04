@@ -4,6 +4,7 @@ import '../../models/api_error_response/api_error_response_model.dart';
 import '../../services/api/api_exception.dart';
 
 class ApiController {
+  // static const baseUrl = 'http://192.168.1.18:8000';
   static const baseUrl = 'http://103.49.239.32';
   static String? token;
 

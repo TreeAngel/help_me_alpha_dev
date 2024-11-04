@@ -1,16 +1,25 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../data/menu_items_data.dart';
-import '../../widgets/gradient_card.dart';
-import 'selected_popup.dart';
 
 import '../../../blocs/auth/auth_bloc.dart';
 import '../../../configs/app_colors.dart';
+import '../../../cubits/home/home_cubit.dart';
+import '../../../cubits/profile/profile_cubit.dart';
+import '../../../data/menu_items_data.dart';
 import '../../../models/misc/menu_item_model.dart';
+import '../../../models/order/order_recieved.dart';
+import '../../../services/api/api_controller.dart';
+import '../../../services/firebase/firebase_api.dart';
+import '../../../services/location_service.dart';
 import '../../../utils/logging.dart';
+import '../../../utils/manage_token.dart';
 import '../../widgets/custom_dialog.dart';
+import '../../widgets/gradient_card.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -20,90 +29,289 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  FlutterLocalNotificationsPlugin notificationsPlugin =
+      FlutterLocalNotificationsPlugin();
   bool showInfo = false;
 
   @override
   Widget build(BuildContext context) {
     final appTheme = Theme.of(context);
     final textTheme = appTheme.textTheme;
-    // final colorScheme = appTheme.colorScheme;
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-    String username = 'Mitra';
+    String username = 'Kamu!';
 
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: Colors.black,
-        body: Stack(
-          children: [
-            Container(
-              margin: EdgeInsets.only(top: screenHeight / 3.32),
-              height: screenHeight,
-              width: screenWidth,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(40),
-                  topRight: Radius.circular(40),
-                ),
-              ),
-            ),
-            Positioned.fill(
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  top: 20,
-                  left: 10,
-                  right: 10,
-                  bottom: 10,
-                ),
-                child: RefreshIndicator(
-                  onRefresh: () async {},
-                  child: CustomScrollView(
-                    slivers: <Widget>[
-                      _homeHeader(
-                        context,
-                        textTheme,
-                        username,
-                      ),
-                      const SliverToBoxAdapter(
-                        child: SizedBox(
-                          height: 10,
-                        ),
-                      ),
-                      _saldoCard(textTheme, username),
-                      const SliverToBoxAdapter(
-                        child: SizedBox(
-                          height: 10,
-                        ),
-                      ),
-                      _orderanTextHeader(textTheme),
-                      const SliverToBoxAdapter(
-                        child: SizedBox(
-                          height: 10,
-                        ),
-                      ),
-                      _orderanContainer(context, textTheme),
-                      const SliverToBoxAdapter(
-                        child: SizedBox(
-                          height: 10,
-                        ),
-                      ),
-                      _riwayatTextHeader(textTheme),
-                      const SliverToBoxAdapter(
-                        child: SizedBox(
-                          height: 10,
-                        ),
-                      ),
-                      _riwayatContainer(textTheme),
-                    ],
+    FirebaseMessaging.onMessage.listen((message) {
+      RemoteNotification? notification = message.notification;
+      AndroidNotification? android = notification?.android;
+      if (notification != null && android != null) {
+        if (notification.title!.trim().toLowerCase().contains('new order')) {
+          final data = message.data;
+          if (data.isNotEmpty && context.mounted) {
+            context
+                .read<HomeCubit>()
+                .ordersRecieved
+                .add(OrderRecieved.fromMap(data));
+          }
+        }
+      }
+    });
+
+    return PopScope(
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop == true) {
+          context.read<HomeCubit>().disposeHome();
+          context.read<ProfileCubit>().profileDisposed();
+        }
+      },
+      child: SafeArea(
+        child: Scaffold(
+          backgroundColor: Colors.black,
+          body: Stack(
+            children: [
+              Container(
+                margin: EdgeInsets.only(top: screenHeight / 3.32),
+                height: screenHeight,
+                width: screenWidth,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(40),
+                    topRight: Radius.circular(40),
                   ),
                 ),
               ),
-            ),
-          ],
+              Positioned.fill(
+                child: BlocConsumer<AuthBloc, AuthState>(
+                  listener: (context, state) {
+                    if (state is AuthError) {
+                      _signOutError(context, state);
+                    }
+                    if (state is SignOutLoaded) {
+                      if (state.message.isNotEmpty) {
+                        CustomDialog.showAlertDialog(
+                          context,
+                          'Sign Out',
+                          state.message,
+                          TextButton(
+                            onPressed: () {
+                              context.read<HomeCubit>().disposeHome();
+                              context.read<ProfileCubit>().profileDisposed();
+                              context.goNamed('signInPage');
+                            },
+                            child: const Text('Lanjut'),
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  builder: (context, state) {
+                    return Padding(
+                      padding: const EdgeInsets.only(
+                        top: 20,
+                        left: 10,
+                        right: 10,
+                        bottom: 10,
+                      ),
+                      child: RefreshIndicator(
+                        onRefresh: () async {
+                          context.read<ProfileCubit>().fetchProfile();
+                          context.read<HomeCubit>().fetchCategories();
+                        },
+                        child: CustomScrollView(
+                          slivers: <Widget>[
+                            _homeHeaderConsumer(username, textTheme),
+                            const SliverToBoxAdapter(
+                              child: SizedBox(
+                                height: 10,
+                              ),
+                            ),
+                            _balanceCardBuilder(textTheme, username),
+                            const SliverToBoxAdapter(
+                              child: SizedBox(
+                                height: 10,
+                              ),
+                            ),
+                            _orderanTextHeader(textTheme),
+                            const SliverToBoxAdapter(
+                              child: SizedBox(
+                                height: 10,
+                              ),
+                            ),
+                            _orderanContainer(context, textTheme),
+                            const SliverToBoxAdapter(
+                              child: SizedBox(
+                                height: 10,
+                              ),
+                            ),
+                            _riwayatTextHeader(textTheme),
+                            const SliverToBoxAdapter(
+                              child: SizedBox(
+                                height: 10,
+                              ),
+                            ),
+                            _riwayatContainer(textTheme),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  BlocBuilder<ProfileCubit, ProfileState> _balanceCardBuilder(
+      TextTheme textTheme, String username) {
+    return BlocBuilder<ProfileCubit, ProfileState>(
+      builder: (context, state) {
+        String saldo = '';
+        String phoneNumber = '08xxxxxxxxxx';
+        if (state is ProfileLoaded) {
+          saldo = state.data.user.balance.toString();
+          phoneNumber = state.data.user.phoneNumber ?? phoneNumber;
+        }
+        return _saldoCard(
+          textTheme,
+          username,
+          saldo,
+          phoneNumber,
+        );
+      },
+    );
+  }
+
+  BlocConsumer _homeHeaderConsumer(String username, TextTheme textTheme) {
+    return BlocConsumer<ProfileCubit, ProfileState>(
+      listener: (context, state) {
+        if (state is ProfileLoaded) {
+          context.read<ProfileCubit>().profile = state.data.user;
+          if (state.data.user.username != null) {
+            username = state.data.user.username.toString();
+          }
+          if (state.data.user.phoneNumberVerifiedAt == null) {
+            CustomDialog.showAlertDialog(
+              context,
+              'Verifikasi nomor!',
+              'Verifikasi nomor telpon anda sebelum lanjut',
+              IconButton.outlined(
+                onPressed: () {
+                  context.pop();
+                  context.pushNamed('verifyPhoneNumberPage');
+                },
+                icon: const Icon(
+                  Icons.arrow_forward_ios,
+                  color: AppColors.lightTextColor,
+                ),
+              ),
+            );
+          }
+        }
+        if (state is ProfileError) {
+          _onProfileError(context, state);
+        }
+      },
+      builder: (context, state) {
+        if (state is ProfileDisposed && ApiController.token != null) {
+          context.read<ProfileCubit>().profileInit();
+        }
+        if (state is ProfileInitial) {
+          context.read<ProfileCubit>().fetchProfile();
+          context.read<HomeCubit>().fetchCategories();
+          _requestPermission(context);
+        }
+        return _homeHeader(
+          context,
+          textTheme,
+          username,
+        );
+      },
+    );
+  }
+
+  void _requestPermission(BuildContext context) {
+    return WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final locationPermission = await LocationService.setPermission();
+      if (locationPermission is String && locationPermission.isNotEmpty) {
+        context.mounted
+            ? CustomDialog.showAlertDialog(
+                context,
+                'Peringatan!',
+                locationPermission,
+                null,
+              )
+            : null;
+      }
+      final notificationPermission = await FirebaseMessagingApi.setPermission();
+      if (notificationPermission is String &&
+          notificationPermission.isNotEmpty) {
+        context.mounted
+            ? CustomDialog.showAlertDialog(
+                context,
+                'Peringatan!',
+                notificationPermission,
+                null,
+              )
+            : null;
+      }
+    });
+  }
+
+  void _onProfileError(BuildContext context, ProfileError state) {
+    CustomDialog.showAlertDialog(
+      context,
+      'Error fetching profile',
+      state.errorMessage,
+      state.errorMessage.toString().toLowerCase().contains('unauthorized')
+          ? OutlinedButton.icon(
+              onPressed: () {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  ManageAuthToken.deleteToken();
+                  context.read<AuthBloc>().add(AuthIsIdle());
+                  context.goNamed('signInPage');
+                });
+              },
+              label: const Text('Sign In ulang'),
+              icon: const Icon(Icons.arrow_forward_ios),
+              iconAlignment: IconAlignment.end,
+            )
+          : IconButton.outlined(
+              onPressed: () {
+                context.pop();
+                context.read<ProfileCubit>().fetchProfile();
+              },
+              icon: const Icon(Icons.refresh_outlined),
+            ),
+    );
+    context.read<HomeCubit>().homeIdle();
+  }
+
+  void _signOutError(BuildContext context, AuthError state) {
+    CustomDialog.showAlertDialog(
+      context,
+      'Error Sing Out',
+      state.message.toString(),
+      state.message.toString().toLowerCase().contains('unauthorized')
+          ? OutlinedButton.icon(
+              onPressed: () {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  ManageAuthToken.deleteToken();
+                  context.read<AuthBloc>().add(AuthIsIdle());
+                  context.goNamed('signInPage');
+                  context.pop();
+                });
+              },
+              label: const Text('Sign In ulang'),
+              icon: const Icon(Icons.arrow_forward_ios),
+              iconAlignment: IconAlignment.end,
+            )
+          : null,
+    );
+    context.read<AuthBloc>().add(ResetAuthState());
   }
 
   SliverToBoxAdapter _riwayatContainer(TextTheme textTheme) {
@@ -118,8 +326,63 @@ class _HomePageState extends State<HomePage> {
           ),
           borderRadius: BorderRadius.circular(25),
         ),
-        child: const Center(
-          child: Text(''),
+        child: BlocConsumer<HomeCubit, HomeState>(
+          listener: (context, state) {
+            if (state is CategoryLoaded) {
+              context.read<HomeCubit>().categories = state.categories;
+              context.read<HomeCubit>().fetchHistory(status: 'complete');
+            }
+            if (state is OrderHistoryLoaded) {
+              context.read<HomeCubit>().orderHistory = state.histories;
+              context.read<HomeCubit>().homeIdle();
+            }
+          },
+          builder: (context, state) {
+            if (state is HomeLoading) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+            if (context.read<HomeCubit>().orderHistory.isNotEmpty) {
+              return ListView.builder(
+                itemCount: context.read<HomeCubit>().orderHistory.length,
+                itemBuilder: (BuildContext context, int index) {
+                  final order = context.read<HomeCubit>().orderHistory[index];
+                  return ListTile(
+                    style: ListTileStyle.list,
+                    leading: CircleAvatar(
+                      backgroundImage: order.userProfile != null
+                          ? CachedNetworkImageProvider(order.userProfile!)
+                          : const AssetImage('assets/images/man1.png'),
+                    ),
+                    title: Text(
+                      order.description.toString(),
+                      style: textTheme.bodyLarge?.copyWith(
+                        color: AppColors.lightTextColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    subtitle: Text(
+                      order.orderTime.toString(),
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: AppColors.lightTextColor,
+                      ),
+                    ),
+                  );
+                },
+              );
+            } else {
+              return Center(
+                child: Text(
+                  'Kamu belum mengerjakan orderan!',
+                  style: textTheme.bodyLarge?.copyWith(
+                    color: AppColors.lightTextColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              );
+            }
+          },
         ),
       ),
     );
@@ -152,40 +415,7 @@ class _HomePageState extends State<HomePage> {
           ),
           borderRadius: BorderRadius.circular(25),
         ),
-        child: Column(
-          children: [
-            const Center(
-              child: Text('To Soon list order'),
-            ),
-            // ICON BUTTON UNTUK JALAN PINTAS KE ORDERAN (dev mode)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                IconButton(
-                  icon: const Icon(Icons.arrow_forward),
-                  iconSize: 30,
-                  color: Colors.red,
-                  onPressed: () {
-                    // Navigator ke OrderScreen atau halaman lain (dev mode)
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.arrow_forward),
-                  iconSize: 30,
-                  color: Colors.black,
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const SelectedPop(),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ],
-        ),
+        child: const SizedBox(),
       ),
     );
   }
@@ -202,7 +432,12 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  SliverToBoxAdapter _saldoCard(TextTheme textTheme, String username) {
+  SliverToBoxAdapter _saldoCard(
+    TextTheme textTheme,
+    String username,
+    String saldo,
+    String phoneNumber,
+  ) {
     return SliverToBoxAdapter(
       child: GradientCard(
         width: 360,
@@ -262,7 +497,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               Text(
-                "Rp0",
+                "Rp$saldo",
                 style: GoogleFonts.poppins(
                   color: Colors.white,
                   fontSize: 22.15,
@@ -274,24 +509,34 @@ class _HomePageState extends State<HomePage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "08x-xxx-xxx-xxx",
+                    showInfo == false ? "08x-xxx-xxx-xxx" : phoneNumber,
                     style: GoogleFonts.poppins(
                       color: Colors.white,
                       fontSize: 22.15,
                       fontWeight: FontWeight.normal,
                     ),
                   ),
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(7),
-                    ),
-                    child: const Icon(
+                  IconButton.filled(
+                    onPressed: () {},
+                    icon: const Icon(
                       Icons.east,
                       color: AppColors.leavesGreen,
                       size: 20,
+                    ),
+                    style: const ButtonStyle(
+                      fixedSize: WidgetStatePropertyAll(
+                        Size(32, 32),
+                      ),
+                      backgroundColor: WidgetStatePropertyAll(
+                        AppColors.surface,
+                      ),
+                      shape: WidgetStatePropertyAll(
+                        RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(10),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -333,10 +578,15 @@ class _HomePageState extends State<HomePage> {
       ),
       actions: [
         PopupMenuButton<MenuItemModel>(
-          icon: const CircleAvatar(
-            backgroundImage: AssetImage(
-              'assets/images/girl1.png',
-            ), // TODO: Ganti ke NetwordkImage buat ambil profile image dari api
+          icon: CircleAvatar(
+            backgroundImage:
+                context.read<ProfileCubit>().profile?.imageProfile != null
+                    ? CachedNetworkImageProvider(
+                        context.read<ProfileCubit>().profile!.imageProfile!,
+                      )
+                    : const AssetImage(
+                        'assets/images/man1.png',
+                      ),
             radius: 22,
           ),
           tooltip: 'Menu',

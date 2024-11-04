@@ -5,12 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'blocs/auth/auth_bloc.dart';
-import 'blocs/home_/home_bloc.dart';
+import 'cubits/home/home_cubit.dart';
 import 'cubits/profile/profile_cubit.dart';
 import 'configs/app_route.dart';
 import 'configs/app_theme.dart';
 import 'firebase_options.dart';
-import 'services/api/api_controller.dart';
 import 'utils/manage_token.dart';
 import 'utils/image_picker_util.dart';
 
@@ -31,7 +30,6 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final imagePicker = ImagePickerUtil();
-    final apiController = ApiController();
     ManageAuthToken.readToken();
     ManageFCMToken.readToken();
 
@@ -59,7 +57,7 @@ class MainApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) => HomeBloc(apiController: apiController),
+          create: (context) => HomeCubit(),
         ),
         BlocProvider(
           create: (context) => AuthBloc(),

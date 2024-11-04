@@ -34,6 +34,7 @@ class UserModel {
   final String? identifier;
   final String? imageProfile;
   final dynamic phoneNumberVerifiedAt;
+  final int? balance;
 
   const UserModel({
     this.id,
@@ -45,6 +46,7 @@ class UserModel {
     this.identifier,
     this.imageProfile,
     this.phoneNumberVerifiedAt,
+    this.balance,
   });
 
   factory UserModel.fromModel(Map<String, dynamic> json) => UserModel(
@@ -57,5 +59,6 @@ class UserModel {
         identifier: json['identifier'],
         imageProfile: json['image_profile'],
         phoneNumberVerifiedAt: json['phone_number_verified_at'],
+        balance: json['saldo'],
       );
 }

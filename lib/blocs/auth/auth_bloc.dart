@@ -174,8 +174,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           );
         }
       } else if (signInResponse is ApiErrorResponseModel) {
-        final message =
+        String? message =
             signInResponse.error?.error ?? signInResponse.error?.message;
+        if (message.toString().trim().toLowerCase().contains('invalid') ||
+            message.toString().trim().toLowerCase().contains('unauthorized')) {
+          message = 'Username atau password salah';
+        }
         emit(AuthError(message: message.toString()));
       }
     }

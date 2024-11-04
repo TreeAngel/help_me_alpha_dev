@@ -135,7 +135,7 @@ class SignInPage extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         context.read<AuthBloc>().add(AuthIsIdle());
-        context.pushNamed('forgetPasswordPage');
+        context.pushNamed('forgotPasswordPage');
       },
       child: Text(
         'Lupa kata sandi?',

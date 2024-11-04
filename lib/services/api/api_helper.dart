@@ -9,6 +9,7 @@ import '../../models/auth/user_model.dart';
 import '../../models/category_problem/category_model.dart';
 import '../../models/order/chat/chat_response_model.dart';
 import '../../models/order/chat/send_chat_response_model/send_chat_response_mode.dart';
+import '../../models/order/history/order_history_model.dart';
 import '../firebase/firebase_api.dart';
 import 'api_controller.dart';
 
@@ -158,6 +159,27 @@ class ApiHelper {
   // }
 
   // Order
+   static Future getOrderHistory(String status) async {
+    String url = 'users/orders';
+    status.isNotEmpty ? url += '?status=$status' : null;
+    final response = await ApiController.getData(url);
+    if (response is ApiErrorResponseModel) {
+      return response;
+    } else {
+      if (response is Map<String, dynamic> &&
+          response.keys.contains('message')) {
+        return ApiErrorResponseModel(
+          error: MessageErrorModel.fromMap(response),
+        );
+      } else {
+        List<OrderHistoryModel> orderHistorys = [];
+        for (var item in response as List<dynamic>) {
+          orderHistorys.add(OrderHistoryModel.fromMap(item));
+        }
+        return orderHistorys;
+      }
+    }
+  }
   // TODO: Order api here
 
   // Chat
