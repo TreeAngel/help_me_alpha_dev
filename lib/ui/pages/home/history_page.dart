@@ -66,7 +66,18 @@ class _HistoryPageState extends State<HistoryPage> {
                   const SliverToBoxAdapter(child: SizedBox(height: 20)),
                   _allHistoryHeader(textTheme),
                   const SliverToBoxAdapter(child: SizedBox(height: 10)),
-                  _allHistoryBuilder(textTheme, context),
+                  if (context.read<HomeCubit>().orderHistory.isNotEmpty) ...[
+                    _allHistoryBuilder(textTheme, context)
+                  ] else ...[
+                    SliverToBoxAdapter(
+                      child: Center(
+                        child: Text(
+                          'Anda belum memesan',
+                          style: textTheme.headlineMedium,
+                        ),
+                      ),
+                    )
+                  ],
                 ],
               ),
             );
@@ -81,7 +92,12 @@ class _HistoryPageState extends State<HistoryPage> {
       context,
       'Error fetching order history',
       state.errorMessage,
-      state.errorMessage.toString().toLowerCase().contains('unauthorized')
+      state.errorMessage.toString().trim().toLowerCase().contains('invalid') ||
+              state.errorMessage
+                  .toString()
+                  .trim()
+                  .toLowerCase()
+                  .contains('unauthorized')
           ? OutlinedButton.icon(
               onPressed: () {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -108,6 +124,7 @@ class _HistoryPageState extends State<HistoryPage> {
   SliverList _allHistoryBuilder(TextTheme textTheme, BuildContext context) {
     return SliverList(
       delegate: SliverChildBuilderDelegate(
+        childCount: context.read<HomeCubit>().orderHistory.length,
         (context, index) {
           final history = context.read<HomeCubit>().orderHistory[index];
           return Padding(
@@ -118,7 +135,6 @@ class _HistoryPageState extends State<HistoryPage> {
             ),
           );
         },
-        childCount: context.read<HomeCubit>().orderHistory.length,
       ),
     );
   }

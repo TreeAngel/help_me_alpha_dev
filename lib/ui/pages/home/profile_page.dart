@@ -346,7 +346,12 @@ class _ProfilePageState extends State<ProfilePage> {
       context,
       'Error saat memproses profile',
       state.errorMessage,
-      state.errorMessage.toString().toLowerCase().contains('unauthorized')
+      state.errorMessage.toString().trim().toLowerCase().contains('invalid') ||
+              state.errorMessage
+                  .toString()
+                  .trim()
+                  .toLowerCase()
+                  .contains('unauthorized')
           ? OutlinedButton.icon(
               onPressed: () {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
