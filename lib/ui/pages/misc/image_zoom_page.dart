@@ -74,44 +74,45 @@ class _ImageZoomPageState extends State<ImageZoomPage> {
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 40),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    IconButton.outlined(
-                      iconSize: 35,
-                      onPressed: () {
-                        _carouselController.previousPage();
-                      },
-                      icon: const Icon(Icons.arrow_back_ios_new),
-                      style: const ButtonStyle(
-                        iconColor: WidgetStatePropertyAll(AppColors.primary),
-                        side: WidgetStatePropertyAll(
-                          BorderSide(
-                            color: AppColors.primary,
+              if (imagePaths.length > 1 && imageNames.length > 1)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 40),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      IconButton.outlined(
+                        iconSize: 35,
+                        onPressed: () {
+                          _carouselController.previousPage();
+                        },
+                        icon: const Icon(Icons.arrow_back_ios_new),
+                        style: const ButtonStyle(
+                          iconColor: WidgetStatePropertyAll(AppColors.primary),
+                          side: WidgetStatePropertyAll(
+                            BorderSide(
+                              color: AppColors.primary,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    IconButton.outlined(
-                      iconSize: 35,
-                      onPressed: () {
-                        _carouselController.nextPage();
-                      },
-                      icon: const Icon(Icons.arrow_forward_ios),
-                      style: const ButtonStyle(
-                        iconColor: WidgetStatePropertyAll(AppColors.primary),
-                        side: WidgetStatePropertyAll(
-                          BorderSide(
-                            color: AppColors.primary,
+                      IconButton.outlined(
+                        iconSize: 35,
+                        onPressed: () {
+                          _carouselController.nextPage();
+                        },
+                        icon: const Icon(Icons.arrow_forward_ios),
+                        style: const ButtonStyle(
+                          iconColor: WidgetStatePropertyAll(AppColors.primary),
+                          side: WidgetStatePropertyAll(
+                            BorderSide(
+                              color: AppColors.primary,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
             ],
           ),
         ),

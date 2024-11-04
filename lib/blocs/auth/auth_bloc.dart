@@ -104,7 +104,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     if (signOutResponse is ApiErrorResponseModel) {
       final message =
           signOutResponse.error?.message ?? signOutResponse.error?.error;
-      if (message!.trim().toLowerCase().contains('unauthorized')) {
+      if (message.toString().trim().toLowerCase().contains('invalid') ||
+          message.toString().trim().toLowerCase().contains('unauthorized')) {
         emit(
           AuthError(message: message.toString()),
         );
@@ -171,8 +172,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           );
         }
       } else if (signInResponse is ApiErrorResponseModel) {
-        final message =
+        String? message =
             signInResponse.error?.error ?? signInResponse.error?.message;
+        if (message.toString().trim().toLowerCase().contains('invalid') || message.toString().trim().toLowerCase().contains('unauthorized')) {
+          message = 'Username atau password salah';
+        }
         emit(AuthError(message: message.toString()));
       }
     }
@@ -247,9 +251,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       } else if (signUpResponse is ApiErrorResponseModel) {
         String? message =
             signUpResponse.error?.error ?? signUpResponse.error?.message;
-            if (message == null || message.isEmpty) {
-              message = signUpResponse.toString();
-            }
+        if (message == null || message.isEmpty) {
+          message = signUpResponse.toString();
+        }
         emit(AuthError(message: message.toString()));
       }
     }

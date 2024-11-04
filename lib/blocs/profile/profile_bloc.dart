@@ -101,7 +101,10 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     } else {
       final response = await ApiHelper.verifyOTP(phoneNumber!, codeOTP!);
       if (response.error != null) {
-        final message = response.error?.message ?? response.error?.error;
+        String? message = response.error?.message ?? response.error?.error;
+        if (message == null || message.isEmpty) {
+          message = response.toString();
+        }
         emit(OTPVerified(
           message: message.toString(),
         ));
@@ -124,7 +127,10 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     } else {
       final response = await ApiHelper.requestOTP(phoneNumber!);
       if (response.error != null) {
-        final message = response.error?.message ?? response.error?.error;
+        String? message = response.error?.message ?? response.error?.error;
+        if (message == null || message.isEmpty) {
+          message = response.toString();
+        }
         emit(OTPRequested(
           message: message.toString(),
         ));
@@ -173,7 +179,10 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       final response = await ApiHelper.changePassword(
           oldPassword!, newPassword!, newConfirmPassword!);
       if (response.error != null) {
-        final message = response.error?.message ?? response.error?.error;
+        String? message = response.error?.message ?? response.error?.error;
+        if (message == null || message.isEmpty) {
+          message = response.toString();
+        }
         emit(EditPasswordLoaded(
           message: message.toString(),
         ));
@@ -213,7 +222,10 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       });
       final response = await ApiHelper.editProfile(formData);
       if (response is ApiErrorResponseModel) {
-        final message = response.error?.message ?? response.error?.error;
+        String? message = response.error?.message ?? response.error?.error;
+        if (message == null || message.isEmpty) {
+          message = response.toString();
+        }
         emit(EditProfileError(
           message: message.toString(),
         ));

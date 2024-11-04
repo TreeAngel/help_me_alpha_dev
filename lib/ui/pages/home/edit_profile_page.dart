@@ -343,7 +343,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
       context,
       'Gagal!',
       message,
-      message.toString().toLowerCase().contains('unauthorized')
+      message.toString().trim().toLowerCase().contains('invalid') ||
+              message.toString().trim().toLowerCase().contains('unauthorized')
           ? OutlinedButton.icon(
               onPressed: () {
                 WidgetsBinding.instance.addPostFrameCallback((_) {

@@ -31,8 +31,12 @@ class ApiException {
             dioException.response?.statusCode == 415 ||
             dioException.response?.statusCode == 416 ||
             dioException.response?.statusCode == 422) {
-          final message = dioException.response?.data as Map<String, dynamic>;
-          return message;
+          if (dioException.response?.data is Map<String, dynamic>) {
+            final message = dioException.response?.data as Map<String, dynamic>;
+            return message;
+          } else {
+            return {'error': dioException.response?.data as String};
+          }
         } else if (dioException.response?.statusCode == 401) {
           return {'error': 'Unauthorized'};
         } else {

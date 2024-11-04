@@ -57,21 +57,23 @@ class _HomePageState extends State<HomePage> {
                         .read<HomeCubit>()
                         .fetchCategories()
                         .whenComplete(() {
-                      Future.delayed(const Duration(seconds: 3), () {
-                        if (context.mounted) {
-                          final activeOrder =
-                              context.read<ManageOrderBloc>().activeOrder;
-                          context
-                              .read<ManageOrderBloc>()
-                              .add(ManageOrderIsIdle());
-                          context.pushNamed(
-                            'detailOrderPage',
-                            queryParameters: {
-                              'orderId': activeOrder?.orderId.toString(),
-                            },
-                          );
-                        }
-                      });
+                      if (context.mounted) {
+                        final activeOrder =
+                            context.read<ManageOrderBloc>().activeOrder;
+                        context
+                            .read<ManageOrderBloc>()
+                            .add(ManageOrderIsIdle());
+                        Future.delayed(const Duration(seconds: 3), () {
+                          if (context.mounted) {
+                            context.pushNamed(
+                              'detailOrderPage',
+                              queryParameters: {
+                                'orderId': activeOrder?.orderId.toString(),
+                              },
+                            );
+                          }
+                        });
+                      }
                     });
                   }
                 },
@@ -83,20 +85,22 @@ class _HomePageState extends State<HomePage> {
                         .read<HomeCubit>()
                         .fetchCategories()
                         .whenComplete(() {
-                      Future.delayed(const Duration(seconds: 3), () {
-                        if (context.mounted) {
-                          final activeOrder =
-                              context.read<ManageOrderBloc>().activeOrder;
-                          context.read<SendOrderBloc>().add(OrderIsIdle());
-                          context.pushNamed(
-                            'selectMitraPage',
-                            queryParameters: {
-                              'orderId': activeOrder?.orderId.toString(),
-                              'status': activeOrder?.orderStatus.toString(),
-                            },
-                          );
-                        }
-                      });
+                      if (context.mounted) {
+                        final activeOrder =
+                            context.read<ManageOrderBloc>().activeOrder;
+                        context.read<SendOrderBloc>().add(OrderIsIdle());
+                        Future.delayed(const Duration(seconds: 3), () {
+                          if (context.mounted) {
+                            context.pushNamed(
+                              'selectMitraPage',
+                              queryParameters: {
+                                'orderId': activeOrder?.orderId.toString(),
+                                'status': activeOrder?.orderStatus.toString(),
+                              },
+                            );
+                          }
+                        });
+                      }
                     });
                   }
                 },
@@ -211,7 +215,12 @@ class _HomePageState extends State<HomePage> {
       context,
       'Error fetching order history',
       state.errorMessage,
-      state.errorMessage.toString().toLowerCase().contains('unauthorized')
+      state.errorMessage.toString().trim().toLowerCase().contains('invalid') ||
+              state.errorMessage
+                  .toString()
+                  .trim()
+                  .toLowerCase()
+                  .contains('unauthorized')
           ? OutlinedButton.icon(
               onPressed: () {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -240,7 +249,12 @@ class _HomePageState extends State<HomePage> {
       context,
       'Error Sing Out',
       state.message.toString(),
-      state.message.toString().toLowerCase().contains('unauthorized')
+      state.message.toString().trim().toLowerCase().contains('invalid') ||
+              state.message
+                  .toString()
+                  .trim()
+                  .toLowerCase()
+                  .contains('unauthorized')
           ? OutlinedButton.icon(
               onPressed: () {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -333,7 +347,12 @@ class _HomePageState extends State<HomePage> {
       context,
       'Error fetching profile',
       state.errorMessage,
-      state.errorMessage.toString().toLowerCase().contains('unauthorized')
+      state.errorMessage.toString().trim().toLowerCase().contains('invalid') ||
+              state.errorMessage
+                  .toString()
+                  .trim()
+                  .toLowerCase()
+                  .contains('unauthorized')
           ? OutlinedButton.icon(
               onPressed: () {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -424,7 +443,12 @@ class _HomePageState extends State<HomePage> {
       context,
       'Error fetching categories',
       state.errorMessage,
-      state.errorMessage.toString().toLowerCase().contains('unauthorized')
+      state.errorMessage.toString().trim().toLowerCase().contains('invalid') ||
+              state.errorMessage
+                  .toString()
+                  .trim()
+                  .toLowerCase()
+                  .contains('unauthorized')
           ? OutlinedButton.icon(
               onPressed: () {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -509,7 +533,9 @@ class _HomePageState extends State<HomePage> {
                   textTheme,
                   history?.orderStatus?.trim().toLowerCase() == 'complete' ||
                       history?.orderStatus?.trim().toLowerCase() == 'rated'),
-              _orderCardHistoryImageSection(history),
+              history != null
+                  ? _orderCardHistoryImageSection(history)
+                  : const SizedBox.shrink(),
             ],
           ),
         ),
@@ -580,51 +606,55 @@ class _HomePageState extends State<HomePage> {
                 color: AppColors.aquamarine,
               ),
             )),
-        Text(
-          history != null ? 'Rp${history.price}' : 'N/A',
-          style: textTheme.titleMedium?.copyWith(
-            color: AppColors.primary,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            ElevatedButton.icon(
-              onPressed: () {
-                context.pushNamed(
-                  'detailOrderPage',
-                  queryParameters: {
-                    'orderId': history?.orderId.toString(),
-                  },
-                );
-              },
-              style: ButtonStyle(
-                backgroundColor: const WidgetStatePropertyAll(
-                  AppColors.primary,
+        history != null
+            ? Text(
+                'Rp${history.price}',
+                style: textTheme.titleMedium?.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w800,
                 ),
-                textStyle: WidgetStatePropertyAll(
-                  textTheme.bodyMedium?.copyWith(
-                    color: AppColors.lightTextColor,
-                    fontWeight: FontWeight.w800,
+              )
+            : const SizedBox.shrink(),
+        history != null
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      context.pushNamed(
+                        'detailOrderPage',
+                        queryParameters: {
+                          'orderId': history.orderId.toString(),
+                        },
+                      );
+                    },
+                    style: ButtonStyle(
+                      backgroundColor: const WidgetStatePropertyAll(
+                        AppColors.primary,
+                      ),
+                      textStyle: WidgetStatePropertyAll(
+                        textTheme.bodyMedium?.copyWith(
+                          color: AppColors.lightTextColor,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                    icon: const Icon(
+                      Icons.arrow_forward_rounded,
+                      color: AppColors.lightTextColor,
+                      size: 20,
+                    ),
+                    iconAlignment: IconAlignment.end,
+                    label: const Text('Lihat Detail'),
                   ),
-                ),
-              ),
-              icon: const Icon(
-                Icons.arrow_forward_rounded,
-                color: AppColors.lightTextColor,
-                size: 20,
-              ),
-              iconAlignment: IconAlignment.end,
-              label: const Text('Lihat Detail'),
-            ),
-            const SizedBox(width: 10),
-            Icon(
-              isDone ? Icons.done : Icons.pending,
-              color: isDone ? Colors.greenAccent : Colors.orangeAccent,
-            ),
-          ],
-        )
+                  const SizedBox(width: 10),
+                  Icon(
+                    isDone ? Icons.done : Icons.pending,
+                    color: isDone ? Colors.greenAccent : Colors.orangeAccent,
+                  ),
+                ],
+              )
+            : const SizedBox.shrink(),
       ],
     );
   }
