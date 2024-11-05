@@ -1,4 +1,4 @@
-class RegisterModel {
+class RegisterUserModel {
   final String fullName;
   final String username;
   final String phoneNumber;
@@ -7,7 +7,7 @@ class RegisterModel {
   final String role;
   final String? fcmToken;
 
-  RegisterModel({
+  RegisterUserModel({
     required this.fullName,
     required this.username,
     required this.phoneNumber,
@@ -26,6 +26,38 @@ class RegisterModel {
       'password_confirmation': passwordConfirmation,
       'role': role,
       'fcm_token': fcmToken,
+    };
+  }
+}
+
+class RegisterMitraModel {
+  final String name;
+  final double lat;
+  final double long;
+  final int categoryId;
+  final String accountNumber;
+  final int helperId0;
+  final int? helperId1;
+
+  RegisterMitraModel({
+    required this.name,
+    required this.lat,
+    required this.long,
+    required this.categoryId,
+    required this.accountNumber,
+    required this.helperId0,
+    this.helperId1,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'latitude': lat,
+      'longitude': long,
+      'category_id': categoryId,
+      'nomor_rekening': accountNumber,
+      'helper_ids[0]': helperId0,
+      'helper_ids[1]': helperId1,
     };
   }
 }

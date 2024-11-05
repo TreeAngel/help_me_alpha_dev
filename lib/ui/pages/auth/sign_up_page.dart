@@ -27,12 +27,10 @@ class SignUpPage extends StatelessWidget {
         body: CustomScrollView(
           physics: const ClampingScrollPhysics(),
           slivers: <Widget>[
-            const SliverToBoxAdapter(child: SizedBox(height: 20)),
-            _sliverAPpBSliverAppBar(context, textTheme),
+            _sliverAppBar(context, textTheme),
             const SliverToBoxAdapter(child: SizedBox(height: 20)),
             SliverToBoxAdapter(
-              child: Container(
-                decoration: const BoxDecoration(),
+              child: Padding(
                 padding: const EdgeInsets.only(left: 16, right: 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,7 +44,7 @@ class SignUpPage extends StatelessWidget {
                     const SizedBox(height: 20),
                     BlocConsumer<AuthBloc, AuthState>(
                       listener: (context, state) {
-                        if (state is SignUpLoaded) {
+                        if (state is SignUpUserLoaded) {
                           _stateLoaded(context);
                         } else if (state is AuthError) {
                           _stateError(context, state);
@@ -67,10 +65,11 @@ class SignUpPage extends StatelessWidget {
                             ),
                             const SizedBox(height: 10),
                             _textInputField(
-                                context,
-                                textTheme,
-                                'Masukkan nama lengkap',
-                                TextInputEvent.fullname),
+                              context,
+                              textTheme,
+                              'Masukkan nama lengkap',
+                              TextInputEvent.fullname,
+                            ),
                             const SizedBox(height: 10),
                             Text(
                               'Nomor handphone',
@@ -90,8 +89,12 @@ class SignUpPage extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 10),
-                            _textInputField(context, textTheme,
-                                'Masukan username', TextInputEvent.username),
+                            _textInputField(
+                              context,
+                              textTheme,
+                              'Masukan username',
+                              TextInputEvent.username,
+                            ),
                             const SizedBox(height: 10),
                             Text(
                               'Kata sandi',
@@ -101,8 +104,13 @@ class SignUpPage extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 10),
-                            _passwordInputField(state, context, textTheme,
-                                'Masukan Kata sandi', isPassword),
+                            _passwordInputField(
+                              state,
+                              context,
+                              textTheme,
+                              'Masukan Kata sandi',
+                              isPassword,
+                            ),
                             const SizedBox(height: 10),
                             Text(
                               'Konfirmasi kata sandi',
@@ -112,8 +120,13 @@ class SignUpPage extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 10),
-                            _passwordInputField(state, context, textTheme,
-                                'Konfirmasi kata sandi', !isPassword),
+                            _passwordInputField(
+                              state,
+                              context,
+                              textTheme,
+                              'Konfirmasi kata sandi',
+                              !isPassword,
+                            ),
                             const SizedBox(height: 40),
                             if (state is AuthLoading) ...[
                               const Center(
@@ -182,7 +195,7 @@ class SignUpPage extends StatelessWidget {
     CustomDialog.showAlertDialog(
       context,
       'Berhasil Sign Up!',
-      null,
+      'Berhasil membuat akun, lanjut untuk mengisi informasi mitra anda',
       OutlinedButton.icon(
         onPressed: () {
           context.read<AuthBloc>().add(ResetAuthState());
@@ -197,7 +210,7 @@ class SignUpPage extends StatelessWidget {
           iconColor: WidgetStateProperty.all(AppColors.lightTextColor),
         ),
         label: const Text(
-          'Lanjut ke halaman utama',
+          'Lanjut',
           style: TextStyle(color: AppColors.lightTextColor),
         ),
         icon: const Icon(Icons.arrow_forward_ios_rounded),
@@ -230,7 +243,7 @@ class SignUpPage extends StatelessWidget {
           ),
         ),
         onPressed: () {
-          context.read<AuthBloc>().add(SignUpSubmitted());
+          context.read<AuthBloc>().add(SignUpUserSubmitted());
         },
       ),
     );
@@ -319,8 +332,7 @@ class SignUpPage extends StatelessWidget {
     );
   }
 
-  SliverAppBar _sliverAPpBSliverAppBar(
-      BuildContext context, TextTheme textTheme) {
+  SliverAppBar _sliverAppBar(BuildContext context, TextTheme textTheme) {
     return SliverAppBar(
       centerTitle: true,
       backgroundColor: Colors.black,

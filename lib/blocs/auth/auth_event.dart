@@ -62,24 +62,57 @@ class ToggleRememberMe extends AuthEvent {}
 
 class SignInSubmitted extends AuthEvent {}
 
-class SignUpSubmitted extends AuthEvent {}
+class SignUpUserSubmitted extends AuthEvent {}
+
+class SignUpMitraSubmitted extends AuthEvent {}
 
 class SignOutSubmitted extends AuthEvent {}
 
 class ForgetPasswordSubmitted extends AuthEvent {}
 
-class MitraTypeChanged extends AuthEvent {
-  final String mitraType;
+class MitraNameChanged extends AuthEvent {
+  final String mitraName;
 
-  const MitraTypeChanged({required this.mitraType});
-
-  @override
-  List<Object> get props => [mitraType];
-}
-
-class GetOrderEvent extends AuthEvent {
-  const GetOrderEvent();
+  const MitraNameChanged({required this.mitraName});
 
   @override
-  List<Object> get props => [];
+  List<Object> get props => [mitraName];
 }
+
+class CategoryIdChanged extends AuthEvent {
+  final int categoryId;
+
+  const CategoryIdChanged({required this.categoryId});
+
+  @override
+  List<Object> get props => [categoryId];
+}
+
+class BankCodeChanged extends AuthEvent {
+  final int bankCode;
+
+  const BankCodeChanged({required this.bankCode});
+
+  @override
+  List<Object> get props => [bankCode];
+}
+
+class AccountNumberChanged extends AuthEvent {
+  final String accountNumber;
+
+  const AccountNumberChanged({required this.accountNumber});
+
+  @override
+  List<Object> get props => [accountNumber];
+}
+
+class HelpersIdChanged extends AuthEvent {
+  final List<int> helpersId;
+
+  const HelpersIdChanged({required this.helpersId});
+
+  @override
+  List<Object> get props => [helpersId];
+}
+
+class CheckAccountNumber extends AuthEvent {}

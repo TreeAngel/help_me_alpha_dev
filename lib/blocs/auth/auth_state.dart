@@ -38,14 +38,23 @@ final class SignInLoaded extends AuthState {
 }
 
 // Sign Up states
-final class SignUpLoaded extends AuthState {
+final class SignUpUserLoaded extends AuthState {
   final String message;
   final String token;
 
-  const SignUpLoaded({required this.message, required this.token});
+  const SignUpUserLoaded({required this.message, required this.token});
 
   @override
   List<Object> get props => [message, token];
+}
+
+final class SignUpMitraLoaded extends AuthState {
+  final String message;
+
+  const SignUpMitraLoaded({required this.message});
+
+  @override
+  List<Object?> get props => [message];
 }
 
 // Sign Out states
@@ -74,4 +83,22 @@ final class ForgetPasswordError extends AuthState {
 
   @override
   List<Object> get props => [message];
+}
+
+final class AccountNumberExist extends AuthState {
+  final BankResponseModel response;
+
+  const AccountNumberExist({required this.response});
+
+  @override
+  List<Object?> get props => [response];
+}
+
+final class AccountNumberNotExist extends AuthState {
+  final String message;
+
+  const AccountNumberNotExist({required this.message});
+
+  @override
+  List<Object?> get props => [message];
 }

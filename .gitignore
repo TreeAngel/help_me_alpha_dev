@@ -43,6 +43,6 @@ app.*.map.json
 /android/app/release
 
 # Added by dev
-android/app/google-services.json
-lib/firebase_options.dart
-firebase.json
+# android/app/google-services.json
+# lib/firebase_options.dart
+# firebase.json

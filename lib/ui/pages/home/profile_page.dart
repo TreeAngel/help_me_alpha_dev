@@ -41,7 +41,7 @@ class _ProfilePageState extends State<ProfilePage> {
               height: screenHeight / 1.32,
               child: Container(
                 decoration: const BoxDecoration(
-                  color: Colors.black,
+                  color: Colors.white,
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.elliptical(500, 250),
                     topRight: Radius.elliptical(500, 250),
@@ -132,9 +132,7 @@ class _ProfilePageState extends State<ProfilePage> {
       child: OutlinedButton(
         style: const ButtonStyle(
           side: WidgetStatePropertyAll(
-            BorderSide(
-              color: AppColors.surface,
-            ),
+            BorderSide(color: AppColors.hintTextColor),
           ),
         ),
         onPressed: () => context.pushNamed('changePasswordPage'),
@@ -142,7 +140,7 @@ class _ProfilePageState extends State<ProfilePage> {
           'Ubah',
           style: textTheme.labelLarge?.copyWith(
             fontSize: 13,
-            color: AppColors.darkTextColor,
+            color: AppColors.lightTextColor,
             fontWeight: FontWeight.w100,
           ),
           textAlign: TextAlign.center,
@@ -156,14 +154,14 @@ class _ProfilePageState extends State<ProfilePage> {
       TextSpan(
         text: 'Password\n',
         style: textTheme.titleMedium?.copyWith(
-          color: AppColors.darkTextColor,
+          color: AppColors.lightTextColor,
           fontWeight: FontWeight.w600,
         ),
         children: [
           TextSpan(
             text: '********',
             style: textTheme.titleMedium?.copyWith(
-              color: AppColors.darkTextColor,
+              color: AppColors.lightTextColor,
               fontWeight: FontWeight.normal,
             ),
           ),
@@ -176,7 +174,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return Text(
       'Keamanan',
       style: textTheme.titleLarge?.copyWith(
-        color: AppColors.darkTextColor,
+        color: AppColors.lightTextColor,
         fontWeight: FontWeight.w800,
       ),
     );
@@ -200,7 +198,7 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Text(
           'Ubah data',
           style: textTheme.titleSmall?.copyWith(
-            color: AppColors.lightTextColor,
+            color: AppColors.darkTextColor,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -259,7 +257,7 @@ class _ProfilePageState extends State<ProfilePage> {
         Text(
           'Terverifikasi',
           style: textTheme.labelLarge?.copyWith(
-            color: AppColors.darkTextColor,
+            color: AppColors.lightTextColor,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -277,14 +275,14 @@ class _ProfilePageState extends State<ProfilePage> {
       TextSpan(
         text: 'Nomor Telepon\n',
         style: textTheme.titleLarge?.copyWith(
-          color: AppColors.darkTextColor,
+          color: AppColors.lightTextColor,
           fontWeight: FontWeight.w600,
         ),
         children: [
           TextSpan(
             text: profile?.phoneNumber ?? 'Reload untuk menampilkan data',
             style: textTheme.titleMedium?.copyWith(
-              color: AppColors.darkTextColor,
+              color: AppColors.lightTextColor,
               fontWeight: FontWeight.normal,
             ),
           ),
@@ -298,14 +296,14 @@ class _ProfilePageState extends State<ProfilePage> {
       TextSpan(
         text: 'Username\n',
         style: textTheme.titleLarge?.copyWith(
-          color: AppColors.darkTextColor,
+          color: AppColors.lightTextColor,
           fontWeight: FontWeight.w600,
         ),
         children: [
           TextSpan(
             text: profile?.username ?? 'Reload untuk menampilkan data',
             style: textTheme.titleMedium?.copyWith(
-              color: AppColors.darkTextColor,
+              color: AppColors.lightTextColor,
               fontWeight: FontWeight.normal,
             ),
           ),
@@ -319,14 +317,14 @@ class _ProfilePageState extends State<ProfilePage> {
       TextSpan(
         text: 'Nama Lengkap\n',
         style: textTheme.titleLarge?.copyWith(
-          color: AppColors.darkTextColor,
+          color: AppColors.lightTextColor,
           fontWeight: FontWeight.w600,
         ),
         children: [
           TextSpan(
             text: profile?.fullName ?? 'Reload untuk menampilkan data',
             style: textTheme.titleMedium?.copyWith(
-              color: AppColors.darkTextColor,
+              color: AppColors.lightTextColor,
               fontWeight: FontWeight.normal,
             ),
           ),
@@ -386,13 +384,13 @@ class _ProfilePageState extends State<ProfilePage> {
         Text(
           profile?.fullName ?? 'Fullname',
           style: textTheme.titleLarge?.copyWith(
-              color: AppColors.darkTextColor, fontWeight: FontWeight.w600),
+              color: AppColors.lightTextColor, fontWeight: FontWeight.w600),
         ),
         // const SizedBox(height: 10),
         Text(
           profile?.username ?? 'Username',
           style: textTheme.titleMedium?.copyWith(
-              color: AppColors.darkTextColor, fontWeight: FontWeight.normal),
+              color: AppColors.lightTextColor, fontWeight: FontWeight.normal),
         ),
       ],
     );

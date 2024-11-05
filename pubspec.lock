@@ -426,18 +426,18 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_osm_plugin
-      sha256: c2acfbb83cd8bc2b44fede44831fe631e9e20b5bc0cb9b1f5c946d911c78d5ec
+      sha256: "5ea3fbd8614a128f4962b39261861a377781b7b3a7cefdcaf47b8457a371c56c"
       url: "https://pub.dev"
     source: hosted
-    version: "1.3.3+1"
+    version: "1.3.5"
   flutter_osm_web:
     dependency: transitive
     description:
       name: flutter_osm_web
-      sha256: c8626554a149a59ba7ba31ef088a3b171bc3aaa6f843a2ac810ac88d8389b471
+      sha256: "8542dc76aee29479b75fc79861ac748cd0a58482b71f0dfd116af6306e377300"
       url: "https://pub.dev"
     source: hosted
-    version: "1.3.4"
+    version: "1.3.5"
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:
@@ -876,10 +876,10 @@ packages:
     dependency: transitive
     description:
       name: permission_handler_android
-      sha256: "76e4ab092c1b240d31177bb64d2b0bea43f43d0e23541ec866151b9f7b2490fa"
+      sha256: "71bbecfee799e65aff7c744761a57e817e73b738fedf62ab7afd5593da21f9f1"
       url: "https://pub.dev"
     source: hosted
-    version: "12.0.12"
+    version: "12.0.13"
   permission_handler_apple:
     dependency: transitive
     description:

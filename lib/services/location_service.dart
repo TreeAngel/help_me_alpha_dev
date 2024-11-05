@@ -30,6 +30,15 @@ class LocationService {
     );
   }
 
+  static Stream<Position> trackLocation() async* {
+    Geolocator.getPositionStream(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.bestForNavigation,
+        distanceFilter: 100,
+      ),
+    );
+  }
+
   static Future<void> fetchLocation(BuildContext context) async {
     try {
       final location = await getLocation();

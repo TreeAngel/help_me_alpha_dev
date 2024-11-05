@@ -2,10 +2,12 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:help_me_mitra_alpha_ver/services/location_service.dart';
 
 import '../../models/api_error_response/api_error_response_model.dart';
 import '../../models/auth/auth_response_model.dart';
 import '../../models/auth/login_model.dart';
+import '../../models/misc/check_e_wallet_model.dart';
 import '../../services/api/api_controller.dart';
 import '../../services/firebase/firebase_api.dart';
 import '../../utils/manage_token.dart';
@@ -16,15 +18,21 @@ part 'auth_state.dart';
 part 'auth_event.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
+  final role = 'mitra';
+
   String fullName = '';
   String username = '';
   String password = '';
   String passwordConfirmation = '';
   String phoneNumber = '';
-  final role = 'mitra';
   bool isPasswordVisible = false;
   bool rememberMe = false;
-  String mitraType = '';
+
+  String mitraName = '';
+  int categoryId = 0;
+  String accountNumber = '';
+  List<int> helpersId = [];
+  int bankCode = 0;
 
   AuthBloc() : super(AuthInitial()) {
     on<FullNameChanged>(
@@ -39,13 +47,33 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       (event, emit) => phoneNumber = event.phoneNumber.trim(),
     );
 
-    on<PasswordChanged>((event, emit) => password = event.password.trim());
+    on<PasswordChanged>(
+      (event, emit) => password = event.password.trim(),
+    );
 
     on<ConfirmPasswordChanged>(
       (event, emit) => passwordConfirmation = event.confirmPassword.trim(),
     );
 
-    on<MitraTypeChanged>((event, emit) => mitraType = event.mitraType.trim());
+    on<MitraNameChanged>(
+      (event, emit) => mitraName = event.mitraName.trim(),
+    );
+
+    on<CategoryIdChanged>(
+      (event, emit) => categoryId = event.categoryId,
+    );
+
+    on<AccountNumberChanged>(
+      (event, emit) => accountNumber = event.accountNumber.trim(),
+    );
+
+    on<HelpersIdChanged>(
+      (event, emit) => helpersId = event.helpersId,
+    );
+
+    on<BankCodeChanged>(
+      (event, emit) => bankCode = event.bankCode,
+    );
 
     on<TogglePasswordVisibility>((event, emit) {
       isPasswordVisible = !isPasswordVisible;
@@ -61,9 +89,31 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     on<SignOutSubmitted>(_onSignOutSubmitted);
 
-    on<SignUpSubmitted>(_onSignUpSubmitted);
+    on<SignUpUserSubmitted>(_onSignUpSubmitted);
+
+    on<SignUpMitraSubmitted>(_onSignUpMitraSubmitted);
 
     on<ForgetPasswordSubmitted>(_onForgetPasswordSubmitted);
+
+    on<CheckAccountNumber>((event, emit) async {
+      if (bankCode == 0) {
+        emit(const AuthError(message: 'Pilih bank'));
+      } else if (accountNumber.isEmpty) {
+        emit(const AuthError(message: 'Isi dengan nomor rekening anda'));
+      } else {
+        emit(AuthLoading());
+        final response = await ApiHelper.checkBankAccount(bankCode, accountNumber);
+        if (response is ApiErrorResponseModel) {
+          String? message = response.error?.error ?? response.error?.message;
+          if (message == null || message.isEmpty) {
+            message = response.toString();
+          }
+          emit(AccountNumberNotExist(message: message.toString()));
+        } else {
+          emit(AccountNumberExist(response: response));
+        }
+      }
+    });
 
     on<AuthIsIdle>((event, emit) => emit(AuthIdle()));
 
@@ -75,8 +125,47 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       phoneNumber = '';
       isPasswordVisible = false;
       rememberMe = false;
+      mitraName = '';
+      categoryId = 0;
+      accountNumber = '';
+      helpersId = [];
       emit(AuthInitial());
     });
+  }
+
+  FutureOr<void> _onSignUpMitraSubmitted(event, emit) async {
+    emit(AuthLoading());
+    if (mitraName.isEmpty) {
+      emit(const AuthError(message: 'Isi name mitra anda'));
+    } else if (categoryId == 0) {
+      emit(const AuthError(message: 'Isi bagian mana yang ingin anda isi'));
+    } else if (accountNumber.isEmpty) {
+      emit(const AuthError(message: 'Isi dengan nomor rekening anda'));
+    } else if (helpersId.isEmpty) {
+      emit(const AuthError(message: 'Pilih keahlian anda'));
+    } else {
+      // TODO: Cek nomor rekening apakah ada
+      final response = await ApiHelper.authRegisterMitra(
+        RegisterMitraModel(
+          name: mitraName,
+          lat: LocationService.lat ?? -6.917421657525377,
+          long: LocationService.long ?? 107.61912406584922,
+          categoryId: categoryId,
+          accountNumber: accountNumber,
+          helperId0: helpersId.first,
+          helperId1: helpersId.length > 1 ? helpersId.last : null,
+        ),
+      );
+      if (response is ApiErrorResponseModel) {
+        String? message = response.error?.error ?? response.error?.message;
+        if (message == null || message.isEmpty) {
+          message = response.toString();
+        }
+        emit(AuthError(message: message.toString()));
+      } else {
+        emit(SignUpMitraLoaded(message: response.message.toString()));
+      }
+    }
   }
 
   FutureOr<void> _onForgetPasswordSubmitted(event, emit) async {
@@ -186,7 +275,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _onSignUpSubmitted(
-    SignUpSubmitted event,
+    SignUpUserSubmitted event,
     Emitter<AuthState> emit,
   ) async {
     if (fullName.isEmpty) {
@@ -228,7 +317,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         );
         return;
       }
-      final signUpModel = RegisterModel(
+      final signUpModel = RegisterUserModel(
         fullName: fullName,
         username: username,
         password: password,
@@ -237,7 +326,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         role: role,
         fcmToken: fcmToken,
       );
-      final signUpResponse = await ApiHelper.authRegister(signUpModel);
+      final signUpResponse = await ApiHelper.authRegisterUser(signUpModel);
       if (signUpResponse is AuthResponseModel) {
         final authMessage = signUpResponse.message.toString();
         final authToken = signUpResponse.token;
@@ -245,7 +334,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           ApiController.token = authToken;
           FirebaseMessagingApi.fcmToken = fcmToken;
           emit(
-            SignUpLoaded(
+            SignUpUserLoaded(
               message: authMessage.toString(),
               token: authToken,
             ),

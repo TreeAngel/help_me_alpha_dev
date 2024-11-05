@@ -76,7 +76,7 @@ class AppRoute {
         builder: (context, state) => const SignUpPage(),
       ),
       GoRoute(
-        path: '/formdatamitra',
+        path: '/formDataMitra',
         name: 'formDataMitraPage',
         builder: (context, state) => const FormDataMitraPage(),
       ),

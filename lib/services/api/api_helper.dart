@@ -7,6 +7,7 @@ import '../../models/auth/login_model.dart';
 import '../../models/auth/register_model.dart';
 import '../../models/auth/user_model.dart';
 import '../../models/category_problem/category_model.dart';
+import '../../models/misc/check_e_wallet_model.dart';
 import '../../models/order/chat/chat_response_model.dart';
 import '../../models/order/chat/send_chat_response_model/send_chat_response_mode.dart';
 import '../../models/order/history/order_history_model.dart';
@@ -14,12 +15,48 @@ import '../firebase/firebase_api.dart';
 import 'api_controller.dart';
 
 class ApiHelper {
+  // Misc
+  static const urlCheckEWallet = 'https://api-rekening.lfourr.com/';
+  static final dioCheckEWallet = Dio(
+    BaseOptions(
+      baseUrl: ApiHelper.urlCheckEWallet,
+      sendTimeout: const Duration(seconds: 60),
+      connectTimeout: const Duration(seconds: 60),
+      receiveTimeout: const Duration(seconds: 60),
+    ),
+  );
+  static Future checkBankAccount(int bankCode, String accountNumber) async {
+    try {
+      final response = await dioCheckEWallet.get(
+        'getBankAccount',
+        queryParameters: {
+          'bankCode': bankCode,
+          'accountNumber': accountNumber,
+        },
+      );
+      if (response.statusCode == 200) {
+        final data = response.data as Map<String, dynamic>;
+        if (data['status'] == true) {
+          return BankResponseModel.fromMap(data['data']);
+        } else {
+          return ApiErrorResponseModel(
+            error: MessageErrorModel(message: data['msg']),
+          );
+        }
+      }
+    } on DioException catch (e) {
+      final error = ApiController.checkException(e);
+      return ApiErrorResponseModel.fromMap(error);
+    } catch (e) {
+      throw Exception(e);
+    }
+  }
+
   // Auth
   static Future authLogin(LoginModel user) async {
-    final userData = user.toJson();
     final response = await ApiController.postData(
       'auth/login?app_type=mitra',
-      userData,
+      user.toJson(),
     );
     if (response is ApiErrorResponseModel) {
       return response;
@@ -28,9 +65,23 @@ class ApiHelper {
     }
   }
 
-  static Future authRegister(RegisterModel user) async {
-    final userData = user.toJson();
-    final response = await ApiController.postData('auth/register', userData);
+  static Future authRegisterUser(RegisterUserModel user) async {
+    final response = await ApiController.postData(
+      'auth/register',
+      user.toJson(),
+    );
+    if (response is ApiErrorResponseModel) {
+      return response;
+    } else {
+      return AuthResponseModel.fromMap(response);
+    }
+  }
+
+  static Future authRegisterMitra(RegisterMitraModel mitra) async {
+    final response = await ApiController.postData(
+      'mitras',
+      mitra.toJson(),
+    );
     if (response is ApiErrorResponseModel) {
       return response;
     } else {
@@ -159,7 +210,7 @@ class ApiHelper {
   // }
 
   // Order
-   static Future getOrderHistory(String status) async {
+  static Future getOrderHistory(String status) async {
     String url = 'users/orders';
     status.isNotEmpty ? url += '?status=$status' : null;
     final response = await ApiController.getData(url);
