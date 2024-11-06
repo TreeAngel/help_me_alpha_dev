@@ -275,7 +275,8 @@ class SignInPage extends StatelessWidget {
       backgroundColor: Colors.black,
       foregroundColor: AppColors.darkTextColor,
       title: Text(
-        'Help Me!',
+        'HelpMe!\nMitra',
+        textAlign: TextAlign.center,
         style: textTheme.titleLarge?.copyWith(
           color: AppColors.darkTextColor,
           fontWeight: FontWeight.bold,

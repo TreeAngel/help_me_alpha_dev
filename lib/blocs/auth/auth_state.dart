@@ -84,21 +84,3 @@ final class ForgetPasswordError extends AuthState {
   @override
   List<Object> get props => [message];
 }
-
-final class AccountNumberExist extends AuthState {
-  final BankResponseModel response;
-
-  const AccountNumberExist({required this.response});
-
-  @override
-  List<Object?> get props => [response];
-}
-
-final class AccountNumberNotExist extends AuthState {
-  final String message;
-
-  const AccountNumberNotExist({required this.message});
-
-  @override
-  List<Object?> get props => [message];
-}

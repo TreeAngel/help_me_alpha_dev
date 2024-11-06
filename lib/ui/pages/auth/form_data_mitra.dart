@@ -5,6 +5,9 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../blocs/auth/auth_bloc.dart';
 import '../../../configs/app_colors.dart';
+import '../../../cubits/check_bank_account/check_bank_account_cubit.dart';
+import '../../../cubits/home/home_cubit.dart';
+import '../../../data/bank_code.dart';
 import '../../widgets/custom_dialog.dart';
 
 class FormDataMitraPage extends StatefulWidget {
@@ -15,6 +18,7 @@ class FormDataMitraPage extends StatefulWidget {
 }
 
 class _FormDataMitraPageState extends State<FormDataMitraPage> {
+
   @override
   Widget build(BuildContext context) {
     final appTheme = Theme.of(context);
@@ -38,7 +42,7 @@ class _FormDataMitraPageState extends State<FormDataMitraPage> {
                   children: [
                     Text(
                       'Daftarkan informasi mitra anda',
-                      style: textTheme.headlineLarge?.copyWith(
+                      style: textTheme.headlineMedium?.copyWith(
                         color: AppColors.darkTextColor,
                         fontWeight: FontWeight.w800,
                       ),
@@ -54,6 +58,9 @@ class _FormDataMitraPageState extends State<FormDataMitraPage> {
                         }
                       },
                       builder: (context, state) {
+                        if (context.read<HomeCubit>().categories.isEmpty) {
+                          context.read<HomeCubit>().fetchCategories();
+                        }
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -79,12 +86,20 @@ class _FormDataMitraPageState extends State<FormDataMitraPage> {
                               ),
                             ),
                             const SizedBox(height: 10),
-                            _accountNumberInputField(
-                              context,
-                              textTheme,
-                              'Nomor rekening',
+                            _inputBankAccount(textTheme, context),
+                            const SizedBox(height: 10),
+                            _bankAccountCheckerWidget(textTheme),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Kategori mitra',
+                              style: textTheme.titleMedium?.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             const SizedBox(height: 10),
+                            _kategoriMitraDropdownMenu(textTheme, context),
+                            const SizedBox(height: 20),
                             if (state is AuthLoading) ...[
                               const Center(
                                 child: CircularProgressIndicator(),
@@ -104,6 +119,177 @@ class _FormDataMitraPageState extends State<FormDataMitraPage> {
             )
           ],
         ),
+      ),
+    );
+  }
+
+  DecoratedBox _kategoriMitraDropdownMenu(
+      TextTheme textTheme, BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: DropdownMenu<int>(
+        expandedInsets: const EdgeInsets.all(0),
+        hintText: 'Pilh kategori mitra',
+        textStyle: textTheme.labelLarge?.copyWith(
+          color: AppColors.lightTextColor,
+        ),
+        menuStyle: const MenuStyle(
+          backgroundColor: WidgetStatePropertyAll(
+            AppColors.surface,
+          ),
+          shadowColor: WidgetStatePropertyAll(
+            Colors.transparent,
+          ),
+          side: WidgetStatePropertyAll(
+            BorderSide(
+              color: Colors.black,
+            ),
+          ),
+        ),
+        onSelected: (value) {
+          context.read<AuthBloc>().add(CategoryIdChanged(
+                categoryId: value ?? 0,
+              ));
+        },
+        dropdownMenuEntries: context
+            .read<HomeCubit>()
+            .categories
+            .map<DropdownMenuEntry<int>>((value) {
+          return DropdownMenuEntry<int>(
+            value: value.id,
+            label: value.name,
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  BlocBuilder<CheckBankAccountCubit, CheckBankAccountState>
+      _bankAccountCheckerWidget(TextTheme textTheme) {
+    return BlocBuilder<CheckBankAccountCubit, CheckBankAccountState>(
+      builder: (context, state) {
+        if (state is CheckError) {
+          return Center(
+            child: Text(
+              state.message,
+              style: textTheme.bodyLarge?.copyWith(
+                color: AppColors.darkTextColor,
+              ),
+            ),
+          );
+        } else if (state is AccountNumberExist) {
+          return _bankAccountExist(state, textTheme);
+        } else if (state is AccountNumberNotExist) {
+          return Center(
+            child: Text(
+              state.message,
+              style: textTheme.bodyLarge?.copyWith(
+                color: AppColors.darkTextColor,
+              ),
+            ),
+          );
+        } else {
+          return const SizedBox.shrink();
+        }
+      },
+    );
+  }
+
+  Row _inputBankAccount(TextTheme textTheme, BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          flex: 6,
+          child: _bankDropdownMenu(textTheme, context),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          flex: 10,
+          child: _accountNumberInputField(
+            context,
+            textTheme,
+            'Nomor rekening',
+          ),
+        ),
+      ],
+    );
+  }
+
+  Center _bankAccountExist(AccountNumberExist state, TextTheme textTheme) {
+    return Center(
+      child: Column(
+        children: [
+          const Divider(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Text(
+                state.bank.bankName,
+                textAlign: TextAlign.start,
+                style: textTheme.bodyLarge?.copyWith(
+                  color: AppColors.darkTextColor,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text.rich(
+                textAlign: TextAlign.end,
+                TextSpan(
+                  text: '${state.bank.accountNumber}\n',
+                  children: [
+                    TextSpan(
+                      text: state.bank.accountName,
+                    ),
+                  ],
+                ),
+                style: textTheme.bodyLarge?.copyWith(
+                  color: AppColors.darkTextColor,
+                ),
+              ),
+            ],
+          ),
+          const Divider(),
+        ],
+      ),
+    );
+  }
+
+  DecoratedBox _bankDropdownMenu(TextTheme textTheme, BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: DropdownMenu<String>(
+        hintText: 'Pilh bank',
+        textStyle: textTheme.labelLarge?.copyWith(
+          color: AppColors.lightTextColor,
+        ),
+        menuStyle: const MenuStyle(
+          backgroundColor: WidgetStatePropertyAll(
+            AppColors.surface,
+          ),
+          shadowColor: WidgetStatePropertyAll(
+            Colors.transparent,
+          ),
+          side: WidgetStatePropertyAll(
+            BorderSide(
+              color: Colors.black,
+            ),
+          ),
+        ),
+        onSelected: (value) {
+          context.read<CheckBankAccountCubit>().bankCode = value ?? '';
+        },
+        dropdownMenuEntries:
+            BankCode.data.keys.map<DropdownMenuEntry<String>>((String value) {
+          return DropdownMenuEntry(
+            value: BankCode.data[value],
+            label: value,
+          );
+        }).toList(),
       ),
     );
   }
@@ -168,7 +354,8 @@ class _FormDataMitraPageState extends State<FormDataMitraPage> {
           ),
         ),
         onPressed: () {
-          context.read<AuthBloc>().add(SignUpMitraSubmitted());
+          context.read<AuthBloc>().add(SignUpMitraSubmitted(
+              bankAccountState: context.read<CheckBankAccountCubit>().state));
         },
       ),
     );
@@ -209,9 +396,15 @@ class _FormDataMitraPageState extends State<FormDataMitraPage> {
   ) {
     return TextFormField(
       cursorColor: Colors.black,
-      onChanged: (value) => context
-          .read<AuthBloc>()
-          .add(AccountNumberChanged(accountNumber: value)),
+      onChanged: (value) {
+        context
+            .read<AuthBloc>()
+            .add(AccountNumberChanged(accountNumber: value));
+        context.read<CheckBankAccountCubit>().accountNumber = value;
+        if (value.length >= 10) {
+          context.read<CheckBankAccountCubit>().checkBankAccount();
+        }
+      },
       keyboardType: TextInputType.number,
       decoration: InputDecoration(
         filled: true,

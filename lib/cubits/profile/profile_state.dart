@@ -16,12 +16,21 @@ final class ProfileIdle extends ProfileState {}
 final class ProfileDisposed extends ProfileState {}
 
 final class ProfileLoaded extends ProfileState {
-  final DataUser data;
+  final DataUser userProfile;
 
-  const ProfileLoaded({required this.data});
+  const ProfileLoaded({required this.userProfile});
 
   @override
-  List<Object> get props => [data];
+  List<Object> get props => [userProfile];
+}
+
+final class MitraLoaded extends ProfileState {
+  final UserMitraModel mitra;
+
+  const MitraLoaded({required this.mitra});
+
+  @override
+  List<Object> get props => [mitra];
 }
 
 final class ProfileError extends ProfileState {

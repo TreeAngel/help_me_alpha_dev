@@ -6,6 +6,7 @@ import 'package:equatable/equatable.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../models/api_error_response/api_error_response_model.dart';
+import '../../models/auth/user_mitra_model.dart';
 import '../../models/auth/user_model.dart';
 import '../../services/api/api_helper.dart';
 import '../../ui/pages/auth/verify_phone_number_page.dart';
@@ -18,7 +19,8 @@ class ProfileCubit extends Cubit<ProfileState> {
 
   ProfileCubit({required this.imagePickerUtil}) : super(ProfileInitial());
 
-  UserModel? profile;
+  UserModel? userProfile;
+  UserMitraModel? userMitra;
 
   String? oldPassword;
   String? newPassword;
@@ -129,59 +131,73 @@ class ProfileCubit extends Cubit<ProfileState> {
     }
   }
 
- // TODO: Soon add edit mitra info(not profile)
+  // TODO: Soon add edit mitra info(not profile)
 
-FutureOr<void> editProfileSubmitted() async {
-  emit(ProfileLoading());
-  if (fullname == null || fullname!.isEmpty) {
-    emit(const EditProfileError(message: 'Isi nama lengkap'));
-  } else if (fullname == null || username!.isEmpty) {
-    emit(const EditProfileError(message: 'Isi username'));
-  } else if (phoneNumber == null || phoneNumber!.isEmpty) {
-    emit(
-      const EditProfileError(message: 'Isi nomor telpon'),
-    );
-  } else if (!phoneNumber!.startsWith('08')) {
-    emit(
-      const EditProfileError(message: 'isi dengan nomor telpon yang valid'),
-    );
-  } else {
-    MultipartFile? profileImage;
-    if (imageProfile != null) {
-      profileImage = await MultipartFile.fromFile(
-        imageProfile!.path,
-        filename: imageProfile!.name.split('/').last,
+  FutureOr<void> editProfileSubmitted() async {
+    emit(ProfileLoading());
+    if (fullname == null || fullname!.isEmpty) {
+      emit(const EditProfileError(message: 'Isi nama lengkap'));
+    } else if (fullname == null || username!.isEmpty) {
+      emit(const EditProfileError(message: 'Isi username'));
+    } else if (phoneNumber == null || phoneNumber!.isEmpty) {
+      emit(
+        const EditProfileError(message: 'Isi nomor telpon'),
       );
-    }
-    final formData = FormData.fromMap({
-      'full_name': fullname,
-      'username': username,
-      'phone_number': phoneNumber,
-      if (profileImage != null) 'image_profile': profileImage,
-    });
-    final response = await ApiHelper.editProfile(formData);
-    if (response is ApiErrorResponseModel) {
-      final message = response.error?.message ?? response.error?.error;
-      emit(EditProfileError(
-        message: message.toString(),
-      ));
+    } else if (!phoneNumber!.startsWith('08')) {
+      emit(
+        const EditProfileError(message: 'isi dengan nomor telpon yang valid'),
+      );
     } else {
-      emit(ProfileEdited(message: response.message, data: response.user));
+      MultipartFile? profileImage;
+      if (imageProfile != null) {
+        profileImage = await MultipartFile.fromFile(
+          imageProfile!.path,
+          filename: imageProfile!.name.split('/').last,
+        );
+      }
+      final formData = FormData.fromMap({
+        'full_name': fullname,
+        'username': username,
+        'phone_number': phoneNumber,
+        if (profileImage != null) 'image_profile': profileImage,
+      });
+      final response = await ApiHelper.editProfile(formData);
+      if (response is ApiErrorResponseModel) {
+        final message = response.error?.message ?? response.error?.error;
+        emit(EditProfileError(
+          message: message.toString(),
+        ));
+      } else {
+        emit(ProfileEdited(message: response.message, data: response.user));
+      }
     }
   }
-}
 
   FutureOr<void> fetchProfile() async {
     emit(ProfileLoading());
-    try {
-      final response = await ApiHelper.getUserProfile();
-      if (response is ApiErrorResponseModel) {
-        emit(ProfileError(errorMessage: response.error!.error.toString()));
-      } else {
-        emit(ProfileLoaded(data: response));
+    final response = await ApiHelper.getUserProfile();
+    if (response is ApiErrorResponseModel) {
+      String? message = response.error?.message ?? response.error?.error;
+      if (message == null || message.isEmpty) {
+        message = response.toString();
       }
-    } catch (e) {
-      emit(ProfileError(errorMessage: e.toString()));
+      emit(ProfileError(errorMessage: message.toString()));
+    } else {
+      emit(ProfileLoaded(userProfile: response));
+    }
+  }
+
+  Future<void> fetchMitra(int id) async {
+    emit(ProfileLoading());
+    final response = await ApiHelper.getUserMitra(id);
+    if (response is ApiErrorResponseModel) {
+      String? message = response.error?.error ?? response.error?.message;
+      if (message == null || message.isEmpty) {
+        message = response.toString();
+      }
+      emit(ProfileError(errorMessage: message));
+    } else {
+      emit(MitraLoaded(mitra: response));
     }
   }
 }

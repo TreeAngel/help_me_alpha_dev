@@ -12,10 +12,10 @@ class BankResponseModel {
 
   factory BankResponseModel.fromMap(Map<String, dynamic> map) {
     return BankResponseModel(
-      bankCode: map['bankCode'] ?? '',
-      bankName: map['bankName'] ?? '',
-      accountNumber: map['accountNumber'] ?? '',
-      accountName: map['accountName'] ?? '',
+      bankCode: map['bankcode'] ?? '',
+      bankName: map['bankname'] ?? '',
+      accountNumber: map['accountnumber'] ?? '',
+      accountName: map['accountname'] ?? '',
     );
   }
 }

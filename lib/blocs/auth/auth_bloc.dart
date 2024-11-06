@@ -4,10 +4,10 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:help_me_mitra_alpha_ver/services/location_service.dart';
 
+import '../../cubits/check_bank_account/check_bank_account_cubit.dart';
 import '../../models/api_error_response/api_error_response_model.dart';
 import '../../models/auth/auth_response_model.dart';
 import '../../models/auth/login_model.dart';
-import '../../models/misc/check_e_wallet_model.dart';
 import '../../services/api/api_controller.dart';
 import '../../services/firebase/firebase_api.dart';
 import '../../utils/manage_token.dart';
@@ -32,7 +32,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   int categoryId = 0;
   String accountNumber = '';
   List<int> helpersId = [];
-  int bankCode = 0;
 
   AuthBloc() : super(AuthInitial()) {
     on<FullNameChanged>(
@@ -71,10 +70,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       (event, emit) => helpersId = event.helpersId,
     );
 
-    on<BankCodeChanged>(
-      (event, emit) => bankCode = event.bankCode,
-    );
-
     on<TogglePasswordVisibility>((event, emit) {
       isPasswordVisible = !isPasswordVisible;
       emit(PasswordToggled());
@@ -95,26 +90,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     on<ForgetPasswordSubmitted>(_onForgetPasswordSubmitted);
 
-    on<CheckAccountNumber>((event, emit) async {
-      if (bankCode == 0) {
-        emit(const AuthError(message: 'Pilih bank'));
-      } else if (accountNumber.isEmpty) {
-        emit(const AuthError(message: 'Isi dengan nomor rekening anda'));
-      } else {
-        emit(AuthLoading());
-        final response = await ApiHelper.checkBankAccount(bankCode, accountNumber);
-        if (response is ApiErrorResponseModel) {
-          String? message = response.error?.error ?? response.error?.message;
-          if (message == null || message.isEmpty) {
-            message = response.toString();
-          }
-          emit(AccountNumberNotExist(message: message.toString()));
-        } else {
-          emit(AccountNumberExist(response: response));
-        }
-      }
-    });
-
     on<AuthIsIdle>((event, emit) => emit(AuthIdle()));
 
     on<ResetAuthState>((event, emit) {
@@ -133,18 +108,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     });
   }
 
-  FutureOr<void> _onSignUpMitraSubmitted(event, emit) async {
+  FutureOr<void> _onSignUpMitraSubmitted(SignUpMitraSubmitted event, emit) async {
     emit(AuthLoading());
     if (mitraName.isEmpty) {
       emit(const AuthError(message: 'Isi name mitra anda'));
-    } else if (categoryId == 0) {
-      emit(const AuthError(message: 'Isi bagian mana yang ingin anda isi'));
     } else if (accountNumber.isEmpty) {
       emit(const AuthError(message: 'Isi dengan nomor rekening anda'));
+    } else if (event.bankAccountState is! AccountNumberExist) {
+      emit(const AuthError(message: 'Nomor rekening tidak valid'));
+    } else if (categoryId == 0) {
+      // TODO: Disable untuk selain serabutan dan kendaraan, untuk saat ini
+      emit(const AuthError(message: 'Isi bagian mana yang ingin anda isi'));
     } else if (helpersId.isEmpty) {
       emit(const AuthError(message: 'Pilih keahlian anda'));
     } else {
-      // TODO: Cek nomor rekening apakah ada
       final response = await ApiHelper.authRegisterMitra(
         RegisterMitraModel(
           name: mitraName,

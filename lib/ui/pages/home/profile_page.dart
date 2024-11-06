@@ -26,7 +26,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final textTheme = appTheme.textTheme;
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-    profile = context.watch<ProfileCubit>().profile;
+    profile = context.watch<ProfileCubit>().userProfile;
 
     return SafeArea(
       top: false,
@@ -55,8 +55,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   if (state is ProfileError) {
                     _onStateError(context, state);
                   } else if (state is ProfileLoaded) {
-                    profile = state.data.user;
-                    context.read<ProfileCubit>().profile = profile;
+                    profile = state.userProfile.user;
+                    context.read<ProfileCubit>().userProfile =
+                        state.userProfile.user;
                   }
                 },
                 builder: (context, state) {

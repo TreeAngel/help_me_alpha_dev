@@ -195,13 +195,15 @@ class SignUpPage extends StatelessWidget {
     CustomDialog.showAlertDialog(
       context,
       'Berhasil Sign Up!',
-      'Berhasil membuat akun, lanjut untuk mengisi informasi mitra anda',
+      'Berhasil membuat akun, lanjut verifikasi nomor telpon',
       OutlinedButton.icon(
-        onPressed: () {
+        onPressed: () async {
           context.read<AuthBloc>().add(ResetAuthState());
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            context.pop();
-            context.goNamed('homePage');
+          context.pop();
+          await context.pushNamed('verifyPhoneNumberPage').whenComplete(() {
+            if (context.mounted) {
+              context.goNamed('formDataMitraPage');
+            }
           });
         },
         style: ButtonStyle(
@@ -338,7 +340,8 @@ class SignUpPage extends StatelessWidget {
       backgroundColor: Colors.black,
       foregroundColor: AppColors.darkTextColor,
       title: Text(
-        'Help Me!',
+        'HelpMe!\nMitra',
+        textAlign: TextAlign.center,
         style: textTheme.titleLarge?.copyWith(
           color: AppColors.darkTextColor,
           fontWeight: FontWeight.bold,

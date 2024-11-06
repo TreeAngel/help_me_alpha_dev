@@ -64,7 +64,14 @@ class SignInSubmitted extends AuthEvent {}
 
 class SignUpUserSubmitted extends AuthEvent {}
 
-class SignUpMitraSubmitted extends AuthEvent {}
+class SignUpMitraSubmitted extends AuthEvent {
+  final CheckBankAccountState bankAccountState;
+
+  const SignUpMitraSubmitted({required this.bankAccountState});
+
+  @override
+  List<Object> get props => [bankAccountState];
+}
 
 class SignOutSubmitted extends AuthEvent {}
 
@@ -88,15 +95,6 @@ class CategoryIdChanged extends AuthEvent {
   List<Object> get props => [categoryId];
 }
 
-class BankCodeChanged extends AuthEvent {
-  final int bankCode;
-
-  const BankCodeChanged({required this.bankCode});
-
-  @override
-  List<Object> get props => [bankCode];
-}
-
 class AccountNumberChanged extends AuthEvent {
   final String accountNumber;
 
@@ -114,5 +112,3 @@ class HelpersIdChanged extends AuthEvent {
   @override
   List<Object> get props => [helpersId];
 }
-
-class CheckAccountNumber extends AuthEvent {}

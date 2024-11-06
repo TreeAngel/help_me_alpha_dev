@@ -32,6 +32,8 @@ class _HomePageState extends State<HomePage> {
   FlutterLocalNotificationsPlugin notificationsPlugin =
       FlutterLocalNotificationsPlugin();
   bool showInfo = false;
+  String username = 'Kamu!';
+  String orderContainerText = 'Kamu belum nyelesain orderan!';
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +41,6 @@ class _HomePageState extends State<HomePage> {
     final textTheme = appTheme.textTheme;
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-    String username = 'Kamu!';
 
     FirebaseMessaging.onMessage.listen((message) {
       RemoteNotification? notification = message.notification;
@@ -172,8 +173,8 @@ class _HomePageState extends State<HomePage> {
         String saldo = '';
         String phoneNumber = '08xxxxxxxxxx';
         if (state is ProfileLoaded) {
-          saldo = state.data.user.balance.toString();
-          phoneNumber = state.data.user.phoneNumber ?? phoneNumber;
+          saldo = state.userProfile.user.balance.toString();
+          phoneNumber = state.userProfile.user.phoneNumber ?? phoneNumber;
         }
         return _saldoCard(
           textTheme,
@@ -189,11 +190,12 @@ class _HomePageState extends State<HomePage> {
     return BlocConsumer<ProfileCubit, ProfileState>(
       listener: (context, state) {
         if (state is ProfileLoaded) {
-          context.read<ProfileCubit>().profile = state.data.user;
-          if (state.data.user.username != null) {
-            username = state.data.user.username.toString();
+          context.read<ProfileCubit>().userProfile = state.userProfile.user;
+          context.read<ProfileCubit>().fetchMitra(state.userProfile.user.id!);
+          if (state.userProfile.user.username != null) {
+            username = state.userProfile.user.username.toString();
           }
-          if (state.data.user.phoneNumberVerifiedAt == null) {
+          if (state.userProfile.user.phoneNumberVerifiedAt == null) {
             CustomDialog.showAlertDialog(
               context,
               'Verifikasi nomor!',
@@ -211,8 +213,40 @@ class _HomePageState extends State<HomePage> {
             );
           }
         }
+        if (state is MitraLoaded) {
+          context.read<ProfileCubit>().userMitra = state.mitra;
+        }
         if (state is ProfileError) {
-          _onProfileError(context, state);
+          if (state.errorMessage
+              .trim()
+              .toLowerCase()
+              .contains('mitra not found')) {
+            CustomDialog.showAlertDialog(
+              context,
+              'Peringatan!',
+              'Anda belum mengisi data mitra, tolong isi informasi mitra anda segera!',
+              OutlinedButton.icon(
+                onPressed: () {
+                  context.read<AuthBloc>().add(ResetAuthState());
+                  context.pop();
+                  context.goNamed('formDataMitraPage');
+                },
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.all(Colors.transparent),
+                  elevation: WidgetStateProperty.all(0),
+                  iconColor: WidgetStateProperty.all(AppColors.lightTextColor),
+                ),
+                label: const Text(
+                  'Isi data mitra',
+                  style: TextStyle(color: AppColors.lightTextColor),
+                ),
+                icon: const Icon(Icons.arrow_forward_ios_rounded),
+                iconAlignment: IconAlignment.end,
+              ),
+            );
+          } else {
+            _onProfileError(context, state);
+          }
         }
       },
       builder: (context, state) {
@@ -287,7 +321,6 @@ class _HomePageState extends State<HomePage> {
               icon: const Icon(Icons.refresh_outlined),
             ),
     );
-    context.read<HomeCubit>().homeIdle();
   }
 
   void _signOutError(BuildContext context, AuthError state) {
@@ -336,6 +369,10 @@ class _HomePageState extends State<HomePage> {
               context.read<HomeCubit>().orderHistory = state.histories;
               context.read<HomeCubit>().homeIdle();
             }
+            if (state is OrderHistoryError) {
+              orderContainerText = state.message;
+              context.read<HomeCubit>().homeIdle();
+            }
           },
           builder: (context, state) {
             if (state is HomeLoading) {
@@ -372,12 +409,15 @@ class _HomePageState extends State<HomePage> {
                 },
               );
             } else {
-              return Center(
-                child: Text(
-                  'Kamu belum mengerjakan orderan!',
-                  style: textTheme.bodyLarge?.copyWith(
-                    color: AppColors.lightTextColor,
-                    fontWeight: FontWeight.bold,
+              return Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Center(
+                  child: Text(
+                    orderContainerText,
+                    style: textTheme.bodyLarge?.copyWith(
+                      color: AppColors.lightTextColor,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               );
@@ -497,7 +537,9 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               Text(
-                "Rp$saldo",
+                showInfo
+                    ? 'Rp${context.read<ProfileCubit>().userProfile?.balance}'
+                    : 'Rp****',
                 style: GoogleFonts.poppins(
                   color: Colors.white,
                   fontSize: 22.15,
@@ -509,7 +551,13 @@ class _HomePageState extends State<HomePage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    showInfo == false ? "08x-xxx-xxx-xxx" : phoneNumber,
+                    showInfo
+                        ? context
+                                .read<ProfileCubit>()
+                                .userProfile
+                                ?.phoneNumber ??
+                            phoneNumber
+                        : "08x-xxx-xxx-xxx",
                     style: GoogleFonts.poppins(
                       color: Colors.white,
                       fontSize: 22.15,
@@ -566,7 +614,8 @@ class _HomePageState extends State<HomePage> {
           ),
           children: <TextSpan>[
             TextSpan(
-              text: "$username!",
+              text: context.read<ProfileCubit>().userProfile?.username ??
+                  username,
               style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontSize: 35.62,
@@ -580,9 +629,9 @@ class _HomePageState extends State<HomePage> {
         PopupMenuButton<MenuItemModel>(
           icon: CircleAvatar(
             backgroundImage:
-                context.read<ProfileCubit>().profile?.imageProfile != null
+                context.read<ProfileCubit>().userProfile?.imageProfile != null
                     ? CachedNetworkImageProvider(
-                        context.read<ProfileCubit>().profile!.imageProfile!,
+                        context.read<ProfileCubit>().userProfile!.imageProfile!,
                       )
                     : const AssetImage(
                         'assets/images/man1.png',

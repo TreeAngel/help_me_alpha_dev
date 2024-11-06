@@ -31,6 +31,15 @@ class VerifyPhoneNumberPage extends StatelessWidget {
           appBar: _appBar(context, textTheme),
           body: BlocConsumer<ProfileCubit, ProfileState>(
             listener: (context, state) {
+              if (context.read<ProfileCubit>().userProfile == null &&
+                  ApiController.token != null) {
+                context.read<ProfileCubit>().fetchProfile();
+              }
+              if (state is ProfileLoaded) {
+                context.read<ProfileCubit>().userProfile =
+                    state.userProfile.user;
+                context.read<ProfileCubit>().profileIsIdle();
+              }
               if (state is OTPRequested) {
                 context.read<ProfileCubit>().statusOTP = StatusOTP.requested;
                 message = state.message;
@@ -93,7 +102,7 @@ class VerifyPhoneNumberPage extends StatelessWidget {
                   const SizedBox(height: 10),
                   _phoneNumberInput(
                     currentStatus,
-                    context.read<ProfileCubit>().profile?.phoneNumber ??
+                    context.read<ProfileCubit>().userProfile?.phoneNumber ??
                         context.read<ProfileCubit>().phoneNumber,
                     context,
                     textTheme,

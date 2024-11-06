@@ -34,7 +34,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   void initState() {
     super.initState();
     pickedImg = null;
-    profile = context.read<ProfileCubit>().profile;
+    profile = context.read<ProfileCubit>().userProfile;
     _fullnameController.text = profile!.fullName.toString();
     _usernameController.text = profile!.username.toString();
     _phoneNumberController.text = profile!.phoneNumber.toString();

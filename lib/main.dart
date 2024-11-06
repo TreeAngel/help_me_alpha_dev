@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'blocs/auth/auth_bloc.dart';
+import 'cubits/check_bank_account/check_bank_account_cubit.dart';
 import 'cubits/home/home_cubit.dart';
 import 'cubits/profile/profile_cubit.dart';
 import 'configs/app_route.dart';
@@ -61,6 +62,9 @@ class MainApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => AuthBloc(),
+        ),
+        BlocProvider(
+          create: (context) => CheckBankAccountCubit(),
         ),
         BlocProvider(
           create: (context) => ProfileCubit(imagePickerUtil: imagePicker),

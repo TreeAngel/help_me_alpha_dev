@@ -5,6 +5,7 @@ import '../../models/api_error_response/message_error_model.dart';
 import '../../models/auth/auth_response_model.dart';
 import '../../models/auth/login_model.dart';
 import '../../models/auth/register_model.dart';
+import '../../models/auth/user_mitra_model.dart';
 import '../../models/auth/user_model.dart';
 import '../../models/category_problem/category_model.dart';
 import '../../models/misc/check_e_wallet_model.dart';
@@ -25,7 +26,7 @@ class ApiHelper {
       receiveTimeout: const Duration(seconds: 60),
     ),
   );
-  static Future checkBankAccount(int bankCode, String accountNumber) async {
+  static Future checkBankAccount(String bankCode, String accountNumber) async {
     try {
       final response = await dioCheckEWallet.get(
         'getBankAccount',
@@ -107,6 +108,15 @@ class ApiHelper {
       return response;
     } else {
       return DataUser.fromJson(response);
+    }
+  }
+
+  static Future getUserMitra(int id) async {
+    final response = await ApiController.getData('mitras/$id');
+    if (response is ApiErrorResponseModel) {
+      return response;
+    } else {
+      return UserMitraModel.fromModel(response);
     }
   }
 
