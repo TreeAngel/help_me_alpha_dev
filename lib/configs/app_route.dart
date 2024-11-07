@@ -1,7 +1,7 @@
 import 'package:go_router/go_router.dart';
 
 import '../ui/pages/auth/forgot_password_page.dart';
-import '../ui/pages/auth/form_data_mitra.dart';
+import '../ui/pages/auth/form_data_mitra_page.dart';
 import '../ui/pages/auth/verify_phone_number_page.dart';
 import '../ui/pages/home/edit_profile_page.dart';
 import '../ui/pages/home/profile_page.dart';

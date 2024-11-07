@@ -6,10 +6,11 @@ import 'package:equatable/equatable.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../models/api_error_response/api_error_response_model.dart';
-import '../../models/auth/user_mitra_model.dart';
+import '../../models/auth/user_mitra_model/user_mitra_model.dart';
 import '../../models/auth/user_model.dart';
 import '../../services/api/api_helper.dart';
 import '../../ui/pages/auth/verify_phone_number_page.dart';
+import '../../ui/pages/home/profile_page.dart';
 import '../../utils/image_picker_util.dart';
 
 part 'profile_state.dart';
@@ -39,6 +40,9 @@ class ProfileCubit extends Cubit<ProfileState> {
   void profileIsIdle() => emit(ProfileIdle());
 
   void profileDisposed() => emit(ProfileDisposed());
+
+  void changeSegment(ProfileSegment segment) =>
+      emit(ProfileSegmentChanged(segment: segment));
 
   FutureOr<void> verifyOTP() async {
     emit(OTPLoading());
@@ -187,9 +191,9 @@ class ProfileCubit extends Cubit<ProfileState> {
     }
   }
 
-  Future<void> fetchMitra(int id) async {
+  Future<void> fetchMitra() async {
     emit(ProfileLoading());
-    final response = await ApiHelper.getUserMitra(id);
+    final response = await ApiHelper.getUserMitra();
     if (response is ApiErrorResponseModel) {
       String? message = response.error?.error ?? response.error?.message;
       if (message == null || message.isEmpty) {

@@ -12,6 +12,7 @@ part 'home_state.dart';
 
 class HomeCubit extends Cubit<HomeState> {
   List<CategoryModel> categories = [];
+  List<CategoryModel> helpers = [];
   List<OrderHistoryModel> orderHistory = [];
   List<OrderRecieved> ordersRecieved = [];
 
@@ -32,7 +33,10 @@ class HomeCubit extends Cubit<HomeState> {
     try {
       final response = await ApiHelper.getCategories();
       if (response is ApiErrorResponseModel) {
-        final message = response.error?.error ?? response.error?.message;
+        String? message = response.error?.error ?? response.error?.message;
+        if (message == null || message.isEmpty) {
+          message = response.toString();
+        }
         emit(CategoryError(errorMessage: message.toString()));
       } else {
         emit(CategoryLoaded(categories: response.data));
@@ -42,16 +46,37 @@ class HomeCubit extends Cubit<HomeState> {
     }
   }
 
+  Future<void> fetchHelpers(String category) async {
+    emit(HomeLoading());
+    try {
+      final response = await ApiHelper.getHelpers(category: category);
+      if (response is ApiErrorResponseModel) {
+        String? message = response.error?.error ?? response.error?.message;
+        if (message == null || message.isEmpty) {
+          message = response.toString();
+        }
+        emit(HelperError(message: message.toString()));
+      } else {
+        emit(HelperLoaded(helpers: response.data));
+      }
+    } catch (e) {
+      emit(HelperError(message: e.toString()));
+    }
+  }
+
   Future<void> fetchHistory({String? status}) async {
     emit(HomeLoading());
     final response = await ApiHelper.getOrderHistory(status ?? '');
     if (response is ApiErrorResponseModel) {
-      final message = response.error?.error ?? response.error?.message;
+      String? message = response.error?.error ?? response.error?.message;
+      if (message == null || message.isEmpty) {
+        message = response.toString();
+      }
       if (message.toString().toLowerCase().trim().contains('no order found')) {
         emit(const OrderHistoryLoaded(histories: <OrderHistoryModel>[]));
       } else {
         emit(OrderHistoryError(message: message.toString()));
-      }                                                                                                                                             
+      }
     } else {
       emit(OrderHistoryLoaded(histories: response));
     }

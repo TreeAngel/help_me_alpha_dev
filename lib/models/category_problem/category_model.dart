@@ -27,4 +27,7 @@ class CategoryModel {
         id: json['id'],
         name: json['name'],
       );
+
+  @override
+  String toString() => 'CategoryModel($id, $name)';
 }

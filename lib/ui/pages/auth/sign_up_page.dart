@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../configs/app_colors.dart';
 import '../../../blocs/auth/auth_bloc.dart';
+import '../../../cubits/profile/profile_cubit.dart';
 import '../../widgets/custom_dialog.dart';
 
 enum TextInputEvent {
@@ -199,12 +200,12 @@ class SignUpPage extends StatelessWidget {
       OutlinedButton.icon(
         onPressed: () async {
           context.read<AuthBloc>().add(ResetAuthState());
+          context.read<ProfileCubit>().fetchProfile();
           context.pop();
-          await context.pushNamed('verifyPhoneNumberPage').whenComplete(() {
-            if (context.mounted) {
-              context.goNamed('formDataMitraPage');
-            }
-          });
+          final isVerified = await context.pushNamed('verifyPhoneNumberPage');
+          if (context.mounted && isVerified == true) {
+            context.goNamed('formDataMitraPage');
+          }
         },
         style: ButtonStyle(
           backgroundColor: WidgetStateProperty.all(Colors.transparent),

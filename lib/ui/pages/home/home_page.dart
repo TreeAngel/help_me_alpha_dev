@@ -152,6 +152,13 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ),
                             _riwayatContainer(textTheme),
+                            SliverToBoxAdapter(
+                              child: TextButton(
+                                onPressed: () =>
+                                    context.pushNamed('formDataMitraPage'),
+                                child: const Text('Periksa page form data'),
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -191,11 +198,21 @@ class _HomePageState extends State<HomePage> {
       listener: (context, state) {
         if (state is ProfileLoaded) {
           context.read<ProfileCubit>().userProfile = state.userProfile.user;
-          context.read<ProfileCubit>().fetchMitra(state.userProfile.user.id!);
+          context.read<ProfileCubit>().fetchMitra();
           if (state.userProfile.user.username != null) {
             username = state.userProfile.user.username.toString();
           }
-          if (state.userProfile.user.phoneNumberVerifiedAt == null) {
+        }
+        if (state is MitraLoaded) {
+          context.read<ProfileCubit>().userMitra = state.mitra;
+        }
+        if (state is ProfileError) {
+          if (state.errorMessage
+                  .toLowerCase()
+                  .trim()
+                  .contains('number is not verified') ||
+              context.read<ProfileCubit>().userProfile?.phoneNumberVerifiedAt ==
+                  null) {
             CustomDialog.showAlertDialog(
               context,
               'Verifikasi nomor!',
@@ -211,16 +228,12 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             );
-          }
-        }
-        if (state is MitraLoaded) {
-          context.read<ProfileCubit>().userMitra = state.mitra;
-        }
-        if (state is ProfileError) {
-          if (state.errorMessage
-              .trim()
-              .toLowerCase()
-              .contains('mitra not found')) {
+          } else if (state.errorMessage
+                  .trim()
+                  .toLowerCase()
+                  .contains('mitra not found') &&
+              context.read<ProfileCubit>().userProfile?.phoneNumberVerifiedAt !=
+                  null) {
             CustomDialog.showAlertDialog(
               context,
               'Peringatan!',
@@ -229,7 +242,7 @@ class _HomePageState extends State<HomePage> {
                 onPressed: () {
                   context.read<AuthBloc>().add(ResetAuthState());
                   context.pop();
-                  context.goNamed('formDataMitraPage');
+                  context.pushNamed('formDataMitraPage');
                 },
                 style: ButtonStyle(
                   backgroundColor: WidgetStateProperty.all(Colors.transparent),
@@ -303,11 +316,9 @@ class _HomePageState extends State<HomePage> {
       state.errorMessage.toString().toLowerCase().contains('unauthorized')
           ? OutlinedButton.icon(
               onPressed: () {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  ManageAuthToken.deleteToken();
-                  context.read<AuthBloc>().add(AuthIsIdle());
-                  context.goNamed('signInPage');
-                });
+                ManageAuthToken.deleteToken();
+                context.read<AuthBloc>().add(AuthIsIdle());
+                context.goNamed('signInPage');
               },
               label: const Text('Sign In ulang'),
               icon: const Icon(Icons.arrow_forward_ios),
@@ -331,12 +342,10 @@ class _HomePageState extends State<HomePage> {
       state.message.toString().toLowerCase().contains('unauthorized')
           ? OutlinedButton.icon(
               onPressed: () {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  ManageAuthToken.deleteToken();
-                  context.read<AuthBloc>().add(AuthIsIdle());
-                  context.goNamed('signInPage');
-                  context.pop();
-                });
+                ManageAuthToken.deleteToken();
+                context.read<AuthBloc>().add(AuthIsIdle());
+                context.goNamed('signInPage');
+                context.pop();
               },
               label: const Text('Sign In ulang'),
               icon: const Icon(Icons.arrow_forward_ios),
@@ -636,7 +645,7 @@ class _HomePageState extends State<HomePage> {
                     : const AssetImage(
                         'assets/images/man1.png',
                       ),
-            radius: 22,
+            radius: 20,
           ),
           tooltip: 'Menu',
           position: PopupMenuPosition.under,

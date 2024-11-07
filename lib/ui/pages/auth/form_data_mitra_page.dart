@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:help_me_mitra_alpha_ver/cubits/profile/profile_cubit.dart';
 
 import '../../../blocs/auth/auth_bloc.dart';
 import '../../../configs/app_colors.dart';
 import '../../../cubits/check_bank_account/check_bank_account_cubit.dart';
 import '../../../cubits/home/home_cubit.dart';
 import '../../../data/bank_code.dart';
+import '../../../services/location_service.dart';
 import '../../widgets/custom_dialog.dart';
 
 class FormDataMitraPage extends StatefulWidget {
@@ -18,16 +21,31 @@ class FormDataMitraPage extends StatefulWidget {
 }
 
 class _FormDataMitraPageState extends State<FormDataMitraPage> {
+  final MapController _showedMapController = MapController(
+    initPosition: GeoPoint(
+      latitude: -6.917421657525377,
+      longitude: 107.61912406584922,
+    ),
+  );
+  GeoPoint? pickedLocation;
+
+  @override
+  void dispose() {
+    _showedMapController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final appTheme = Theme.of(context);
     final textTheme = appTheme.textTheme;
+    final screenWidht = MediaQuery.sizeOf(context).width;
 
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.black,
         body: CustomScrollView(
+          physics: const ClampingScrollPhysics(),
           slivers: <Widget>[
             _sliverAppBar(context, textTheme),
             const SliverToBoxAdapter(child: SizedBox(height: 20)),
@@ -41,20 +59,36 @@ class _FormDataMitraPageState extends State<FormDataMitraPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Daftarkan informasi mitra anda',
+                      'Daftarkan informasi usaha anda',
                       style: textTheme.headlineMedium?.copyWith(
                         color: AppColors.darkTextColor,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
                     const SizedBox(height: 20),
+                    Text(
+                      'Nama usaha',
+                      style: textTheme.titleMedium?.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    _nameInputField(
+                      context,
+                      textTheme,
+                      'Masukkan nama usaha',
+                    ),
                     BlocConsumer<AuthBloc, AuthState>(
                       listener: (context, state) {
                         if (state is SignUpMitraLoaded) {
                           _stateLoaded(context);
                         }
-                        if (state is AuthError) {
-                          _stateError(context, state);
+                        if (state is SignUpMitraError) {
+                          _stateError(context, state.message);
+                        }
+                        if (state is HelperIdChanged) {
+                          context.read<AuthBloc>().add(AuthIsIdle());
                         }
                       },
                       builder: (context, state) {
@@ -64,19 +98,6 @@ class _FormDataMitraPageState extends State<FormDataMitraPage> {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'Nama mitra',
-                              style: textTheme.titleMedium?.copyWith(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            _nameInputField(
-                              context,
-                              textTheme,
-                              'Masukkan nama mitra',
-                            ),
                             const SizedBox(height: 10),
                             Text(
                               'Nomor rekening',
@@ -99,6 +120,27 @@ class _FormDataMitraPageState extends State<FormDataMitraPage> {
                             ),
                             const SizedBox(height: 10),
                             _kategoriMitraDropdownMenu(textTheme, context),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Keahlian',
+                              style: textTheme.titleMedium?.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            _helperConsumer(textTheme),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Lokasi usaha',
+                              style: textTheme.titleMedium?.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            _showedMap(screenWidht),
+                            const SizedBox(height: 15),
+                            _pickLoactionBtn(context, textTheme),
                             const SizedBox(height: 20),
                             if (state is AuthLoading) ...[
                               const Center(
@@ -119,6 +161,197 @@ class _FormDataMitraPageState extends State<FormDataMitraPage> {
             )
           ],
         ),
+      ),
+    );
+  }
+
+  SizedBox _pickLoactionBtn(BuildContext context, TextTheme textTheme) {
+    return SizedBox(
+      width: double.infinity,
+      height: 38,
+      child: ElevatedButton(
+        onPressed: () => _pickLocation(
+          context,
+          textTheme,
+        ),
+        style: ButtonStyle(
+          shape: WidgetStateProperty.all(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        ),
+        child: Text(
+          'Cari lokasi',
+          style: textTheme.bodyLarge?.copyWith(
+            color: AppColors.lightTextColor,
+          ),
+        ),
+      ),
+    );
+  }
+
+  LimitedBox _showedMap(double screenWidht) {
+    return LimitedBox(
+      maxWidth: screenWidht,
+      maxHeight: 250,
+      child: OSMFlutter(
+        controller: _showedMapController,
+        mapIsLoading: const Center(
+          child: CircularProgressIndicator(),
+        ),
+        osmOption: const OSMOption(
+          zoomOption: ZoomOption(
+            initZoom: 14,
+            stepZoom: 2,
+            minZoomLevel: 2,
+            maxZoomLevel: 19,
+          ),
+          showZoomController: true,
+          showContributorBadgeForOSM: true,
+          enableRotationByGesture: true,
+        ),
+      ),
+    );
+  }
+
+  void _pickLocation(BuildContext context, TextTheme textTheme) async {
+    await LocationService.fetchLocation(context);
+    if (!context.mounted) return;
+    pickedLocation = await showSimplePickerLocation(
+      context: context,
+      titleWidget: Text(
+        'Lokasi Usaha',
+        textAlign: TextAlign.center,
+        style: textTheme.titleLarge?.copyWith(
+          color: AppColors.lightTextColor,
+        ),
+      ),
+      textCancelPicker: 'Batal',
+      textConfirmPicker: 'Pilih',
+      radius: 10,
+      contentPadding: const EdgeInsets.all(8),
+      zoomOption: const ZoomOption(
+        initZoom: 19,
+        stepZoom: 2,
+        minZoomLevel: 2,
+        maxZoomLevel: 19,
+      ),
+      initPosition: GeoPoint(
+        latitude: LocationService.lat ?? 0,
+        longitude: LocationService.long ?? 0,
+      ),
+    );
+    if (pickedLocation != null) {
+      Future.delayed(Durations.long2);
+      if (!context.mounted) return;
+      _showedMapController.moveTo(
+        pickedLocation!,
+        animate: true,
+      );
+      Future.delayed(Durations.long2);
+      if (!context.mounted) return;
+      await _showedMapController.removeMarker(pickedLocation!);
+      Future.delayed(Durations.long2);
+      if (!context.mounted) return;
+      await _showedMapController.addMarker(
+        pickedLocation!,
+        markerIcon: const MarkerIcon(
+          icon: Icon(
+            Icons.location_on_sharp,
+            color: AppColors.vividRed,
+          ),
+        ),
+      );
+      Future.delayed(Durations.long2);
+      if (!context.mounted) return;
+      await _showedMapController.setZoom(
+        zoomLevel: 19,
+      );
+      Future.delayed(Durations.long2);
+      if (!context.mounted) return;
+      context.read<AuthBloc>().add(MitraLocationPicked(
+            location: pickedLocation!,
+          ));
+    }
+  }
+
+  BlocConsumer<HomeCubit, HomeState> _helperConsumer(TextTheme textTheme) {
+    return BlocConsumer<HomeCubit, HomeState>(
+      listener: (context, state) {
+        if (state is HelperLoaded) {
+          context.read<HomeCubit>().helpers = state.helpers;
+        }
+        if (state is HelperError) {
+          CustomDialog.showAlertDialog(
+            context,
+            'Gagal mengambil helper!',
+            state.message,
+            null,
+          );
+          context.read<HomeCubit>().homeIdle();
+        }
+      },
+      builder: (context, state) {
+        if (state is HelperLoaded &&
+            context.read<HomeCubit>().helpers.isNotEmpty) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 5),
+              Text(
+                'Keahlian anda pada kategori yang dipilih, ambil yang menurut anda paling sesuai!',
+                style: textTheme.labelSmall?.copyWith(
+                  color: AppColors.darkTextColor,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 10),
+              _helperMultiSelect(context),
+            ],
+          );
+        }
+        if (state is! HelperLoaded ||
+            context.read<HomeCubit>().helpers.isEmpty) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 10),
+              Text(
+                'Pilih kategori terlebih dahulu',
+                style: textTheme.bodyLarge?.copyWith(
+                  color: AppColors.darkTextColor,
+                ),
+              )
+            ],
+          );
+        }
+        return const SizedBox.shrink();
+      },
+    );
+  }
+
+  Center _helperMultiSelect(BuildContext context) {
+    return Center(
+      child: Wrap(
+        spacing: 5,
+        children: context.read<HomeCubit>().helpers.map((helper) {
+          return FilterChip(
+            label: Text(helper.name),
+            selected: context.read<AuthBloc>().helpersId.contains(helper),
+            onSelected: (selected) {
+              if (selected) {
+                context.read<AuthBloc>().add(HelperIdAdded(
+                      helper: helper,
+                    ));
+              } else {
+                context.read<AuthBloc>().add(HelperIdRemoved(
+                      helper: helper,
+                    ));
+              }
+            },
+          );
+        }).toList(),
       ),
     );
   }
@@ -153,10 +386,16 @@ class _FormDataMitraPageState extends State<FormDataMitraPage> {
           context.read<AuthBloc>().add(CategoryIdChanged(
                 categoryId: value ?? 0,
               ));
+          context.read<HomeCubit>().fetchHelpers(context
+              .read<HomeCubit>()
+              .categories
+              .firstWhere((category) => category.id == value)
+              .name);
         },
         dropdownMenuEntries: context
             .read<HomeCubit>()
             .categories
+            .sublist(0, 2)
             .map<DropdownMenuEntry<int>>((value) {
           return DropdownMenuEntry<int>(
             value: value.id,
@@ -294,11 +533,11 @@ class _FormDataMitraPageState extends State<FormDataMitraPage> {
     );
   }
 
-  _stateError(BuildContext context, AuthError state) {
+  _stateError(BuildContext context, String message) {
     CustomDialog.showAlertDialog(
       context,
-      'Error',
-      state.message,
+      'Peringatan!',
+      message,
       null,
     );
   }
@@ -311,6 +550,8 @@ class _FormDataMitraPageState extends State<FormDataMitraPage> {
       TextButton.icon(
         onPressed: () {
           context.goNamed('homePage');
+          context.read<ProfileCubit>().fetchProfile();
+          context.read<HomeCubit>().fetchHistory();
         },
         style: ButtonStyle(
           backgroundColor: WidgetStateProperty.all(Colors.transparent),
@@ -322,6 +563,7 @@ class _FormDataMitraPageState extends State<FormDataMitraPage> {
           style: TextStyle(color: AppColors.lightTextColor),
         ),
         icon: const Icon(Icons.arrow_forward_ios_rounded),
+        iconAlignment: IconAlignment.end,
       ),
     );
   }
@@ -426,11 +668,11 @@ class _FormDataMitraPageState extends State<FormDataMitraPage> {
 
   SliverAppBar _sliverAppBar(BuildContext context, TextTheme textTheme) {
     return SliverAppBar(
-      centerTitle: true,
       backgroundColor: Colors.black,
       foregroundColor: AppColors.darkTextColor,
       title: Text(
-        'Help Me!',
+        'HelpMe!\nMitra',
+        textAlign: TextAlign.center,
         style: textTheme.titleLarge?.copyWith(
           color: AppColors.darkTextColor,
           fontWeight: FontWeight.bold,

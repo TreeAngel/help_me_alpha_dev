@@ -33,6 +33,24 @@ final class CategoryError extends HomeState {
   List<Object> get props => [errorMessage];
 }
 
+final class HelperLoaded extends HomeState {
+  final List<CategoryModel> helpers;
+
+  const HelperLoaded({required this.helpers});
+
+  @override
+  List<Object> get props => [helpers];
+}
+
+final class HelperError extends HomeState {
+  final String message;
+
+  const HelperError({required this.message});
+
+  @override
+  List<Object> get props => [message];
+}
+
 final class OrderHistoryLoaded extends HomeState {
   final List<OrderHistoryModel> histories;
 

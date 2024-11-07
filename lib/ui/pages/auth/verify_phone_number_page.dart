@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../configs/app_colors.dart';
+import '../../../cubits/home/home_cubit.dart';
 import '../../../cubits/profile/profile_cubit.dart';
 import '../../../services/api/api_controller.dart';
 import '../../widgets/custom_dialog.dart';
@@ -22,9 +23,13 @@ class VerifyPhoneNumberPage extends StatelessWidget {
     StatusOTP currentStatus = context.watch<ProfileCubit>().statusOTP;
     String message = 'Message that will showed after every button pressed';
     bool canPop = true;
+    bool verified = false;
 
     return PopScope(
       canPop: canPop,
+      onPopInvokedWithResult: (didPop, result) {
+        didPop ? result = verified : null;
+      },
       child: SafeArea(
         child: Scaffold(
           backgroundColor: Colors.black,
@@ -51,6 +56,7 @@ class VerifyPhoneNumberPage extends StatelessWidget {
                 );
               } else if (state is OTPError) {
                 message = state.errorMessage;
+                verified = false;
                 CustomDialog.showAlertDialog(
                   context,
                   'Verifikasi Gagal!',
@@ -61,6 +67,7 @@ class VerifyPhoneNumberPage extends StatelessWidget {
                 message = state.message;
                 if (!message.toLowerCase().trim().contains('salah')) {
                   context.read<ProfileCubit>().statusOTP = StatusOTP.done;
+                  verified = true;
                 } else {
                   context.read<ProfileCubit>().statusOTP = StatusOTP.requested;
                 }
@@ -71,7 +78,10 @@ class VerifyPhoneNumberPage extends StatelessWidget {
                   null,
                 );
                 ApiController.token != null
-                    ? context.read<ProfileCubit>().fetchProfile()
+                    ? {
+                        context.read<ProfileCubit>().fetchProfile(),
+                        context.read<HomeCubit>().fetchHistory(),
+                      }
                     : null;
               }
               if (state is ProfileLoading) {

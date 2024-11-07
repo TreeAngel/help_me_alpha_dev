@@ -59,5 +59,4 @@ class DefaultFirebaseOptions {
     projectId: 'helpme-c33ef',
     storageBucket: 'helpme-c33ef.firebasestorage.app',
   );
-
 }

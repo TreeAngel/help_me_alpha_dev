@@ -58,8 +58,6 @@ class ConfirmPasswordChanged extends AuthEvent {
 
 class TogglePasswordVisibility extends AuthEvent {}
 
-class ToggleRememberMe extends AuthEvent {}
-
 class SignInSubmitted extends AuthEvent {}
 
 class SignUpUserSubmitted extends AuthEvent {}
@@ -104,11 +102,29 @@ class AccountNumberChanged extends AuthEvent {
   List<Object> get props => [accountNumber];
 }
 
-class HelpersIdChanged extends AuthEvent {
-  final List<int> helpersId;
+class HelperIdAdded extends AuthEvent {
+  final CategoryModel helper;
 
-  const HelpersIdChanged({required this.helpersId});
+  const HelperIdAdded({required this.helper});
 
   @override
-  List<Object> get props => [helpersId];
+  List<Object> get props => [helper];
+}
+
+class HelperIdRemoved extends AuthEvent {
+  final CategoryModel helper;
+
+  const HelperIdRemoved({required this.helper});
+
+  @override
+  List<Object> get props => [helper];
+}
+
+class MitraLocationPicked extends AuthEvent {
+  final GeoPoint location;
+
+  const MitraLocationPicked({required this.location});
+
+  @override
+  List<Object> get props => [location];
 }

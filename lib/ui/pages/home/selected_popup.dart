@@ -345,7 +345,7 @@ class SelectedPop extends StatelessWidget {
 //               const CircleAvatar(
 //                 backgroundImage: AssetImage('assets/images/ban-kempes.jpg'),
 //                 radius: 75,
-//               ), 
+//               ),
 //               const SizedBox(height: 10),
 //               const Row(
 //                 mainAxisAlignment: MainAxisAlignment.center,
@@ -386,7 +386,7 @@ class SelectedPop extends StatelessWidget {
 //                   fontWeight: FontWeight.bold
 //                 )),
 //               ),
-//               const Padding(padding: EdgeInsets.only(bottom: 8)),                    
+//               const Padding(padding: EdgeInsets.only(bottom: 8)),
 //                 const TawarkanBtn()
 //               ],
 //             ),
@@ -406,9 +406,9 @@ class SelectedPop extends StatelessWidget {
 //       padding: const EdgeInsets.only(bottom: 0, top: 30),
 //       child: ElevatedButton(
 //         onPressed: () {
-          
+
 //         },
-        
+
 //         style: ElevatedButton.styleFrom(
 //           backgroundColor: Colors.black,
 //           padding: const EdgeInsets.symmetric(

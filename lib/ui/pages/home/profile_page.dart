@@ -1,14 +1,18 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../blocs/auth/auth_bloc.dart';
 import '../../../cubits/profile/profile_cubit.dart';
 import '../../../configs/app_colors.dart';
+import '../../../models/auth/user_mitra_model/user_mitra_model.dart';
 import '../../../models/auth/user_model.dart';
 import '../../../utils/manage_token.dart';
 import '../../widgets/custom_dialog.dart';
+
+enum ProfileSegment { user, mitra }
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -18,7 +22,16 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  UserModel? profile;
+  UserModel? userProfile;
+  UserMitraModel? mitraProfile;
+  ProfileSegment currentSegment = ProfileSegment.user;
+  MapController? _showedMapController;
+
+  @override
+  void dispose() {
+    _showedMapController?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +39,22 @@ class _ProfilePageState extends State<ProfilePage> {
     final textTheme = appTheme.textTheme;
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-    profile = context.watch<ProfileCubit>().userProfile;
+    userProfile = context.read<ProfileCubit>().userProfile;
+    mitraProfile = context.read<ProfileCubit>().userMitra;
+    if (mitraProfile != null) {
+      _showedMapController = MapController(
+        initPosition: GeoPoint(
+          latitude: mitraProfile?.latitude ?? 0,
+          longitude: mitraProfile?.longitude ?? 0,
+        ),
+      );
+      _showedMapController!.addMarker(
+        GeoPoint(
+          latitude: mitraProfile?.latitude ?? 0,
+          longitude: mitraProfile?.longitude ?? 0,
+        ),
+      );
+    }
 
     return SafeArea(
       top: false,
@@ -54,14 +82,19 @@ class _ProfilePageState extends State<ProfilePage> {
                 listener: (context, state) {
                   if (state is ProfileError) {
                     _onStateError(context, state);
-                  } else if (state is ProfileLoaded) {
-                    profile = state.userProfile.user;
+                  }
+                  if (state is ProfileLoaded) {
+                    userProfile = state.userProfile.user;
                     context.read<ProfileCubit>().userProfile =
                         state.userProfile.user;
                   }
+                  if (state is ProfileSegmentChanged) {
+                    currentSegment = state.segment;
+                    context.read<ProfileCubit>().profileIsIdle();
+                  }
                 },
                 builder: (context, state) {
-                  if (profile == null) {
+                  if (userProfile == null) {
                     context.read<ProfileCubit>().fetchProfile();
                   }
                   if (state is ProfileLoading) {
@@ -81,28 +114,132 @@ class _ProfilePageState extends State<ProfilePage> {
                         context.read<ProfileCubit>().fetchProfile();
                       },
                       child: CustomScrollView(
+                        physics: const ClampingScrollPhysics(),
                         slivers: <Widget>[
                           SliverToBoxAdapter(
                             child: Center(
                               child: _profileSummarySection(textTheme),
                             ),
                           ),
-                          const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                          SliverToBoxAdapter(child: _fullnameText(textTheme)),
-                          const SliverToBoxAdapter(child: SizedBox(height: 10)),
-                          SliverToBoxAdapter(child: _usernameText(textTheme)),
-                          const SliverToBoxAdapter(child: SizedBox(height: 10)),
-                          SliverToBoxAdapter(
-                            child: _phoneNumberSection(context, textTheme),
-                          ),
-                          const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                          SliverToBoxAdapter(child: _editProfileBtn(textTheme)),
-                          const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                          SliverToBoxAdapter(child: _keamananText(textTheme)),
-                          const SliverToBoxAdapter(child: SizedBox(height: 10)),
-                          SliverToBoxAdapter(
-                            child: _passwordSection(textTheme),
-                          ),
+                          _profileSegmentBtn(context),
+                          switch (currentSegment) {
+                            ProfileSegment.user => SliverToBoxAdapter(
+                                child: _profileSegment(context, textTheme),
+                              ),
+                            ProfileSegment.mitra => SliverToBoxAdapter(
+                                child: Column(
+                                  children: [
+                                    const SizedBox(height: 20),
+                                    Text.rich(
+                                      TextSpan(
+                                        text: 'Nama Usaha\n',
+                                        style: textTheme.titleLarge?.copyWith(
+                                          color: AppColors.lightTextColor,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        children: [
+                                          TextSpan(
+                                            text: mitraProfile?.name ??
+                                                'Reload untuk menampilkan data',
+                                            style:
+                                                textTheme.titleMedium?.copyWith(
+                                              color: AppColors.lightTextColor,
+                                              fontWeight: FontWeight.normal,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Text.rich(
+                                      TextSpan(
+                                        text: 'Lokasi Usaha\n',
+                                        style: textTheme.titleLarge?.copyWith(
+                                          color: AppColors.lightTextColor,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        children: [
+                                          WidgetSpan(
+                                            child: OSMFlutter(
+                                              controller:
+                                                  _showedMapController != null
+                                                      ? _showedMapController!
+                                                      : MapController(),
+                                              osmOption: const OSMOption(
+                                                zoomOption: ZoomOption(
+                                                  stepZoom: 2,
+                                                  initZoom: 18,
+                                                ),
+                                                showZoomController: true,
+                                                showContributorBadgeForOSM:
+                                                    true,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 20),
+                                    Text.rich(
+                                      TextSpan(
+                                        text: 'Kategori Usaha\n',
+                                        style: textTheme.titleLarge?.copyWith(
+                                          color: AppColors.lightTextColor,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        children: [
+                                          TextSpan(
+                                            text: mitraProfile?.category ??
+                                                'Reload untuk menampilkan data',
+                                            style:
+                                                textTheme.titleMedium?.copyWith(
+                                              color: AppColors.lightTextColor,
+                                              fontWeight: FontWeight.normal,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Text.rich(
+                                      TextSpan(
+                                        text: 'Spesialisasi Usaha\n',
+                                        style: textTheme.titleLarge?.copyWith(
+                                          color: AppColors.lightTextColor,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        children: mitraProfile?.helpers != null
+                                            ? mitraProfile!.helpers!
+                                                .map((helper) {
+                                                return WidgetSpan(
+                                                  child: Chip(
+                                                    label: Text(
+                                                      helper.name ??
+                                                          'Reload untuk menampilkan data',
+                                                    ),
+                                                  ),
+                                                );
+                                              }).toList()
+                                            : [
+                                                TextSpan(
+                                                  text:
+                                                      'Reload untuk menampilkan data',
+                                                  style: textTheme.titleMedium
+                                                      ?.copyWith(
+                                                    color: AppColors
+                                                        .lightTextColor,
+                                                    fontWeight:
+                                                        FontWeight.normal,
+                                                  ),
+                                                ),
+                                              ],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                  ],
+                                ),
+                              ),
+                          }
                         ],
                       ),
                     ),
@@ -112,6 +249,55 @@ class _ProfilePageState extends State<ProfilePage> {
             )
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _profileSegment(BuildContext context, TextTheme textTheme) {
+    return Column(
+      children: [
+        const SizedBox(height: 20),
+        _fullnameText(textTheme),
+        const SizedBox(height: 10),
+        _usernameText(textTheme),
+        const SizedBox(height: 10),
+        _phoneNumberSection(context, textTheme),
+        const SizedBox(height: 20),
+        _editProfileBtn(textTheme),
+        const SizedBox(height: 20),
+        _keamananText(textTheme),
+        const SizedBox(height: 10),
+        _passwordSection(textTheme),
+      ],
+    );
+  }
+
+  SliverToBoxAdapter _profileSegmentBtn(BuildContext context) {
+    return SliverToBoxAdapter(
+      child: SegmentedButton<ProfileSegment>(
+        style: SegmentedButton.styleFrom(
+          backgroundColor: Colors.grey[200],
+          foregroundColor: AppColors.lightTextColor,
+          selectedBackgroundColor: AppColors.primary,
+          selectedForegroundColor: AppColors.darkTextColor,
+        ),
+        segments: const <ButtonSegment<ProfileSegment>>[
+          ButtonSegment<ProfileSegment>(
+            value: ProfileSegment.user,
+            label: Text('Profile'),
+          ),
+          ButtonSegment<ProfileSegment>(
+            value: ProfileSegment.mitra,
+            label: Text('Usaha'),
+          ),
+        ],
+        selected: <ProfileSegment>{currentSegment},
+        onSelectionChanged: (segment) async {
+          if (currentSegment != segment.first) {
+            context.read<ProfileCubit>().changeSegment(segment.first);
+            await Future.delayed(Durations.extralong4);
+          }
+        },
       ),
     );
   }
@@ -213,7 +399,7 @@ class _ProfilePageState extends State<ProfilePage> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         _phoneNumberText(textTheme),
-        profile?.phoneNumberVerifiedAt != null
+        userProfile?.phoneNumberVerifiedAt != null
             ? _numberVerified(textTheme)
             : _numberNotVerified(context, textTheme),
       ],
@@ -226,10 +412,12 @@ class _ProfilePageState extends State<ProfilePage> {
       height: 40,
       child: OutlinedButton(
         onPressed: () {
-          context.read<ProfileCubit>().fullname = profile!.fullName.toString();
-          context.read<ProfileCubit>().username = profile!.username.toString();
+          context.read<ProfileCubit>().fullname =
+              userProfile!.fullName.toString();
+          context.read<ProfileCubit>().username =
+              userProfile!.username.toString();
           context.read<ProfileCubit>().phoneNumber =
-              profile!.phoneNumber.toString();
+              userProfile!.phoneNumber.toString();
           context.pushNamed('verifyPhoneNumberPage');
         },
         style: const ButtonStyle(
@@ -281,7 +469,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         children: [
           TextSpan(
-            text: profile?.phoneNumber ?? 'Reload untuk menampilkan data',
+            text: userProfile?.phoneNumber ?? 'Reload untuk menampilkan data',
             style: textTheme.titleMedium?.copyWith(
               color: AppColors.lightTextColor,
               fontWeight: FontWeight.normal,
@@ -302,7 +490,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         children: [
           TextSpan(
-            text: profile?.username ?? 'Reload untuk menampilkan data',
+            text: userProfile?.username ?? 'Reload untuk menampilkan data',
             style: textTheme.titleMedium?.copyWith(
               color: AppColors.lightTextColor,
               fontWeight: FontWeight.normal,
@@ -323,7 +511,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         children: [
           TextSpan(
-            text: profile?.fullName ?? 'Reload untuk menampilkan data',
+            text: userProfile?.fullName ?? 'Reload untuk menampilkan data',
             style: textTheme.titleMedium?.copyWith(
               color: AppColors.lightTextColor,
               fontWeight: FontWeight.normal,
@@ -371,9 +559,9 @@ class _ProfilePageState extends State<ProfilePage> {
           backgroundColor: AppColors.surface,
           child: CircleAvatar(
             radius: 80,
-            backgroundImage: profile?.imageProfile != null
+            backgroundImage: userProfile?.imageProfile != null
                 ? CachedNetworkImageProvider(
-                    profile?.imageProfile ??
+                    userProfile?.imageProfile ??
                         'https://st2.depositphotos.com/1561359/12101/v/950/depositphotos_121012076-stock-illustration-blank-photo-icon.jpg',
                     maxWidth: 150,
                     maxHeight: 150,
@@ -383,13 +571,13 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         const SizedBox(height: 10),
         Text(
-          profile?.fullName ?? 'Fullname',
+          userProfile?.fullName ?? 'Fullname',
           style: textTheme.titleLarge?.copyWith(
               color: AppColors.lightTextColor, fontWeight: FontWeight.w600),
         ),
         // const SizedBox(height: 10),
         Text(
-          profile?.username ?? 'Username',
+          userProfile?.username ?? 'Username',
           style: textTheme.titleMedium?.copyWith(
               color: AppColors.lightTextColor, fontWeight: FontWeight.normal),
         ),

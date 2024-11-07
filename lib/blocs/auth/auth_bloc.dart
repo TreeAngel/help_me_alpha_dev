@@ -1,21 +1,24 @@
 import 'dart:async';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'dart:developer';
+
 import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:help_me_mitra_alpha_ver/services/location_service.dart';
+import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
+import 'package:help_me_mitra_alpha_ver/models/category_problem/category_model.dart';
 
 import '../../cubits/check_bank_account/check_bank_account_cubit.dart';
 import '../../models/api_error_response/api_error_response_model.dart';
 import '../../models/auth/auth_response_model.dart';
 import '../../models/auth/login_model.dart';
+import '../../models/auth/register_model.dart';
 import '../../services/api/api_controller.dart';
+import '../../services/api/api_helper.dart';
 import '../../services/firebase/firebase_api.dart';
 import '../../utils/manage_token.dart';
-import '../../models/auth/register_model.dart';
-import '../../services/api/api_helper.dart';
 
-part 'auth_state.dart';
 part 'auth_event.dart';
+part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final role = 'mitra';
@@ -26,12 +29,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   String passwordConfirmation = '';
   String phoneNumber = '';
   bool isPasswordVisible = false;
-  bool rememberMe = false;
 
   String mitraName = '';
   int categoryId = 0;
   String accountNumber = '';
-  List<int> helpersId = [];
+  GeoPoint? mitraLocation;
+  List<CategoryModel> helpersId = [];
 
   AuthBloc() : super(AuthInitial()) {
     on<FullNameChanged>(
@@ -66,25 +69,37 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       (event, emit) => accountNumber = event.accountNumber.trim(),
     );
 
-    on<HelpersIdChanged>(
-      (event, emit) => helpersId = event.helpersId,
-    );
+    on<HelperIdAdded>((event, emit) {
+      if (!helpersId.contains(event.helper)) {
+        helpersId.add(event.helper);
+        log(helpersId.join(', '));
+        emit(HelperIdChanged());
+      }
+    });
+
+    on<HelperIdRemoved>((event, emit) {
+      if (helpersId.contains(event.helper)) {
+        helpersId.remove(event.helper);
+        log(helpersId.join(', '));
+        emit(HelperIdChanged());
+      }
+    });
+
+    on<MitraLocationPicked>((event, emit) {
+      mitraLocation = event.location;
+      emit(MitraLocationChanged());
+    });
 
     on<TogglePasswordVisibility>((event, emit) {
       isPasswordVisible = !isPasswordVisible;
       emit(PasswordToggled());
     });
 
-    on<ToggleRememberMe>((event, emit) {
-      rememberMe = !rememberMe;
-      emit(RememberMeToggled());
-    });
-
     on<SignInSubmitted>(_onSignInSubmitted);
 
     on<SignOutSubmitted>(_onSignOutSubmitted);
 
-    on<SignUpUserSubmitted>(_onSignUpSubmitted);
+    on<SignUpUserSubmitted>(_onSignUpUserSubmitted);
 
     on<SignUpMitraSubmitted>(_onSignUpMitraSubmitted);
 
@@ -99,7 +114,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       passwordConfirmation = '';
       phoneNumber = '';
       isPasswordVisible = false;
-      rememberMe = false;
       mitraName = '';
       categoryId = 0;
       accountNumber = '';
@@ -108,29 +122,37 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     });
   }
 
-  FutureOr<void> _onSignUpMitraSubmitted(SignUpMitraSubmitted event, emit) async {
+  FutureOr<void> _onSignUpMitraSubmitted(
+    SignUpMitraSubmitted event,
+    emit,
+  ) async {
     emit(AuthLoading());
     if (mitraName.isEmpty) {
-      emit(const AuthError(message: 'Isi name mitra anda'));
+      emit(const SignUpMitraError(message: 'Isi nama usaha anda'));
     } else if (accountNumber.isEmpty) {
-      emit(const AuthError(message: 'Isi dengan nomor rekening anda'));
+      emit(const SignUpMitraError(message: 'Isi dengan nomor rekening anda'));
     } else if (event.bankAccountState is! AccountNumberExist) {
-      emit(const AuthError(message: 'Nomor rekening tidak valid'));
+      emit(const SignUpMitraError(message: 'Nomor rekening tidak valid'));
     } else if (categoryId == 0) {
-      // TODO: Disable untuk selain serabutan dan kendaraan, untuk saat ini
-      emit(const AuthError(message: 'Isi bagian mana yang ingin anda isi'));
+      emit(const SignUpMitraError(
+          message: 'Isi bagian mana yang ingin anda isi'));
     } else if (helpersId.isEmpty) {
-      emit(const AuthError(message: 'Pilih keahlian anda'));
+      emit(const SignUpMitraError(message: 'Pilih keahlian anda'));
+    } else if (mitraLocation == null) {
+      emit(const SignUpMitraError(message: 'Tolong bagikan lokasi anda'));
     } else {
+      List<int> helperIds = [];
+      for (var value in helpersId) {
+        helperIds.add(value.id);
+      }
       final response = await ApiHelper.authRegisterMitra(
         RegisterMitraModel(
           name: mitraName,
-          lat: LocationService.lat ?? -6.917421657525377,
-          long: LocationService.long ?? 107.61912406584922,
+          lat: mitraLocation!.latitude,
+          long: mitraLocation!.longitude,
           categoryId: categoryId,
           accountNumber: accountNumber,
-          helperId0: helpersId.first,
-          helperId1: helpersId.length > 1 ? helpersId.last : null,
+          helpersId: helperIds,
         ),
       );
       if (response is ApiErrorResponseModel) {
@@ -138,7 +160,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         if (message == null || message.isEmpty) {
           message = response.toString();
         }
-        emit(AuthError(message: message.toString()));
+        emit(SignUpMitraError(message: message.toString()));
       } else {
         emit(SignUpMitraLoaded(message: response.message.toString()));
       }
@@ -226,12 +248,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         if (authToken != null) {
           ApiController.token = authToken;
           FirebaseMessagingApi.fcmToken = fcmToken;
-          rememberMe == true
-              ? {
-                  ManageAuthToken.writeToken(),
-                  ManageFCMToken.writeToken(fcmToken),
-                }
-              : null;
+          ManageAuthToken.writeToken();
+          ManageFCMToken.writeToken(fcmToken);
           emit(
             SignInLoaded(
               message: authMessage.toString(),
@@ -251,7 +269,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onSignUpSubmitted(
+  Future<void> _onSignUpUserSubmitted(
     SignUpUserSubmitted event,
     Emitter<AuthState> emit,
   ) async {
@@ -310,6 +328,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         if (authToken != null) {
           ApiController.token = authToken;
           FirebaseMessagingApi.fcmToken = fcmToken;
+          ManageAuthToken.writeToken();
+          ManageFCMToken.writeToken(fcmToken);
           emit(
             SignUpUserLoaded(
               message: authMessage.toString(),

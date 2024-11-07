@@ -36,8 +36,7 @@ class RegisterMitraModel {
   final double long;
   final int categoryId;
   final String accountNumber;
-  final int helperId0;
-  final int? helperId1;
+  final List<int> helpersId;
 
   RegisterMitraModel({
     required this.name,
@@ -45,8 +44,7 @@ class RegisterMitraModel {
     required this.long,
     required this.categoryId,
     required this.accountNumber,
-    required this.helperId0,
-    this.helperId1,
+    required this.helpersId,
   });
 
   Map<String, dynamic> toJson() {
@@ -56,8 +54,7 @@ class RegisterMitraModel {
       'longitude': long,
       'category_id': categoryId,
       'nomor_rekening': accountNumber,
-      'helper_ids[0]': helperId0,
-      'helper_ids[1]': helperId1,
+      'helper_ids': helpersId,
     };
   }
 }

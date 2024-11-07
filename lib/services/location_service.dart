@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 
 import '../ui/widgets/custom_dialog.dart';
@@ -56,5 +57,14 @@ class LocationService {
         });
       }
     }
+  }
+
+  static Future<List<Placemark>> fromLatLong(
+      {required double lat, required double long}) async {
+    return await placemarkFromCoordinates(lat, long);
+  }
+
+  static Future<List<Location>> fromAddress({required String address}) async {
+    return await locationFromAddress(address);
   }
 }

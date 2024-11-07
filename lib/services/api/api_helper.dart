@@ -5,7 +5,8 @@ import '../../models/api_error_response/message_error_model.dart';
 import '../../models/auth/auth_response_model.dart';
 import '../../models/auth/login_model.dart';
 import '../../models/auth/register_model.dart';
-import '../../models/auth/user_mitra_model.dart';
+import '../../models/auth/user_mitra_model/user_mitra_model.dart';
+
 import '../../models/auth/user_model.dart';
 import '../../models/category_problem/category_model.dart';
 import '../../models/misc/check_e_wallet_model.dart';
@@ -111,12 +112,12 @@ class ApiHelper {
     }
   }
 
-  static Future getUserMitra(int id) async {
-    final response = await ApiController.getData('mitras/$id');
+  static Future getUserMitra() async {
+    final response = await ApiController.getData('mitras');
     if (response is ApiErrorResponseModel) {
       return response;
     } else {
-      return UserMitraModel.fromModel(response);
+      return UserMitraModel.fromMap(response);
     }
   }
 
@@ -198,6 +199,16 @@ class ApiHelper {
   // Problem & Category
   static Future getCategories() async {
     final response = await ApiController.getData('categories');
+    if (response is ApiErrorResponseModel) {
+      return response;
+    } else {
+      return DataCategory.fromJson(response);
+    }
+  }
+
+  static Future getHelpers({required String category}) async {
+    final response =
+        await ApiController.getData('categories/helpers?category=$category');
     if (response is ApiErrorResponseModel) {
       return response;
     } else {

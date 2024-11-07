@@ -13,6 +13,15 @@ final class ProfileLoading extends ProfileState {}
 
 final class ProfileIdle extends ProfileState {}
 
+final class ProfileSegmentChanged extends ProfileState {
+  final ProfileSegment segment;
+
+  const ProfileSegmentChanged({required this.segment});
+
+  @override
+  List<Object?> get props => [segment];
+}
+
 final class ProfileDisposed extends ProfileState {}
 
 final class ProfileLoaded extends ProfileState {

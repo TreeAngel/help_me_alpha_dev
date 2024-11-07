@@ -15,8 +15,6 @@ final class AuthIdle extends AuthState {}
 
 final class PasswordToggled extends AuthState {}
 
-final class RememberMeToggled extends AuthState {}
-
 final class AuthError extends AuthState {
   final String message;
 
@@ -83,4 +81,17 @@ final class ForgetPasswordError extends AuthState {
 
   @override
   List<Object> get props => [message];
+}
+
+final class HelperIdChanged extends AuthState {}
+
+final class MitraLocationChanged extends AuthState {}
+
+final class SignUpMitraError extends AuthState {
+  final String message;
+
+  const SignUpMitraError({required this.message});
+
+  @override
+  List<Object?> get props => [message];
 }
