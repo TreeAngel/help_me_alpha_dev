@@ -60,11 +60,11 @@ class _HomePageState extends State<HomePage> {
                       if (context.mounted) {
                         final activeOrder =
                             context.read<ManageOrderBloc>().activeOrder;
-                        context
-                            .read<ManageOrderBloc>()
-                            .add(ManageOrderIsIdle());
                         Future.delayed(const Duration(seconds: 3), () {
                           if (context.mounted) {
+                            context
+                                .read<ManageOrderBloc>()
+                                .add(ManageOrderIsIdle());
                             context.pushNamed(
                               'detailOrderPage',
                               queryParameters: {
@@ -88,9 +88,9 @@ class _HomePageState extends State<HomePage> {
                       if (context.mounted) {
                         final activeOrder =
                             context.read<ManageOrderBloc>().activeOrder;
-                        context.read<SendOrderBloc>().add(OrderIsIdle());
                         Future.delayed(const Duration(seconds: 3), () {
                           if (context.mounted) {
+                            context.read<SendOrderBloc>().add(OrderIsIdle());
                             context.pushNamed(
                               'selectMitraPage',
                               queryParameters: {
@@ -406,7 +406,35 @@ class _HomePageState extends State<HomePage> {
           }
         }
         if (state is OrderHistoryError) {
-          _onOrderHistoryError(context, state);
+          if (state.errorMessage
+              .toLowerCase()
+              .trim()
+              .contains('number is not verified')) {
+            CustomDialog.showAlertDialog(
+              context,
+              'Peringatan!',
+              state.errorMessage,
+              OutlinedButton(
+                onPressed: () {
+                  context.pop();
+                  context.pushNamed('verifyPhoneNumberPage');
+                },
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.all(Colors.transparent),
+                  elevation: WidgetStateProperty.all(0),
+                  iconColor: WidgetStateProperty.all(AppColors.lightTextColor),
+                ),
+                child: Text(
+                  'Verifikasi nomor',
+                  style: textTheme.labelLarge?.copyWith(
+                    color: AppColors.lightTextColor,
+                  ),
+                ),
+              ),
+            );
+          } else {
+            _onOrderHistoryError(context, state);
+          }
         } else {
           return;
         }
@@ -834,7 +862,7 @@ class _HomePageState extends State<HomePage> {
             ),
             children: [
               TextSpan(
-                text: username,
+                text: context.read<ProfileBloc>().profile?.username ?? username,
                 style: textTheme.headlineMedium?.copyWith(
                   color: AppColors.darkTextColor,
                   fontWeight: FontWeight.bold,

@@ -217,7 +217,9 @@ class VerifyPhoneNumberPage extends StatelessWidget {
   ) {
     return TextFormField(
       enabled: currentStatus == StatusOTP.waiting,
-      initialValue: currentStatus == StatusOTP.waiting ? userPhoneNumber : null,
+      initialValue: currentStatus == StatusOTP.waiting
+          ? userPhoneNumber ?? context.read<ProfileBloc>().profile?.phoneNumber
+          : null,
       onChanged: (value) => context.read<ProfileBloc>().add(
             NewPhoneNumberChanged(phoneNumber: value),
           ),

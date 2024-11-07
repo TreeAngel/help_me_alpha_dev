@@ -108,20 +108,22 @@ class _SelectProblemPageState extends State<SelectProblemPage> {
         ),
       ),
       onPressed: () {
-        selectedProblem != null
-            ? context.pushNamed(
-                'addTaskPage',
-                queryParameters: {
-                  'problemId': selectedProblem?.id.toString(),
-                  'problem': selectedProblem?.name.toString(),
-                },
-              )
-            : CustomDialog.showAlertDialog(
-                context,
-                'Apa Masalahmu?',
-                'Kasih tau masalah yang lagi kamu alamin sebelum nyari bantuan',
-                null,
-              );
+        if (selectedProblem != null) {
+          context.pushNamed(
+            'addTaskPage',
+            queryParameters: {
+              'problemId': selectedProblem?.id.toString(),
+              'problem': selectedProblem?.name.toString(),
+            },
+          );
+        } else {
+          CustomDialog.showAlertDialog(
+            context,
+            'Apa Masalahmu?',
+            'Kasih tau masalah yang lagi kamu alamin sebelum nyari bantuan',
+            null,
+          );
+        }
       },
       child: Text(
         'Lanjut detail',

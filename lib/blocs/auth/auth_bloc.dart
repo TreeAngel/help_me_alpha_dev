@@ -23,7 +23,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   String phoneNumber = '';
   final role = 'client';
   bool isPasswordVisible = false;
-  bool rememberMe = false;
 
   AuthBloc() : super(AuthInitial()) {
     on<FullNameChanged>(
@@ -49,11 +48,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(PasswordToggled());
     });
 
-    on<ToggleRememberMe>((event, emit) {
-      rememberMe = !rememberMe;
-      emit(RememberMeToggled());
-    });
-
     on<SignInSubmitted>(_onSignInSubmitted);
 
     on<SignOutSubmitted>(_onSignOutSubmitted);
@@ -71,7 +65,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       passwordConfirmation = '';
       phoneNumber = '';
       isPasswordVisible = false;
-      rememberMe = false;
       emit(AuthInitial());
     });
   }
@@ -157,12 +150,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         if (authToken != null) {
           ApiController.token = authToken;
           FirebaseMessagingApi.fcmToken = fcmToken;
-          rememberMe == true
-              ? {
-                  ManageAuthToken.writeToken(),
-                  ManageFCMToken.writeToken(fcmToken),
-                }
-              : null;
+          ManageAuthToken.writeToken();
+          ManageFCMToken.writeToken(fcmToken);
           emit(
             SignInLoaded(
               message: authMessage.toString(),
@@ -241,6 +230,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         if (authToken != null) {
           ApiController.token = authToken;
           FirebaseMessagingApi.fcmToken = fcmToken;
+          ManageAuthToken.writeToken();
+          ManageFCMToken.writeToken(fcmToken);
           emit(
             SignUpLoaded(
               message: authMessage.toString(),

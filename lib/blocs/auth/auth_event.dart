@@ -58,8 +58,6 @@ class ConfirmPasswordChanged extends AuthEvent {
 
 class TogglePasswordVisibility extends AuthEvent {}
 
-class ToggleRememberMe extends AuthEvent {}
-
 class SignInSubmitted extends AuthEvent {}
 
 class SignUpSubmitted extends AuthEvent {}

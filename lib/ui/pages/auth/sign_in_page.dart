@@ -72,10 +72,9 @@ class SignInPage extends StatelessWidget {
                             _passwordInputField(state, context, textTheme),
                             const SizedBox(height: 10),
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              textDirection: TextDirection.rtl,
                               children: [
-                                _rememberMeCheckBox(state, context, textTheme),
-                                _forgetPassword(context, textTheme)
+                                _forgetPassword(context, textTheme),
                               ],
                             ),
                             const SizedBox(height: 20),
@@ -144,27 +143,6 @@ class SignInPage extends StatelessWidget {
           fontWeight: FontWeight.normal,
         ),
       ),
-    );
-  }
-
-  Row _rememberMeCheckBox(
-      AuthState state, BuildContext context, TextTheme textTheme) {
-    return Row(
-      children: [
-        Checkbox(
-          value: context.watch<AuthBloc>().rememberMe,
-          onChanged: (value) {
-            context.read<AuthBloc>().add(ToggleRememberMe());
-          },
-        ),
-        Text(
-          'Tetap login',
-          style: textTheme.titleMedium?.copyWith(
-            color: AppColors.darkTextColor,
-            fontWeight: FontWeight.w500,
-          ),
-        )
-      ],
     );
   }
 

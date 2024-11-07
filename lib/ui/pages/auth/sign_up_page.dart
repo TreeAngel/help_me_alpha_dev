@@ -186,10 +186,8 @@ class SignUpPage extends StatelessWidget {
       OutlinedButton.icon(
         onPressed: () {
           context.read<AuthBloc>().add(ResetAuthState());
-          WidgetsBinding.instance.addPostFrameCallback((_) {
             context.pop();
             context.goNamed('homePage');
-          });
         },
         style: ButtonStyle(
           backgroundColor: WidgetStateProperty.all(Colors.transparent),
