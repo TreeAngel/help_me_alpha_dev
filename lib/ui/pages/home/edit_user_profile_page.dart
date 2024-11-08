@@ -15,14 +15,14 @@ import '../../../models/misc/menu_item_model.dart';
 import '../../../utils/manage_token.dart';
 import '../../widgets/custom_dialog.dart';
 
-class EditProfilePage extends StatefulWidget {
-  const EditProfilePage({super.key});
+class EditUserProfilePage extends StatefulWidget {
+  const EditUserProfilePage({super.key});
 
   @override
-  State<EditProfilePage> createState() => _EditProfilePageState();
+  State<EditUserProfilePage> createState() => _EditUserProfilePageState();
 }
 
-class _EditProfilePageState extends State<EditProfilePage> {
+class _EditUserProfilePageState extends State<EditUserProfilePage> {
   UserModel? profile;
   XFile? pickedImg;
 
@@ -60,7 +60,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
               height: screenHeight / 1.32,
               child: Container(
                 decoration: const BoxDecoration(
-                  color: Colors.black,
+                  color: AppColors.surface,
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.elliptical(500, 250),
                     topRight: Radius.elliptical(500, 250),
@@ -73,7 +73,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 listener: (context, state) {
                   if (state is EditProfileError) {
                     _onStateError(context, state.message);
-                  } else if (state is ProfileEdited) {
+                  } else if (state is UserProfileEdited) {
                     _onProfileEdited(context, state);
                   } else if (state is ImagePicked) {
                     pickedImg = state.pickedImage;
@@ -282,7 +282,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           context.read<ProfileCubit>().username = _usernameController.text;
           context.read<ProfileCubit>().phoneNumber =
               _phoneNumberController.text;
-          context.read<ProfileCubit>().editProfileSubmitted();
+          context.read<ProfileCubit>().editUserProfile();
         },
       ),
     );
@@ -292,7 +292,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     return Text(
       'Nomor Telepon',
       style: textTheme.titleLarge?.copyWith(
-        color: AppColors.darkTextColor,
+        color: AppColors.lightTextColor,
         fontWeight: FontWeight.w600,
       ),
     );
@@ -302,7 +302,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     return Text(
       'Username',
       style: textTheme.titleLarge?.copyWith(
-        color: AppColors.darkTextColor,
+        color: AppColors.lightTextColor,
         fontWeight: FontWeight.w600,
       ),
     );
@@ -312,13 +312,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
     return Text(
       'Nama Lengkap',
       style: textTheme.titleLarge?.copyWith(
-        color: AppColors.darkTextColor,
+        color: AppColors.lightTextColor,
         fontWeight: FontWeight.w600,
       ),
     );
   }
 
-  void _onProfileEdited(BuildContext context, ProfileEdited state) {
+  void _onProfileEdited(BuildContext context, UserProfileEdited state) {
     CustomDialog.showAlertDialog(
       context,
       'Berhasil!',
@@ -397,11 +397,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
   AppBar _appBar(BuildContext context, TextTheme textTheme) {
     return AppBar(
       scrolledUnderElevation: 0,
-      centerTitle: true,
       backgroundColor: AppColors.primary,
       foregroundColor: AppColors.lightTextColor,
       title: Text(
-        'Edit Profile',
+        'Edit User Profile',
         style: textTheme.titleLarge?.copyWith(
           color: AppColors.lightTextColor,
           fontWeight: FontWeight.bold,

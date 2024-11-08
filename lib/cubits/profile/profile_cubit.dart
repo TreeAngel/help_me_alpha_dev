@@ -1,13 +1,16 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../models/api_error_response/api_error_response_model.dart';
-import '../../models/auth/user_mitra_model/user_mitra_model.dart';
+import '../../models/auth/user_mitra_model.dart';
 import '../../models/auth/user_model.dart';
+import '../../models/category_problem/category_model.dart';
 import '../../services/api/api_helper.dart';
 import '../../ui/pages/auth/verify_phone_number_page.dart';
 import '../../ui/pages/home/profile_page.dart';
@@ -23,6 +26,7 @@ class ProfileCubit extends Cubit<ProfileState> {
   UserModel? userProfile;
   UserMitraModel? userMitra;
 
+  // Variable for edit user profile
   String? oldPassword;
   String? newPassword;
   String? newConfirmPassword;
@@ -32,6 +36,12 @@ class ProfileCubit extends Cubit<ProfileState> {
   String? phoneNumber;
   XFile? imageProfile;
 
+  // Variable for edit mitra profile
+  String? mitraName;
+  GeoPoint? mitraLocation;
+  List<CategoryModel> helpers = [];
+
+  // Variable for otp
   String? codeOTP;
   StatusOTP statusOTP = StatusOTP.waiting;
 
@@ -39,10 +49,50 @@ class ProfileCubit extends Cubit<ProfileState> {
 
   void profileIsIdle() => emit(ProfileIdle());
 
-  void profileDisposed() => emit(ProfileDisposed());
+  void profileDisposed() {
+    userProfile = null;
+    userMitra = null;
+    oldPassword = null;
+    newPassword = null;
+    newConfirmPassword = null;
+    fullname = null;
+    username = null;
+    phoneNumber = null;
+    imageProfile = null;
+    mitraName = null;
+    mitraLocation = null;
+    if (helpers.isNotEmpty) helpers.clear();
+    codeOTP = null;
+    statusOTP = StatusOTP.waiting;
+    emit(ProfileDisposed());
+  }
 
-  void changeSegment(ProfileSegment segment) =>
-      emit(ProfileSegmentChanged(segment: segment));
+  void changeSegment(ProfileSegment segment) => emit(
+        ProfileSegmentChanged(segment: segment),
+      );
+
+  void helperAdded(CategoryModel helper) {
+    if (!helpers.contains(helper)) {
+      helpers.add(helper);
+      log(helpers.join(', '), name: 'tambah helper');
+      emit(HelpersChanged(helper: helper));
+    }
+  }
+
+  void helperRemoved(CategoryModel helper) {
+    if (helpers.contains(helper)) {
+      helpers.remove(helper);
+      log(helpers.join(', '), name: 'hapus helper');
+      emit(HelpersChanged(helper: helper));
+    }
+  }
+
+  void mitraLocationUpdated(GeoPoint location) => {
+        log(mitraLocation.toString(), name: 'Old location'),
+        mitraLocation = location,
+        log(mitraLocation.toString(), name: 'New location'),
+        emit(MitraLocationUpdated(newLocation: location)),
+      };
 
   FutureOr<void> verifyOTP() async {
     emit(OTPLoading());
@@ -135,9 +185,45 @@ class ProfileCubit extends Cubit<ProfileState> {
     }
   }
 
-  // TODO: Soon add edit mitra info(not profile)
+  FutureOr<void> editMitraProfile() async {
+    emit(ProfileLoading());
+    if (mitraName == null || mitraName!.isEmpty) {
+      emit(const EditProfileError(message: 'Isi nama usaha'));
+    } else if (mitraLocation == null) {
+      emit(const EditProfileError(message: 'Isi lokasi usaha'));
+    } else if (helpers.isEmpty) {
+      emit(const EditProfileError(message: 'Isi spesialisasi usaha anda'));
+    } else {
+      List<int> helperIds = [];
+      for (var helper in helpers) {
+        helperIds.add(helper.id);
+      }
+      final formData = FormData.fromMap({
+        'name': mitraName,
+        'latitude': mitraLocation!.latitude,
+        'longitude': mitraLocation!.longitude,
+        'helper_ids[]': helperIds
+      });
+      final response = await ApiHelper.editMitraProfie(
+        mitraId: userMitra!.id!,
+        request: formData,
+      );
+      if (response is ApiErrorResponseModel) {
+        String? message = response.error?.message ?? response.error?.error;
+        if (message == null || message.isEmpty) {
+          message = response.toString();
+        }
+        emit(EditProfileError(message: message.toString()));
+      } else {
+        emit(MitraProfileEdited(
+          message: response.message,
+          data: response.mitra,
+        ));
+      }
+    }
+  }
 
-  FutureOr<void> editProfileSubmitted() async {
+  FutureOr<void> editUserProfile() async {
     emit(ProfileLoading());
     if (fullname == null || fullname!.isEmpty) {
       emit(const EditProfileError(message: 'Isi nama lengkap'));
@@ -165,14 +251,15 @@ class ProfileCubit extends Cubit<ProfileState> {
         'phone_number': phoneNumber,
         if (profileImage != null) 'image_profile': profileImage,
       });
-      final response = await ApiHelper.editProfile(formData);
+      final response = await ApiHelper.editUserProfile(formData);
       if (response is ApiErrorResponseModel) {
-        final message = response.error?.message ?? response.error?.error;
-        emit(EditProfileError(
-          message: message.toString(),
-        ));
+        String? message = response.error?.message ?? response.error?.error;
+        if (message == null || message.isEmpty) {
+          message = response.toString();
+        }
+        emit(EditProfileError(message: message.toString()));
       } else {
-        emit(ProfileEdited(message: response.message, data: response.user));
+        emit(UserProfileEdited(message: response.message, data: response.user));
       }
     }
   }

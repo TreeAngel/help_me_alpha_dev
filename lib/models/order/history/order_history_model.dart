@@ -5,8 +5,8 @@ import 'package:equatable/equatable.dart';
 class OrderHistoryModel extends Equatable {
   final int? orderId;
   final String? orderStatus;
-  final String? latitude;
-  final String? longitude;
+  final double? latitude;
+  final double? longitude;
   final String? description;
   final String? orderTime;
   final String? user;
@@ -33,8 +33,8 @@ class OrderHistoryModel extends Equatable {
       OrderHistoryModel(
           orderId: data['order_id'] as int?,
           orderStatus: data['order_status'] as String?,
-          latitude: data['latitude'] as String?,
-          longitude: data['longitude'] as String?,
+          latitude: double.parse(data['latitude']),
+          longitude: double.parse(data['longitude']),
           description: data['description'] as String?,
           orderTime: data['order_time'] as String?,
           user: data['user'] as String?,

@@ -5,7 +5,7 @@ import '../../models/api_error_response/message_error_model.dart';
 import '../../models/auth/auth_response_model.dart';
 import '../../models/auth/login_model.dart';
 import '../../models/auth/register_model.dart';
-import '../../models/auth/user_mitra_model/user_mitra_model.dart';
+import '../../models/auth/user_mitra_model.dart';
 
 import '../../models/auth/user_model.dart';
 import '../../models/category_problem/category_model.dart';
@@ -184,7 +184,7 @@ class ApiHelper {
     }
   }
 
-  static Future editProfile(FormData request) async {
+  static Future editUserProfile(FormData request) async {
     final response = await ApiController.postData(
       'users/profile',
       request,
@@ -193,6 +193,19 @@ class ApiHelper {
       return response;
     } else {
       return EditUserResponse.fromJson(response);
+    }
+  }
+
+  static Future editMitraProfie(
+      {required int mitraId, required FormData request}) async {
+    final response = await ApiController.postData(
+      'mitras/$mitraId',
+      request,
+    );
+    if (response is ApiErrorResponseModel) {
+      return response;
+    } else {
+      return EditMitraResponse.fromMap(response);
     }
   }
 
@@ -251,6 +264,10 @@ class ApiHelper {
         return orderHistorys;
       }
     }
+  }
+
+  static Future getAvailableOrder() async {
+    
   }
   // TODO: Order api here
 

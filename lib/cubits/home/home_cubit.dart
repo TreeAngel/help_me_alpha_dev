@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../models/category_problem/category_model.dart';
 import '../../models/api_error_response/api_error_response_model.dart';
 import '../../models/order/history/order_history_model.dart';
-import '../../models/order/order_recieved.dart';
 import '../../services/api/api_helper.dart';
 
 part 'home_state.dart';
@@ -14,7 +13,6 @@ class HomeCubit extends Cubit<HomeState> {
   List<CategoryModel> categories = [];
   List<CategoryModel> helpers = [];
   List<OrderHistoryModel> orderHistory = [];
-  List<OrderRecieved> ordersRecieved = [];
 
   HomeCubit() : super(HomeInitial());
 
@@ -25,6 +23,7 @@ class HomeCubit extends Cubit<HomeState> {
   void disposeHome() {
     if (categories.isNotEmpty) categories.clear();
     if (orderHistory.isNotEmpty) orderHistory.clear();
+    if (helpers.isNotEmpty) helpers.clear();
     emit(HomeDispose());
   }
 

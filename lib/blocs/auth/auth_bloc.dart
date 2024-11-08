@@ -145,16 +145,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       for (var value in helpersId) {
         helperIds.add(value.id);
       }
-      final response = await ApiHelper.authRegisterMitra(
-        RegisterMitraModel(
-          name: mitraName,
-          lat: mitraLocation!.latitude,
-          long: mitraLocation!.longitude,
-          categoryId: categoryId,
-          accountNumber: accountNumber,
-          helpersId: helperIds,
-        ),
+      final mitra = RegisterMitraModel(
+        name: mitraName,
+        lat: mitraLocation!.latitude,
+        long: mitraLocation!.longitude,
+        categoryId: categoryId,
+        accountNumber: accountNumber,
+        helpersId: helperIds,
       );
+      final response = await ApiHelper.authRegisterMitra(mitra);
       if (response is ApiErrorResponseModel) {
         String? message = response.error?.error ?? response.error?.message;
         if (message == null || message.isEmpty) {

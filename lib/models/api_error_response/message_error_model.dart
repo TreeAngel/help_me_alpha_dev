@@ -13,20 +13,21 @@ class MessageErrorModel {
   final List<dynamic>? verificationCode;
   final List<dynamic>? attachment0;
   final List<dynamic>? attachment1;
+  final List<dynamic>? helperIds;
 
-  const MessageErrorModel({
-    this.error,
-    this.message,
-    this.fullname,
-    this.username,
-    this.phoneNumber,
-    this.password,
-    this.role,
-    this.newPassword,
-    this.verificationCode,
-    this.attachment0,
-    this.attachment1,
-  });
+  const MessageErrorModel(
+      {this.error,
+      this.message,
+      this.fullname,
+      this.username,
+      this.phoneNumber,
+      this.password,
+      this.role,
+      this.newPassword,
+      this.verificationCode,
+      this.attachment0,
+      this.attachment1,
+      this.helperIds});
 
   @override
   String toString() {
@@ -64,6 +65,9 @@ class MessageErrorModel {
     if (attachment1 != null) {
       str += '$attachment1\n';
     }
+    if (helperIds != null) {
+      str += '$helperIds\n';
+    }
     return str.trim();
   }
 
@@ -80,5 +84,6 @@ class MessageErrorModel {
         verificationCode: data['verification_code'] as List<dynamic>?,
         attachment0: data['attachments.0'] as List<dynamic>?,
         attachment1: data['attachments.1'] as List<dynamic>?,
+        helperIds: data['helper_ids'] as List<dynamic>?,
       );
 }

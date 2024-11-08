@@ -7,7 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../blocs/auth/auth_bloc.dart';
 import '../../../cubits/profile/profile_cubit.dart';
 import '../../../configs/app_colors.dart';
-import '../../../models/auth/user_mitra_model/user_mitra_model.dart';
+import '../../../models/auth/user_mitra_model.dart';
 import '../../../models/auth/user_model.dart';
 import '../../../utils/manage_token.dart';
 import '../../widgets/custom_dialog.dart';
@@ -25,11 +25,16 @@ class _ProfilePageState extends State<ProfilePage> {
   UserModel? userProfile;
   UserMitraModel? mitraProfile;
   ProfileSegment currentSegment = ProfileSegment.user;
-  MapController? _showedMapController;
+  final MapController _showedMapController = MapController(
+    initPosition: GeoPoint(
+      latitude: -6.917421657525377,
+      longitude: 107.61912406584922,
+    ),
+  );
 
   @override
   void dispose() {
-    _showedMapController?.dispose();
+    _showedMapController.dispose();
     super.dispose();
   }
 
@@ -41,20 +46,6 @@ class _ProfilePageState extends State<ProfilePage> {
     final screenHeight = MediaQuery.of(context).size.height;
     userProfile = context.read<ProfileCubit>().userProfile;
     mitraProfile = context.read<ProfileCubit>().userMitra;
-    if (mitraProfile != null) {
-      _showedMapController = MapController(
-        initPosition: GeoPoint(
-          latitude: mitraProfile?.latitude ?? 0,
-          longitude: mitraProfile?.longitude ?? 0,
-        ),
-      );
-      _showedMapController!.addMarker(
-        GeoPoint(
-          latitude: mitraProfile?.latitude ?? 0,
-          longitude: mitraProfile?.longitude ?? 0,
-        ),
-      );
-    }
 
     return SafeArea(
       top: false,
@@ -89,8 +80,30 @@ class _ProfilePageState extends State<ProfilePage> {
                         state.userProfile.user;
                   }
                   if (state is ProfileSegmentChanged) {
-                    currentSegment = state.segment;
                     context.read<ProfileCubit>().profileIsIdle();
+                    currentSegment = state.segment;
+                    if (state.segment == ProfileSegment.mitra) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (mitraProfile != null) {
+                          Future.delayed(Durations.long2, () {
+                            _showedMapController.moveTo(
+                              GeoPoint(
+                                latitude: mitraProfile?.latitude ?? 0,
+                                longitude: mitraProfile?.longitude ?? 0,
+                              ),
+                              animate: true,
+                            );
+                            _showedMapController.setZoom(stepZoom: 9);
+                            _showedMapController.addMarker(
+                              GeoPoint(
+                                latitude: mitraProfile?.latitude ?? 0,
+                                longitude: mitraProfile?.longitude ?? 0,
+                              ),
+                            );
+                          });
+                        }
+                      });
+                    }
                   }
                 },
                 builder: (context, state) {
@@ -114,130 +127,19 @@ class _ProfilePageState extends State<ProfilePage> {
                         context.read<ProfileCubit>().fetchProfile();
                       },
                       child: CustomScrollView(
-                        physics: const ClampingScrollPhysics(),
                         slivers: <Widget>[
                           SliverToBoxAdapter(
                             child: Center(
                               child: _profileSummarySection(textTheme),
                             ),
                           ),
-                          _profileSegmentBtn(context),
+                          _pageSegmentBtn(context),
                           switch (currentSegment) {
                             ProfileSegment.user => SliverToBoxAdapter(
                                 child: _profileSegment(context, textTheme),
                               ),
                             ProfileSegment.mitra => SliverToBoxAdapter(
-                                child: Column(
-                                  children: [
-                                    const SizedBox(height: 20),
-                                    Text.rich(
-                                      TextSpan(
-                                        text: 'Nama Usaha\n',
-                                        style: textTheme.titleLarge?.copyWith(
-                                          color: AppColors.lightTextColor,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                        children: [
-                                          TextSpan(
-                                            text: mitraProfile?.name ??
-                                                'Reload untuk menampilkan data',
-                                            style:
-                                                textTheme.titleMedium?.copyWith(
-                                              color: AppColors.lightTextColor,
-                                              fontWeight: FontWeight.normal,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Text.rich(
-                                      TextSpan(
-                                        text: 'Lokasi Usaha\n',
-                                        style: textTheme.titleLarge?.copyWith(
-                                          color: AppColors.lightTextColor,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                        children: [
-                                          WidgetSpan(
-                                            child: OSMFlutter(
-                                              controller:
-                                                  _showedMapController != null
-                                                      ? _showedMapController!
-                                                      : MapController(),
-                                              osmOption: const OSMOption(
-                                                zoomOption: ZoomOption(
-                                                  stepZoom: 2,
-                                                  initZoom: 18,
-                                                ),
-                                                showZoomController: true,
-                                                showContributorBadgeForOSM:
-                                                    true,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(height: 20),
-                                    Text.rich(
-                                      TextSpan(
-                                        text: 'Kategori Usaha\n',
-                                        style: textTheme.titleLarge?.copyWith(
-                                          color: AppColors.lightTextColor,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                        children: [
-                                          TextSpan(
-                                            text: mitraProfile?.category ??
-                                                'Reload untuk menampilkan data',
-                                            style:
-                                                textTheme.titleMedium?.copyWith(
-                                              color: AppColors.lightTextColor,
-                                              fontWeight: FontWeight.normal,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Text.rich(
-                                      TextSpan(
-                                        text: 'Spesialisasi Usaha\n',
-                                        style: textTheme.titleLarge?.copyWith(
-                                          color: AppColors.lightTextColor,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                        children: mitraProfile?.helpers != null
-                                            ? mitraProfile!.helpers!
-                                                .map((helper) {
-                                                return WidgetSpan(
-                                                  child: Chip(
-                                                    label: Text(
-                                                      helper.name ??
-                                                          'Reload untuk menampilkan data',
-                                                    ),
-                                                  ),
-                                                );
-                                              }).toList()
-                                            : [
-                                                TextSpan(
-                                                  text:
-                                                      'Reload untuk menampilkan data',
-                                                  style: textTheme.titleMedium
-                                                      ?.copyWith(
-                                                    color: AppColors
-                                                        .lightTextColor,
-                                                    fontWeight:
-                                                        FontWeight.normal,
-                                                  ),
-                                                ),
-                                              ],
-                                      ),
-                                    ),
-                                    const SizedBox(height: 10),
-                                  ],
-                                ),
+                                child: _mitraSegment(textTheme, screenWidth),
                               ),
                           }
                         ],
@@ -253,8 +155,164 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  Column _mitraSegment(TextTheme textTheme, double screenWidth) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 20),
+        _namaUsahaText(textTheme),
+        const SizedBox(height: 10),
+        _lokasiUsahaMap(textTheme, screenWidth),
+        const SizedBox(height: 20),
+        _kategoriUsahaText(textTheme),
+        const SizedBox(height: 10),
+        _spesialisasiUsahaChip(textTheme),
+        const SizedBox(height: 10),
+        SizedBox(
+          width: double.infinity,
+          height: 42,
+          child: ElevatedButton(
+            style: ButtonStyle(
+              backgroundColor: WidgetStateProperty.all(
+                AppColors.primary,
+              ),
+              shape: WidgetStateProperty.all(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+            child: Text(
+              'Ubah data',
+              style: textTheme.titleSmall?.copyWith(
+                color: AppColors.darkTextColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            onPressed: () => context.pushNamed('editMitraProfilePage'),
+          ),
+        ),
+        const SizedBox(height: 20),
+      ],
+    );
+  }
+
+  Text _spesialisasiUsahaChip(TextTheme textTheme) {
+    return Text.rich(
+      TextSpan(
+        text: 'Spesialisasi Usaha\n',
+        style: textTheme.titleLarge?.copyWith(
+          color: AppColors.lightTextColor,
+          fontWeight: FontWeight.w600,
+        ),
+        children: [
+          WidgetSpan(
+            child: Wrap(
+              spacing: 5,
+              children: mitraProfile?.helpers != null &&
+                      mitraProfile!.helpers!.isNotEmpty
+                  ? mitraProfile!.helpers!.map((helper) {
+                      return Chip(
+                        label: Text(
+                          helper.name,
+                        ),
+                      );
+                    }).toList()
+                  : [
+                      Text(
+                        'Anda mungkin belum memilih spesialisasi usaha anda',
+                        style: textTheme.titleMedium?.copyWith(
+                          color: AppColors.lightTextColor,
+                          fontWeight: FontWeight.normal,
+                        ),
+                      ),
+                    ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Text _kategoriUsahaText(TextTheme textTheme) {
+    return Text.rich(
+      TextSpan(
+        text: 'Kategori Usaha\n',
+        style: textTheme.titleLarge?.copyWith(
+          color: AppColors.lightTextColor,
+          fontWeight: FontWeight.w600,
+        ),
+        children: [
+          TextSpan(
+            text: mitraProfile?.category ?? 'Anda belum mengisi data mitra',
+            style: textTheme.titleMedium?.copyWith(
+              color: AppColors.lightTextColor,
+              fontWeight: FontWeight.normal,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Text _lokasiUsahaMap(TextTheme textTheme, double screenWidth) {
+    return Text.rich(
+      TextSpan(
+        text: 'Lokasi Usaha\n',
+        style: textTheme.titleLarge?.copyWith(
+          color: AppColors.lightTextColor,
+          fontWeight: FontWeight.w600,
+        ),
+        children: [
+          WidgetSpan(
+            child: LimitedBox(
+              maxWidth: screenWidth,
+              maxHeight: 250,
+              child: OSMFlutter(
+                controller: _showedMapController,
+                osmOption: OSMOption(
+                  zoomOption: ZoomOption(
+                    stepZoom: 2,
+                    initZoom: mitraProfile?.latitude != null ? 19 : 10,
+                  ),
+                  showZoomController: true,
+                  showContributorBadgeForOSM: true,
+                ),
+                mapIsLoading: const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Text _namaUsahaText(TextTheme textTheme) {
+    return Text.rich(
+      TextSpan(
+        text: 'Nama Usaha\n',
+        style: textTheme.titleLarge?.copyWith(
+          color: AppColors.lightTextColor,
+          fontWeight: FontWeight.w600,
+        ),
+        children: [
+          TextSpan(
+            text: mitraProfile?.name ?? 'Anda belum mengisi data mitra',
+            style: textTheme.titleMedium?.copyWith(
+              color: AppColors.lightTextColor,
+              fontWeight: FontWeight.normal,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _profileSegment(BuildContext context, TextTheme textTheme) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 20),
         _fullnameText(textTheme),
@@ -272,7 +330,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  SliverToBoxAdapter _profileSegmentBtn(BuildContext context) {
+  SliverToBoxAdapter _pageSegmentBtn(BuildContext context) {
     return SliverToBoxAdapter(
       child: SegmentedButton<ProfileSegment>(
         style: SegmentedButton.styleFrom(
@@ -280,6 +338,7 @@ class _ProfilePageState extends State<ProfilePage> {
           foregroundColor: AppColors.lightTextColor,
           selectedBackgroundColor: AppColors.primary,
           selectedForegroundColor: AppColors.darkTextColor,
+          shadowColor: Colors.black54,
         ),
         segments: const <ButtonSegment<ProfileSegment>>[
           ButtonSegment<ProfileSegment>(
@@ -295,7 +354,7 @@ class _ProfilePageState extends State<ProfilePage> {
         onSelectionChanged: (segment) async {
           if (currentSegment != segment.first) {
             context.read<ProfileCubit>().changeSegment(segment.first);
-            await Future.delayed(Durations.extralong4);
+            await Future.delayed(Durations.long2);
           }
         },
       ),
@@ -389,7 +448,7 @@ class _ProfilePageState extends State<ProfilePage> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        onPressed: () => context.pushNamed('editProfilePage'),
+        onPressed: () => context.pushNamed('editUserProfilePage'),
       ),
     );
   }
@@ -570,17 +629,37 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ),
         const SizedBox(height: 10),
-        Text(
-          userProfile?.fullName ?? 'Fullname',
-          style: textTheme.titleLarge?.copyWith(
-              color: AppColors.lightTextColor, fontWeight: FontWeight.w600),
+        BlocBuilder<ProfileCubit, ProfileState>(
+          builder: (context, state) {
+            switch (currentSegment) {
+              case ProfileSegment.user:
+                return Column(
+                  children: [
+                    Text(
+                      userProfile?.fullName ?? 'Fullname',
+                      style: textTheme.titleLarge?.copyWith(
+                          color: AppColors.lightTextColor,
+                          fontWeight: FontWeight.w600),
+                    ),
+                    Text(
+                      userProfile?.username ?? 'Username',
+                      style: textTheme.titleMedium?.copyWith(
+                          color: AppColors.lightTextColor,
+                          fontWeight: FontWeight.normal),
+                    ),
+                  ],
+                );
+              case ProfileSegment.mitra:
+                return Text(
+                  mitraProfile?.name ?? 'Nama Usaha',
+                  style: textTheme.titleLarge?.copyWith(
+                      color: AppColors.lightTextColor,
+                      fontWeight: FontWeight.w600),
+                );
+            }
+          },
         ),
-        // const SizedBox(height: 10),
-        Text(
-          userProfile?.username ?? 'Username',
-          style: textTheme.titleMedium?.copyWith(
-              color: AppColors.lightTextColor, fontWeight: FontWeight.normal),
-        ),
+        const SizedBox(height: 10),
       ],
     );
   }

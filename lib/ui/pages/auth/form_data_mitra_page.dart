@@ -39,7 +39,7 @@ class _FormDataMitraPageState extends State<FormDataMitraPage> {
   Widget build(BuildContext context) {
     final appTheme = Theme.of(context);
     final textTheme = appTheme.textTheme;
-    final screenWidht = MediaQuery.sizeOf(context).width;
+    final screenWidth = MediaQuery.sizeOf(context).width;
 
     return SafeArea(
       child: Scaffold(
@@ -112,7 +112,7 @@ class _FormDataMitraPageState extends State<FormDataMitraPage> {
                             _bankAccountCheckerWidget(textTheme),
                             const SizedBox(height: 10),
                             Text(
-                              'Kategori mitra',
+                              'Kategori Usaha',
                               style: textTheme.titleMedium?.copyWith(
                                 color: AppColors.primary,
                                 fontWeight: FontWeight.bold,
@@ -122,7 +122,7 @@ class _FormDataMitraPageState extends State<FormDataMitraPage> {
                             _kategoriMitraDropdownMenu(textTheme, context),
                             const SizedBox(height: 10),
                             Text(
-                              'Keahlian',
+                              'Spesialisasi Usaha',
                               style: textTheme.titleMedium?.copyWith(
                                 color: AppColors.primary,
                                 fontWeight: FontWeight.bold,
@@ -138,7 +138,7 @@ class _FormDataMitraPageState extends State<FormDataMitraPage> {
                               ),
                             ),
                             const SizedBox(height: 10),
-                            _showedMap(screenWidht),
+                            _showedMap(screenWidth),
                             const SizedBox(height: 15),
                             _pickLoactionBtn(context, textTheme),
                             const SizedBox(height: 20),
@@ -202,7 +202,7 @@ class _FormDataMitraPageState extends State<FormDataMitraPage> {
         ),
         osmOption: const OSMOption(
           zoomOption: ZoomOption(
-            initZoom: 14,
+            initZoom: 10,
             stepZoom: 2,
             minZoomLevel: 2,
             maxZoomLevel: 19,
@@ -243,36 +243,33 @@ class _FormDataMitraPageState extends State<FormDataMitraPage> {
       ),
     );
     if (pickedLocation != null) {
-      Future.delayed(Durations.long2);
-      if (!context.mounted) return;
-      _showedMapController.moveTo(
-        pickedLocation!,
-        animate: true,
-      );
-      Future.delayed(Durations.long2);
-      if (!context.mounted) return;
-      await _showedMapController.removeMarker(pickedLocation!);
-      Future.delayed(Durations.long2);
-      if (!context.mounted) return;
-      await _showedMapController.addMarker(
-        pickedLocation!,
-        markerIcon: const MarkerIcon(
-          icon: Icon(
-            Icons.location_on_sharp,
-            color: AppColors.vividRed,
-          ),
-        ),
-      );
-      Future.delayed(Durations.long2);
-      if (!context.mounted) return;
-      await _showedMapController.setZoom(
-        zoomLevel: 19,
-      );
-      Future.delayed(Durations.long2);
       if (!context.mounted) return;
       context.read<AuthBloc>().add(MitraLocationPicked(
             location: pickedLocation!,
           ));
+      Future.delayed(Durations.long2, () {
+        if (!context.mounted) return;
+        _showedMapController.removeMarker(pickedLocation!);
+        if (!context.mounted) return;
+        _showedMapController.moveTo(
+          pickedLocation!,
+          animate: true,
+        );
+        if (!context.mounted) return;
+        _showedMapController.addMarker(
+          pickedLocation!,
+          markerIcon: const MarkerIcon(
+            icon: Icon(
+              Icons.location_on_sharp,
+              color: AppColors.vividRed,
+            ),
+          ),
+        );
+        if (!context.mounted) return;
+        _showedMapController.setZoom(
+          zoomLevel: 19,
+        );
+      });
     }
   }
 
@@ -300,7 +297,7 @@ class _FormDataMitraPageState extends State<FormDataMitraPage> {
             children: [
               const SizedBox(height: 5),
               Text(
-                'Keahlian anda pada kategori yang dipilih, ambil yang menurut anda paling sesuai!',
+                'Spesialisasi anda pada kategori yang dipilih, ambil yang menurut anda paling sesuai!',
                 style: textTheme.labelSmall?.copyWith(
                   color: AppColors.darkTextColor,
                   fontWeight: FontWeight.w500,

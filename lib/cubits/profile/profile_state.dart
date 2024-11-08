@@ -51,11 +51,21 @@ final class ProfileError extends ProfileState {
   List<Object> get props => [errorMessage];
 }
 
-final class ProfileEdited extends ProfileState {
+final class UserProfileEdited extends ProfileState {
   final String message;
   final UserModel data;
 
-  const ProfileEdited({required this.message, required this.data});
+  const UserProfileEdited({required this.message, required this.data});
+
+  @override
+  List<Object> get props => [message, data];
+}
+
+final class MitraProfileEdited extends ProfileState {
+  final String message;
+  final UserMitraModel data;
+
+  const MitraProfileEdited({required this.message, required this.data});
 
   @override
   List<Object> get props => [message, data];
@@ -124,4 +134,22 @@ final class OTPVerified extends ProfileState {
 
   @override
   List<Object?> get props => [message];
+}
+
+final class MitraLocationUpdated extends ProfileState {
+  final GeoPoint newLocation;
+
+  const MitraLocationUpdated({required this.newLocation});
+
+  @override
+  List<Object?> get props => [newLocation];
+}
+
+final class HelpersChanged extends ProfileState {
+  final CategoryModel helper;
+
+  const HelpersChanged({required this.helper});
+
+  @override
+  List<Object?> get props => [helper];
 }

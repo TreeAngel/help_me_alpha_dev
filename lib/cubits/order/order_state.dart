@@ -13,19 +13,12 @@ final class OrderIdle extends OrderState {}
 
 final class OrderDispose extends OrderState {}
 
-final class OrderRecieve extends OrderState {
-  final OrderRecieved order;
+final class ReceivingOrder extends OrderState {}
 
-  const OrderRecieve({required this.order});
-
-  @override
-  List<Object> get props => [order];
-}
-
-final class OrderRecieveError extends OrderState {
+final class OrderError extends OrderState {
   final String message;
 
-  const OrderRecieveError({required this.message});
+  const OrderError({required this.message});
 
   @override
   List<Object> get props => [message];

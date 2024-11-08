@@ -1,3 +1,5 @@
+import 'package:equatable/equatable.dart';
+
 class DataCategory {
   final List<CategoryModel> data;
 
@@ -14,20 +16,24 @@ class DataCategory {
       );
 }
 
-class CategoryModel {
+class CategoryModel extends Equatable {
   final int id;
   final String name;
 
-  CategoryModel({
+  const CategoryModel({
     required this.id,
     required this.name,
   });
 
   factory CategoryModel.fromModel(Map<String, dynamic> json) => CategoryModel(
-        id: json['id'],
+        id: json['id'] ?? json['helper_id'],
         name: json['name'],
       );
 
   @override
   String toString() => 'CategoryModel($id, $name)';
+  
+  @override
+  List<Object?> get props => [id, name];
+
 }

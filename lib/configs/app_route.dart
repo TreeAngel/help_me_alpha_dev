@@ -3,7 +3,8 @@ import 'package:go_router/go_router.dart';
 import '../ui/pages/auth/forgot_password_page.dart';
 import '../ui/pages/auth/form_data_mitra_page.dart';
 import '../ui/pages/auth/verify_phone_number_page.dart';
-import '../ui/pages/home/edit_profile_page.dart';
+import '../ui/pages/home/edit_mitra_profile_page.dart';
+import '../ui/pages/home/edit_user_profile_page.dart';
 import '../ui/pages/home/profile_page.dart';
 import '../ui/pages/home/selected_popup.dart';
 import '../ui/pages/misc/launch_page.dart';
@@ -27,7 +28,10 @@ class AppRoute {
       if (isAuthenticated == false && state.matchedLocation == '/profile') {
         return '/signIn';
       }
-      if (isAuthenticated == false && state.matchedLocation == '/editProfile') {
+      if (isAuthenticated == false && state.matchedLocation == '/editUserProfile') {
+        return '/signIn';
+      }
+      if (isAuthenticated == false && state.matchedLocation == '/editMitraProfile') {
         return '/signIn';
       }
       // if (isAuthenticated == false && state.matchedLocation == '/detail') {
@@ -61,9 +65,14 @@ class AppRoute {
         builder: (context, state) => const ProfilePage(),
       ),
       GoRoute(
-        path: '/editProfile',
-        name: 'editProfilePage',
-        builder: (context, state) => const EditProfilePage(),
+        path: '/editUserProfile',
+        name: 'editUserProfilePage',
+        builder: (context, state) => const EditUserProfilePage(),
+      ),
+      GoRoute(
+        path: '/editMitraProfile',
+        name: 'editMitraProfilePage',
+        builder: (context, state) => const EditMitraProfilePage(),
       ),
       GoRoute(
         path: '/signIn',

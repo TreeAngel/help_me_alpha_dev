@@ -1,17 +1,23 @@
+import 'dart:developer';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../blocs/auth/auth_bloc.dart';
 import '../../../configs/app_colors.dart';
 import '../../../cubits/home/home_cubit.dart';
+import '../../../cubits/order/order_cubit.dart';
 import '../../../cubits/profile/profile_cubit.dart';
 import '../../../data/menu_items_data.dart';
 import '../../../models/misc/menu_item_model.dart';
+import '../../../models/order/history/order_history_model.dart';
 import '../../../models/order/order_recieved.dart';
 import '../../../services/api/api_controller.dart';
 import '../../../services/firebase/firebase_api.dart';
@@ -49,10 +55,13 @@ class _HomePageState extends State<HomePage> {
         if (notification.title!.trim().toLowerCase().contains('new order')) {
           final data = message.data;
           if (data.isNotEmpty && context.mounted) {
-            context
-                .read<HomeCubit>()
-                .ordersRecieved
-                .add(OrderRecieved.fromMap(data));
+            context.read<OrderCubit>().receivingOrder(
+                  OrderReceived.fromMap(data),
+                );
+            log(
+              context.read<OrderCubit>().incomingOrder.toString(),
+              name: 'Order masuk',
+            );
           }
         }
       }
@@ -123,41 +132,27 @@ class _HomePageState extends State<HomePage> {
                           slivers: <Widget>[
                             _homeHeaderConsumer(username, textTheme),
                             const SliverToBoxAdapter(
-                              child: SizedBox(
-                                height: 10,
-                              ),
+                              child: SizedBox(height: 20),
                             ),
                             _balanceCardBuilder(textTheme, username),
                             const SliverToBoxAdapter(
-                              child: SizedBox(
-                                height: 10,
-                              ),
+                              child: SizedBox(height: 10),
                             ),
                             _orderanTextHeader(textTheme),
                             const SliverToBoxAdapter(
-                              child: SizedBox(
-                                height: 10,
-                              ),
+                              child: SizedBox(height: 10),
                             ),
                             _orderanContainer(context, textTheme),
                             const SliverToBoxAdapter(
-                              child: SizedBox(
-                                height: 10,
-                              ),
+                              child: SizedBox(height: 10),
                             ),
                             _riwayatTextHeader(textTheme),
                             const SliverToBoxAdapter(
-                              child: SizedBox(
-                                height: 10,
-                              ),
+                              child: SizedBox(height: 10),
                             ),
                             _riwayatContainer(textTheme),
-                            SliverToBoxAdapter(
-                              child: TextButton(
-                                onPressed: () =>
-                                    context.pushNamed('formDataMitraPage'),
-                                child: const Text('Periksa page form data'),
-                              ),
+                            const SliverToBoxAdapter(
+                              child: SizedBox(height: 10),
                             ),
                           ],
                         ),
@@ -204,15 +199,28 @@ class _HomePageState extends State<HomePage> {
           }
         }
         if (state is MitraLoaded) {
-          context.read<ProfileCubit>().userMitra = state.mitra;
+          final data = state.mitra;
+          context.read<ProfileCubit>().userMitra = data;
+          context.read<ProfileCubit>().mitraName = data.name;
+          context.read<ProfileCubit>().mitraLocation = GeoPoint(
+            latitude: data.latitude ?? 0,
+            longitude: data.longitude ?? 0,
+          );
+          context.read<ProfileCubit>().helpers = data.helpers ?? [];
+          if (state.mitra.isVerified == 0) {
+            CustomDialog.showAlertDialog(
+              context,
+              'Peringatan!',
+              'Anda belum terverifikasi sebagai mitra kami, harap tunggu maksimal 3 hari sampai kami memverifikasi semua data anda. Selama anda belum terverifikasi, anda tidak akan menerima order dari client. Jika sudah melebihi 3 hari silahkan hubungi pihak CS kami untuk penanganan lebih lanjut',
+              null,
+            );
+          }
         }
         if (state is ProfileError) {
           if (state.errorMessage
-                  .toLowerCase()
-                  .trim()
-                  .contains('number is not verified') ||
-              context.read<ProfileCubit>().userProfile?.phoneNumberVerifiedAt ==
-                  null) {
+              .toLowerCase()
+              .trim()
+              .contains('number is not verified')) {
             CustomDialog.showAlertDialog(
               context,
               'Verifikasi nomor!',
@@ -318,6 +326,7 @@ class _HomePageState extends State<HomePage> {
               onPressed: () {
                 ManageAuthToken.deleteToken();
                 context.read<AuthBloc>().add(AuthIsIdle());
+                context.pop();
                 context.goNamed('signInPage');
               },
               label: const Text('Sign In ulang'),
@@ -344,8 +353,8 @@ class _HomePageState extends State<HomePage> {
               onPressed: () {
                 ManageAuthToken.deleteToken();
                 context.read<AuthBloc>().add(AuthIsIdle());
-                context.goNamed('signInPage');
                 context.pop();
+                context.goNamed('signInPage');
               },
               label: const Text('Sign In ulang'),
               icon: const Icon(Icons.arrow_forward_ios),
@@ -376,6 +385,9 @@ class _HomePageState extends State<HomePage> {
             }
             if (state is OrderHistoryLoaded) {
               context.read<HomeCubit>().orderHistory = state.histories;
+              if (state.histories.isEmpty) {
+                orderContainerText = 'Kamu belum nyelesain orderan!';
+              }
               context.read<HomeCubit>().homeIdle();
             }
             if (state is OrderHistoryError) {
@@ -389,31 +401,19 @@ class _HomePageState extends State<HomePage> {
                 child: CircularProgressIndicator(),
               );
             }
+            if (state is HomeDispose && ApiController.token != null) {
+              context.read<HomeCubit>().homeInit();
+            }
             if (context.read<HomeCubit>().orderHistory.isNotEmpty) {
               return ListView.builder(
                 itemCount: context.read<HomeCubit>().orderHistory.length,
                 itemBuilder: (BuildContext context, int index) {
                   final order = context.read<HomeCubit>().orderHistory[index];
-                  return ListTile(
-                    style: ListTileStyle.list,
-                    leading: CircleAvatar(
-                      backgroundImage: order.userProfile != null
-                          ? CachedNetworkImageProvider(order.userProfile!)
-                          : const AssetImage('assets/images/man1.png'),
-                    ),
-                    title: Text(
-                      order.description.toString(),
-                      style: textTheme.bodyLarge?.copyWith(
-                        color: AppColors.lightTextColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    subtitle: Text(
-                      order.orderTime.toString(),
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: AppColors.lightTextColor,
-                      ),
-                    ),
+                  return _orderListTile(
+                    textTheme: textTheme,
+                    description: order.description!,
+                    image: order.userProfile ?? 'assets/images/man1.png',
+                    orderTime: order.orderTime,
                   );
                 },
               );
@@ -432,6 +432,36 @@ class _HomePageState extends State<HomePage> {
               );
             }
           },
+        ),
+      ),
+    );
+  }
+
+  ListTile _orderListTile({
+    required TextTheme textTheme,
+    String? image,
+    required String description,
+    String? orderTime,
+    String? orderDistance,
+  }) {
+    return ListTile(
+      style: ListTileStyle.list,
+      leading: CircleAvatar(
+        backgroundImage: image != null
+            ? CachedNetworkImageProvider(image)
+            : const AssetImage('assets/images/man1.png'),
+      ),
+      title: Text(
+        description.toString(),
+        style: textTheme.bodyLarge?.copyWith(
+          color: AppColors.lightTextColor,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      subtitle: Text(
+        orderTime ?? orderDistance!,
+        style: textTheme.bodyMedium?.copyWith(
+          color: AppColors.lightTextColor,
         ),
       ),
     );
@@ -464,7 +494,29 @@ class _HomePageState extends State<HomePage> {
           ),
           borderRadius: BorderRadius.circular(25),
         ),
-        child: const SizedBox(),
+        child: BlocConsumer<OrderCubit, OrderState>(
+          listener: (context, state) {
+            if (state is ReceivingOrder) {
+              context.read<OrderCubit>().orderIsIdle();
+            }
+          },
+          builder: (context, state) {
+            LocationService.fetchLocation(context);
+            return ListView.builder(
+              itemCount: context.read<OrderCubit>().incomingOrder.length,
+              itemBuilder: (BuildContext context, int index) {
+                final order = context.read<OrderCubit>().incomingOrder[index];
+                return _orderListTile(
+                  textTheme: textTheme,
+                  description: order.description!,
+                  image: order.attachments?.first ?? 'assets/images/man1.png',
+                  orderDistance:
+                      '${(Geolocator.distanceBetween(LocationService.lat!, LocationService.long!, order.latitude!, order.longitude!) / 1000).toStringAsFixed(2)}Km',
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }
@@ -621,16 +673,36 @@ class _HomePageState extends State<HomePage> {
             fontSize: 22.15,
             fontWeight: FontWeight.normal,
           ),
-          children: <TextSpan>[
+          children: [
             TextSpan(
               text: context.read<ProfileCubit>().userProfile?.username ??
                   username,
               style: GoogleFonts.poppins(
                 color: Colors.white,
-                fontSize: 35.62,
+                fontSize: 35,
                 fontWeight: FontWeight.bold,
               ),
             ),
+            if (context.read<ProfileCubit>().userMitra != null &&
+                context.read<ProfileCubit>().userMitra!.isVerified == 0) ...[
+              const WidgetSpan(
+                child: SizedBox(width: 10),
+              ),
+              const WidgetSpan(
+                child: Icon(
+                  Icons.block,
+                  color: Colors.redAccent,
+                ),
+              ),
+              TextSpan(
+                text: 'Belum terverifikasi',
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w300,
+                ),
+              ),
+            ],
           ],
         ),
       ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../configs/app_colors.dart';
 import '../../../cubits/home/home_cubit.dart';
@@ -28,7 +29,7 @@ class VerifyPhoneNumberPage extends StatelessWidget {
     return PopScope(
       canPop: canPop,
       onPopInvokedWithResult: (didPop, result) {
-        didPop ? result = verified : null;
+        didPop ? context.pop(result = verified) : null;
       },
       child: SafeArea(
         child: Scaffold(
@@ -68,6 +69,7 @@ class VerifyPhoneNumberPage extends StatelessWidget {
                 if (!message.toLowerCase().trim().contains('salah')) {
                   context.read<ProfileCubit>().statusOTP = StatusOTP.done;
                   verified = true;
+                  context.pop(verified);
                 } else {
                   context.read<ProfileCubit>().statusOTP = StatusOTP.requested;
                 }
