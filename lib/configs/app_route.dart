@@ -3,9 +3,10 @@ import 'package:go_router/go_router.dart';
 import '../ui/pages/auth/forgot_password_page.dart';
 import '../ui/pages/auth/form_data_mitra_page.dart';
 import '../ui/pages/auth/verify_phone_number_page.dart';
-import '../ui/pages/home/edit_mitra_profile_page.dart';
-import '../ui/pages/home/edit_user_profile_page.dart';
-import '../ui/pages/home/profile_page.dart';
+import '../ui/pages/order/send_offer_page.dart';
+import '../ui/pages/profile/edit_mitra_profile_page.dart';
+import '../ui/pages/profile/edit_user_profile_page.dart';
+import '../ui/pages/profile/profile_page.dart';
 import '../ui/pages/home/selected_popup.dart';
 import '../ui/pages/misc/launch_page.dart';
 // import '../../ui/pages/track_maps_page.dart';
@@ -28,15 +29,17 @@ class AppRoute {
       if (isAuthenticated == false && state.matchedLocation == '/profile') {
         return '/signIn';
       }
-      if (isAuthenticated == false && state.matchedLocation == '/editUserProfile') {
+      if (isAuthenticated == false &&
+          state.matchedLocation == '/editUserProfile') {
         return '/signIn';
       }
-      if (isAuthenticated == false && state.matchedLocation == '/editMitraProfile') {
+      if (isAuthenticated == false &&
+          state.matchedLocation == '/editMitraProfile') {
         return '/signIn';
       }
-      // if (isAuthenticated == false && state.matchedLocation == '/detail') {
-      //   return '/signIn';
-      // }
+      if (isAuthenticated == false && state.matchedLocation == '/sendOffer') {
+        return '/signIn';
+      }
       if (isAuthenticated == true && state.matchedLocation == '/signIn') {
         return '/home';
       }
@@ -104,21 +107,31 @@ class AppRoute {
         name: 'changePasswordPage',
         builder: (context, state) => const ChangePasswordPage(),
       ),
-      // GoRoute(
-      //   path: '/order_page',
-      //   name: 'orderPage',
-      //   builder: (context, state) =>  OrderScreen(),
-      // ),
       GoRoute(
         path: '/getselectedorder',
         name: 'selectedPop',
         builder: (context, state) => const SelectedPop(),
       ),
-      // GoRoute(
-      //   path: '/trackmaps',
-      //   name: 'trackmapsPage',
-      //   builder: (context, state) => const TrackMaps(),
-      // ),
+      GoRoute(
+        path: '/sendOffer',
+        name: 'sendOfferPage',
+        builder: (context, state) {
+          final id = int.parse(state.uri.queryParameters['orderId'].toString());
+          final distance =
+              double.parse(state.uri.queryParameters['distance'].toString());
+          final problem = state.uri.queryParameters['problem'].toString();
+          final category = state.uri.queryParameters['category'].toString();
+          final attachments =
+              state.uri.queryParameters['attachments'].toString().split(',');
+          return SendOfferPage(
+            orderId: id,
+            distance: distance,
+            problem: problem,
+            category: category,
+            attachments: attachments,
+          );
+        },
+      ),
     ];
   }
 }

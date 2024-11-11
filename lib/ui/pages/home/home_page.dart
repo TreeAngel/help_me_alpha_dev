@@ -153,6 +153,22 @@ class _HomePageState extends State<HomePage> {
                             const SliverToBoxAdapter(
                               child: SizedBox(height: 10),
                             ),
+                            SliverToBoxAdapter(
+                              child: ElevatedButton(
+                                onPressed: () => context.pushNamed(
+                                  'sendOfferPage',
+                                  queryParameters: {
+                                    'orderId': '1',
+                                    'distance': '4.2',
+                                    'problem': 'debug',
+                                    'category': 'debug',
+                                    'attachments':
+                                        'http://103.49.239.32/storage/images/orders/14/cb298b3a-59f6-406e-ada8-8088114c560c.jpg, http://103.49.239.32/storage/images/orders/14/30a8f396-9a7f-4769-931f-4a57705425b1.jpg',
+                                  },
+                                ),
+                                child: const Text('Cek send offer page'),
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -498,22 +514,59 @@ class _HomePageState extends State<HomePage> {
             if (state is ReceivingOrder) {
               context.read<OrderCubit>().orderIsIdle();
             }
+            if (state is AvailableOrderLoaded) {
+              context.read<OrderCubit>().incomingOrder = state.orders;
+              context.read<OrderCubit>().orderIsIdle();
+            }
           },
           builder: (context, state) {
-            LocationService.fetchLocation(context);
-            return ListView.builder(
-              itemCount: context.read<OrderCubit>().incomingOrder.length,
-              itemBuilder: (BuildContext context, int index) {
-                final order = context.read<OrderCubit>().incomingOrder[index];
-                return _orderListTile(
-                  textTheme: textTheme,
-                  description: order.description!,
-                  image: order.attachments?.first ?? 'assets/images/man1.png',
-                  orderDistance:
-                      '${(Geolocator.distanceBetween(LocationService.lat!, LocationService.long!, order.latitude!, order.longitude!) / 1000).toStringAsFixed(2)}Km',
-                );
-              },
-            );
+            if (LocationService.lat == null && LocationService.long == null) {
+              LocationService.fetchLocation(context);
+            }
+            if (context.read<OrderCubit>().incomingOrder.isEmpty) {
+              context.read<OrderCubit>().getAvailableOrder();
+            }
+            if (state is! AvailableOrderError) {
+              return ListView.builder(
+                itemCount: context.read<OrderCubit>().incomingOrder.length,
+                itemBuilder: (BuildContext context, int index) {
+                  final order = context.read<OrderCubit>().incomingOrder[index];
+                  return _orderListTile(
+                    textTheme: textTheme,
+                    description: order.description!,
+                    image: order.attachments?.first ?? 'assets/images/man1.png',
+                    orderDistance:
+                        '${(Geolocator.distanceBetween(LocationService.lat!, LocationService.long!, order.latitude!, order.longitude!) / 1000).toStringAsFixed(2)}Km',
+                  );
+                },
+              );
+            } else if (state is NoAvailableOrder) {
+              return Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Center(
+                  child: Text(
+                    state.message,
+                    style: textTheme.bodyLarge?.copyWith(
+                      color: AppColors.lightTextColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              );
+            } else {
+              return Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Center(
+                  child: Text(
+                    state.message,
+                    style: textTheme.bodyLarge?.copyWith(
+                      color: AppColors.lightTextColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              );
+            }
           },
         ),
       ),

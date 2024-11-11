@@ -13,7 +13,7 @@ import '../../models/auth/user_model.dart';
 import '../../models/category_problem/category_model.dart';
 import '../../services/api/api_helper.dart';
 import '../../ui/pages/auth/verify_phone_number_page.dart';
-import '../../ui/pages/home/profile_page.dart';
+import '../../ui/pages/profile/profile_page.dart';
 import '../../utils/image_picker_util.dart';
 
 part 'profile_state.dart';

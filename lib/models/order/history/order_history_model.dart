@@ -31,31 +31,18 @@ class OrderHistoryModel extends Equatable {
 
   factory OrderHistoryModel.fromMap(Map<String, dynamic> data) =>
       OrderHistoryModel(
-          orderId: data['order_id'] as int?,
-          orderStatus: data['order_status'] as String?,
-          latitude: double.parse(data['latitude']),
-          longitude: double.parse(data['longitude']),
-          description: data['description'] as String?,
-          orderTime: data['order_time'] as String?,
-          user: data['user'] as String?,
-          userProfile: data['user_profile'] as String?,
-          price: data['price'] as String?,
-          category: data['problem'] as String?,
-          attachment: (data['attachment'] as List<dynamic>?));
-
-  Map<String, dynamic> toMap() => {
-        'order_id': orderId,
-        'order_status': orderStatus,
-        'latitude': latitude,
-        'longitude': longitude,
-        'description': description,
-        'order_time': orderTime,
-        'user': user,
-        'user_profile': userProfile,
-        'price': price,
-        'category': category,
-        'attachment': attachment,
-      };
+        orderId: data['order_id'] as int?,
+        orderStatus: data['order_status'] as String?,
+        latitude: double.parse(data['latitude']),
+        longitude: double.parse(data['longitude']),
+        description: data['description'] as String?,
+        orderTime: data['order_time'] as String?,
+        user: data['user'] as String?,
+        userProfile: data['user_profile'] as String?,
+        price: data['price'] as String?,
+        category: data['problem'] as String?,
+        attachment: (data['attachment'] as List<dynamic>?),
+      );
 
   /// `dart:convert`
   ///
@@ -63,11 +50,6 @@ class OrderHistoryModel extends Equatable {
   factory OrderHistoryModel.fromJson(String data) {
     return OrderHistoryModel.fromMap(json.decode(data) as Map<String, dynamic>);
   }
-
-  /// `dart:convert`
-  ///
-  /// Converts [OrderHistoryModel] to a JSON string.
-  String toJson() => json.encode(toMap());
 
   @override
   List<Object?> get props {

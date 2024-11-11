@@ -23,3 +23,30 @@ final class OrderError extends OrderState {
   @override
   List<Object> get props => [message];
 }
+
+final class AvailableOrderLoaded extends OrderState {
+  final List<OrderReceived> orders;
+
+  const AvailableOrderLoaded({required this.orders});
+
+  @override
+  List<Object> get props => [orders];
+}
+
+final class NoAvailableOrder extends OrderState {
+  final String message;
+
+  const NoAvailableOrder({required this.message});
+
+  @override
+  List<Object> get props => [message];
+}
+
+final class AvailableOrderError extends OrderState {
+  final String message;
+
+  const AvailableOrderError({required this.message});
+
+  @override
+  List<Object> get props => [message];
+}

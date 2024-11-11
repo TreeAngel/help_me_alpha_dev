@@ -20,13 +20,17 @@ class OrderReceived {
   });
 
   factory OrderReceived.fromMap(Map<String, dynamic> data) => OrderReceived(
-        id: int.parse(data['id']),
+        id: (data['id'] ?? data['order_id']) is int
+            ? (data['id'] ?? data['order_id'])
+            : int.parse((data['id'] ?? data['order_id'])),
         category: data['category'] as String?,
         problem: data['problem'] as String?,
         latitude: double.parse(data['latitude']),
         longitude: double.parse(data['longitude']),
         description: data['description'] as String?,
-        attachments: (data['attachments'] as String).split(','),
+        attachments: (data['attachments'] ?? data['attachment']) is String
+            ? (data['attachments'] ?? data['attachment'] as String).split(',')
+            : (data['attachments'] ?? data['attachment']),
       );
 
   /// `dart:convert`

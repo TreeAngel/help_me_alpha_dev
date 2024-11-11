@@ -65,7 +65,7 @@ class HomeCubit extends Cubit<HomeState> {
 
   Future<void> fetchHistory({String? status}) async {
     emit(HomeLoading());
-    final response = await ApiHelper.getOrderHistory(status ?? '');
+    final response = await ApiHelper.getMitraHistory();
     if (response is ApiErrorResponseModel) {
       String? message = response.error?.error ?? response.error?.message;
       if (message == null || message.isEmpty) {
