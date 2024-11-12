@@ -183,13 +183,28 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
             child: Text(
-              'Ubah data',
+              context.read<ProfileCubit>().userMitra != null
+                  ? 'Ubah data'
+                  : 'Isi data',
               style: textTheme.titleSmall?.copyWith(
                 color: AppColors.darkTextColor,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            onPressed: () => context.pushNamed('editMitraProfilePage'),
+            onPressed: () => context.read<ProfileCubit>().userMitra != null
+                ? context.pushNamed('editMitraProfilePage')
+                : context
+                            .read<ProfileCubit>()
+                            .userProfile
+                            ?.phoneNumberVerifiedAt !=
+                        null
+                    ? context.pushNamed('formDataMitraPage')
+                    : CustomDialog.showAlertDialog(
+                        context,
+                        'Verifikasi Nomor!',
+                        'Verifikasi nomor telpon terlebih dahulu',
+                        null,
+                      ),
           ),
         ),
         const SizedBox(height: 20),

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
@@ -26,6 +28,7 @@ class ImagePickerUtil {
       }
       return XFile(compressedImage.path, name: compressedImage.name);
     } catch (e) {
+      log(e.toString(), name: 'Error pick image');
       throw Exception(e.toString());
     }
   }
@@ -47,6 +50,7 @@ class ImagePickerUtil {
       }
       return XFile(compressedImage.path, name: compressedImage.name);
     } catch (e) {
+      log(e.toString(), name: 'Error pick image');
       throw Exception(e.toString());
     }
   }

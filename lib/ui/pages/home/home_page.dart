@@ -239,46 +239,18 @@ class _HomePageState extends State<HomePage> {
             CustomDialog.showAlertDialog(
               context,
               'Verifikasi nomor!',
-              'Verifikasi nomor telpon anda sebelum lanjut',
-              IconButton.outlined(
-                onPressed: () {
-                  context.pop();
-                  context.pushNamed('verifyPhoneNumberPage');
-                },
-                icon: const Icon(
-                  Icons.arrow_forward_ios,
-                  color: AppColors.lightTextColor,
-                ),
-              ),
+              'Verifikasi nomor telpon anda di page profile sebelum lanjut',
+              null,
             );
           } else if (state.errorMessage
-                  .trim()
-                  .toLowerCase()
-                  .contains('mitra not found') &&
-              context.read<ProfileCubit>().userProfile?.phoneNumberVerifiedAt !=
-                  null) {
+              .trim()
+              .toLowerCase()
+              .contains('mitra not found')) {
             CustomDialog.showAlertDialog(
               context,
               'Peringatan!',
-              'Anda belum mengisi data mitra, tolong isi informasi mitra anda segera!',
-              OutlinedButton.icon(
-                onPressed: () {
-                  context.read<AuthBloc>().add(ResetAuthState());
-                  context.pop();
-                  context.pushNamed('formDataMitraPage');
-                },
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all(Colors.transparent),
-                  elevation: WidgetStateProperty.all(0),
-                  iconColor: WidgetStateProperty.all(AppColors.lightTextColor),
-                ),
-                label: const Text(
-                  'Isi data mitra',
-                  style: TextStyle(color: AppColors.lightTextColor),
-                ),
-                icon: const Icon(Icons.arrow_forward_ios_rounded),
-                iconAlignment: IconAlignment.end,
-              ),
+              'Anda belum mengisi data mitra, tolong isi informasi mitra anda di page profile segera!',
+              null,
             );
           } else {
             _onProfileError(context, state);
@@ -406,6 +378,17 @@ class _HomePageState extends State<HomePage> {
               context.read<HomeCubit>().homeIdle();
             }
             if (state is OrderHistoryError) {
+               if (state.message
+                  .toLowerCase()
+                  .trim()
+                  .contains('number is not verified')) {
+                CustomDialog.showAlertDialog(
+                  context,
+                  'Verifikasi nomor!',
+                  'Verifikasi nomor telpon anda di page profile sebelum lanjut',
+                  null,
+                );
+              }
               orderContainerText = state.message;
               context.read<HomeCubit>().homeIdle();
             }
