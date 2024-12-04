@@ -95,6 +95,7 @@ class _SelectMitraPageState extends State<SelectMitraPage> {
                     }
                   } else if (state is SelectMitraSuccess) {
                     context.pop();
+                    if (context.canPop()) context.pop();
                   }
                 },
                 builder: (context, state) {
@@ -189,8 +190,8 @@ class _SelectMitraPageState extends State<SelectMitraPage> {
         final distance = Geolocator.distanceBetween(
           LocationService.lat!,
           LocationService.long!,
-          double.parse(data.latitude!),
-          double.parse(data.longitude!),
+          data.latitude!,
+          data.longitude!,
         ).truncateToDouble();
         return Padding(
           padding: const EdgeInsets.only(top: 10),

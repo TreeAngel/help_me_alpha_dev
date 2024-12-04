@@ -589,7 +589,7 @@ class _HomePageState extends State<HomePage> {
           child: CircleAvatar(
             backgroundImage: history != null
                 ? CachedNetworkImageProvider(
-                    history.userProfile ??
+                    history.attachment?.first ??
                         'https://st2.depositphotos.com/1561359/12101/v/950/depositphotos_121012076-stock-illustration-blank-photo-icon.jpg',
                   )
                 : const AssetImage('assets/images/girl1.png'),

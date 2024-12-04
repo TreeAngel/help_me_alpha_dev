@@ -9,7 +9,7 @@ class DetailOrderModel {
   String? latitude;
   String? longitude;
   List<dynamic>? attachments;
-  String? price;
+  int? price;
   String? category;
   String? mitra;
   String? mitraProfile;
@@ -43,7 +43,7 @@ class DetailOrderModel {
       latitude: data['latitude'] as String?,
       longitude: data['longitude'] as String?,
       attachments: data['attachments'] as List<dynamic>?,
-      price: data['price'] as String?,
+      price: data['price'] as int?,
       category: data['category'] as String?,
       mitra: data['mitra'] as String?,
       mitraProfile: data['mitra_profile'] as String?,

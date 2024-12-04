@@ -8,8 +8,8 @@ class OfferModel {
   String? mitraProfile;
   String? price;
   int? estimatedTime;
-  String? latitude;
-  String? longitude;
+  double? latitude;
+  double? longitude;
 
   OfferModel({
     this.orderId,
@@ -31,8 +31,8 @@ class OfferModel {
         mitraProfile: data['mitra_profile'] as String?,
         price: data['price'] as String?,
         estimatedTime: data['estimated_time'] as int?,
-        latitude: data['latitude'] as String?,
-        longitude: data['longitude'] as String?,
+        latitude: data['latitude'] as double?,
+        longitude: data['longitude'] as double?,
       );
 
   Map<String, dynamic> toMap() => {
