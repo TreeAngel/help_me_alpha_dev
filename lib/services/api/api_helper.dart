@@ -201,6 +201,12 @@ class ApiHelper {
     }
   }
 
+  /*
+    Ini masih pakai stream periodic unutk melakukan requst per 10 detik gak efisien dan terlalu
+    membebani server, ada alternatif tapi menggunakan firebase messaging dan belum diintegrasikan.
+    Jika firebase messaging untuk menerima offer tidak ada atau jika ada tapi tidak memberikan data
+    berati ada yang salah pada bagian back-end atau di bloc 
+  */
   static Stream getOfferFromMitra(int orderId) async* {
     yield* Stream.periodic(const Duration(seconds: 10)).asyncMap((_) async {
       final response = await ApiController.getData('users/offers/$orderId');

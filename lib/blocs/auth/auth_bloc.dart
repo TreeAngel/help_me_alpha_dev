@@ -133,12 +133,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
     } else {
       emit(AuthLoading());
-      late LoginModel loginRequest;
       String? fcmToken = await ManageFCMToken.readToken();
       if (fcmToken == null || fcmToken.isEmpty) {
         fcmToken = await FirebaseMessagingApi.getFCMToken();
       }
-      loginRequest = LoginModel(
+      final loginRequest = LoginModel(
         username: username,
         password: password,
         fcmToken: fcmToken,

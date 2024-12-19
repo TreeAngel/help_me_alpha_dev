@@ -46,6 +46,9 @@ class ApiController {
     }
   }
 
+  /* 
+    extra header untuk request yang membutuhkan multipart form data
+  */
   static Future postData(
     String url, [
     dynamic data,

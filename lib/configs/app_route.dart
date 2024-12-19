@@ -28,7 +28,15 @@ class AppRoute {
     initialLocation: '/',
     routes: _routes,
     redirect: (context, state) {
+      /*
+        Redirect yang kupakai untuk mencegar mencegah user mengakses beberapa page,
+        mungkin bisa diimprove atau ada pendekatan yang lebih baik tanpa menggunakan plugin ini
+      */
       final isAuthenticated = ApiController.token != null ? true : false;
+      /* 
+        Untuk mengecek apakah user memilki order aktif setiap mereka melakukan navigasi,
+        mungkin bisa diupdate agar hanya saat navigasi ke route tertentu
+      */
       final haveOrder = context.read<ManageOrderBloc>().haveActiveOrder;
       final activeOrder = (haveOrder == true &&
               context.read<HomeCubit>().orderHistory.isNotEmpty)
