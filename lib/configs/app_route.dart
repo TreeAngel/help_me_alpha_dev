@@ -7,7 +7,6 @@ import '../ui/pages/order/send_offer_page.dart';
 import '../ui/pages/profile/edit_mitra_profile_page.dart';
 import '../ui/pages/profile/edit_user_profile_page.dart';
 import '../ui/pages/profile/profile_page.dart';
-import '../ui/pages/home/selected_popup.dart';
 import '../ui/pages/misc/launch_page.dart';
 // import '../../ui/pages/track_maps_page.dart';
 import '../services/api/api_controller.dart';
@@ -107,11 +106,11 @@ class AppRoute {
         name: 'changePasswordPage',
         builder: (context, state) => const ChangePasswordPage(),
       ),
-      GoRoute(
-        path: '/getselectedorder',
-        name: 'selectedPop',
-        builder: (context, state) => const SelectedPop(),
-      ),
+      // GoRoute(
+      //   path: '/getselectedorder',
+      //   name: 'selectedPop',
+      //   builder: (context, state) => const SelectedPop(),
+      // ),
       GoRoute(
         path: '/sendOffer',
         name: 'sendOfferPage',
