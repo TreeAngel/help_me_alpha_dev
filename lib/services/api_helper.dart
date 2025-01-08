@@ -5,7 +5,7 @@ import 'package:help_me_alpha_dev/utils/logging.dart';
 class ApiHelper {
   static const baseUrl = null;
   static const temporaryUrl =
-      'https://ecf1-2001-448a-3020-24e1-8183-e5bd-ef1a-f748.ngrok-free.app/api';
+      'https://helpme.smkn2smi.sch.id/api/v1'; 
 
   static String token = '';
 
